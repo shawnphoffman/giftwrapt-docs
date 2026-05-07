@@ -250,7 +250,8 @@ Pin a specific tag in production by setting `APP_IMAGE` in your `.env`. The comp
 
 | Concern                      | Where                                               |
 | ---------------------------- | --------------------------------------------------- |
-| Local development            | [getting-started.md](/getting-started/)        |
+| Quickstart (Docker)          | [getting-started.md](/getting-started/)        |
+| Local development            | [local-development.md](/local-development/)    |
 | Docker self-host             | [self-hosting.md](/self-hosting/)              |
 | Storage backends and recipes | [storage.md](/storage/)                        |
 | URL scraping infra           | [scraping.md](/scraping/)                      |

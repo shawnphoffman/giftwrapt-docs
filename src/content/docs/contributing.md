@@ -2,7 +2,7 @@
 title: Contributing
 ---
 
-Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Getting started](/getting-started/).
+Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Local development](/local-development/).
 
 ## Project layout
 
@@ -110,7 +110,7 @@ See sec-review L6.
 ## Where to find things
 
 - App overview and quick start: [README](https://github.com/shawnphoffman/giftwrapt/blob/main/README.md)
-- Local dev: [getting-started.md](/getting-started/)
+- Local dev: [local-development.md](/local-development/)
 - Self-hosting with Docker: [self-hosting.md](/self-hosting/)
 - Storage backends: [storage.md](/storage/)
 - URL scraping pipeline: [scraping.md](/scraping/)

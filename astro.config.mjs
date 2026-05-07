@@ -49,17 +49,21 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Getting Started',
+					items: [{ label: 'Quickstart', slug: 'getting-started' }],
+				},
+				{
+					label: 'Deploy',
 					items: [
-						{ label: 'Local development', slug: 'getting-started' },
-						{ label: 'Contributing', slug: 'contributing' },
+						{ label: 'One-click platforms', slug: 'deployment' },
+						{ label: 'Self-host with Docker', slug: 'self-hosting' },
+						{ label: 'Storage backends', slug: 'storage' },
 					],
 				},
 				{
-					label: 'Self-Hosting',
+					label: 'Develop',
 					items: [
-						{ label: 'Deployment', slug: 'deployment' },
-						{ label: 'Docker self-host', slug: 'self-hosting' },
-						{ label: 'Storage backends', slug: 'storage' },
+						{ label: 'Local development', slug: 'local-development' },
+						{ label: 'Contributing', slug: 'contributing' },
 					],
 				},
 				{

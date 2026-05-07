@@ -1,8 +1,8 @@
 ---
-title: Getting started
+title: Local development
 ---
 
-Local development setup. For production deployment see [deployment.md](/deployment/).
+Hacking on the app from a local checkout. For running GiftWrapt (self-hosted or on a managed platform) see [Get started](/getting-started/).
 
 ## Requirements
 

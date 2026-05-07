@@ -6,6 +6,8 @@
 	"scripts": {
 		"dev": "astro dev",
 		"start": "astro dev",
+		"sync:compose": "node scripts/sync-compose.mjs",
+		"prebuild": "node scripts/sync-compose.mjs",
 		"build": "astro build",
 		"preview": "astro preview",
 		"astro": "astro"
