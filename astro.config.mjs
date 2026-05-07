@@ -50,30 +50,29 @@ export default defineConfig({
 				{
 					label: 'Getting Started',
 					items: [
-						{ label: 'Overview', slug: 'docs' },
-						{ label: 'Local development', slug: 'docs/getting-started' },
-						{ label: 'Contributing', slug: 'docs/contributing' },
+						{ label: 'Local development', slug: 'getting-started' },
+						{ label: 'Contributing', slug: 'contributing' },
 					],
 				},
 				{
 					label: 'Self-Hosting',
 					items: [
-						{ label: 'Deployment', slug: 'docs/deployment' },
-						{ label: 'Docker self-host', slug: 'docs/self-hosting' },
-						{ label: 'Storage backends', slug: 'docs/storage' },
+						{ label: 'Deployment', slug: 'deployment' },
+						{ label: 'Docker self-host', slug: 'self-hosting' },
+						{ label: 'Storage backends', slug: 'storage' },
 					],
 				},
 				{
 					label: 'Features',
-					items: [{ autogenerate: { directory: 'docs/features' } }],
+					items: [{ autogenerate: { directory: 'features' } }],
 				},
 				{
 					label: 'Reference',
-					items: [{ label: 'URL scraping', slug: 'docs/scraping' }],
+					items: [{ label: 'URL scraping', slug: 'scraping' }],
 				},
 				{
 					label: 'Guides',
-					items: [{ autogenerate: { directory: 'docs/guides' } }],
+					items: [{ autogenerate: { directory: 'guides' } }],
 				},
 			],
 		}),

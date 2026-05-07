@@ -7,7 +7,7 @@ GiftWrapt is a regular [TanStack Start](https://tanstack.com/start) app, so it r
 | Path                                         | When to pick it                                                              |
 | -------------------------------------------- | ---------------------------------------------------------------------------- |
 | [One-click deploy](#one-click-deployment)    | Quickest start. Vercel, Railway, Render, or Coolify, picked from the README. |
-| [Self-host with Docker](/docs/self-hosting/) | You want full control. One `docker compose up`, runs anywhere.               |
+| [Self-host with Docker](/self-hosting/) | You want full control. One `docker compose up`, runs anywhere.               |
 | [Vercel (manual)](#vercel)                   | You want zero-ops hosting and don't mind shipping data to managed providers. |
 | [Custom Node deploy](#custom-node-deploy)    | You're putting it on Fly, a VPS, etc.                                        |
 
@@ -46,7 +46,7 @@ After the first deploy, **enable Supabase Storage S3 access and paste the creden
    - `STORAGE_FORCE_PATH_STYLE` = `true` (Supabase S3 uses path-style)
 5. Redeploy. The app picks up the new vars and image uploads start working.
 
-Supabase Storage S3 details and a longer recipe live in [storage.md → Supabase Storage](/docs/storage/).
+Supabase Storage S3 details and a longer recipe live in [storage.md → Supabase Storage](/storage/).
 
 ### One-click: Railway
 
@@ -65,7 +65,7 @@ The button creates a single service that builds from this repo's `Dockerfile`, u
    - `BETTER_AUTH_SECRET` = output of `openssl rand -base64 32` (run locally, paste the result).
    - `BETTER_AUTH_URL` = `https://${{RAILWAY_PUBLIC_DOMAIN}}` - Railway substitutes the assigned `*.up.railway.app` host automatically. If you've already added a custom domain, hardcode that instead (e.g. `https://giftwrapt.example.com`).
 5. **Redeploy.** The variable changes trigger a new deploy. Watch the deploy logs - you should see migrations run and then `starting giftwrapt`.
-6. **(Optional) Image uploads.** The app boots fine without storage; upload endpoints return 503 until you wire `STORAGE_*` vars to an external S3 bucket (Cloudflare R2, AWS S3, Supabase Storage). Recipes in [storage.md](/docs/storage/).
+6. **(Optional) Image uploads.** The app boots fine without storage; upload endpoints return 503 until you wire `STORAGE_*` vars to an external S3 bucket (Cloudflare R2, AWS S3, Supabase Storage). Recipes in [storage.md](/storage/).
 
 **Common issue: `DATABASE_URL is not set; cannot run migrations`** in deploy logs after step 3. Either the Postgres service has a different name than `Postgres` (check the canvas tile, edit the reference to match), or you saved the variable but didn't redeploy - reference resolution happens at deploy time, not on save.
 
@@ -78,7 +78,7 @@ The Render button reads [`render.yaml`](https://github.com/shawnphoffman/giftwra
 1. Click the badge. Render reads the blueprint and creates both the database and the web service.
 2. `DATABASE_URL` is wired automatically; `BETTER_AUTH_SECRET` is auto-generated.
 3. After the first deploy, set `BETTER_AUTH_URL` and `SERVER_URL` to your Render-assigned URL (or your custom domain).
-4. To enable image uploads, fill in the `STORAGE_*` vars (left as `sync: false` so Render prompts for them). Same recipes as the other targets - see [storage.md](/docs/storage/).
+4. To enable image uploads, fill in the `STORAGE_*` vars (left as `sync: false` so Render prompts for them). Same recipes as the other targets - see [storage.md](/storage/).
 
 Pin a specific image tag (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) in `render.yaml` once you're past the "does it work" phase, otherwise every deploy pulls the latest published image.
 
@@ -93,7 +93,7 @@ Coolify is self-hosted, so there's no public URL to deep-link to - you trigger t
 5. Coolify reads the compose file and spins up app + Postgres + Garage in one go.
 6. Fill in the env vars Coolify prompts for (same set as `env.example`): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `POSTGRES_PASSWORD`, `STORAGE_*`, `GARAGE_*`. The bundled `INIT_GARAGE=true` handles bucket creation on first boot.
 
-This is the only target that lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [self-hosting.md](/docs/self-hosting/).
+This is the only target that lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [self-hosting.md](/self-hosting/).
 
 ## Vercel
 
@@ -103,7 +103,7 @@ The repo is set up for Vercel deployment out of the box.
 2. Set the build command to `pnpm vercel-build` (this is `drizzle-kit migrate && vite build` - migrations run during the build using the `DATABASE_URL` env var).
 3. Provide env vars (see [env.example](https://github.com/shawnphoffman/giftwrapt/blob/main/env.example)). For Vercel specifically:
    - `DATABASE_URL` from a managed Postgres (Vercel Postgres, Neon, Supabase, etc.)
-   - `STORAGE_*` pointing at an external S3-compatible bucket. Cloudflare R2, AWS S3, and Supabase Storage all work; recipes are in [storage.md](/docs/storage/). Garage and RustFS are self-host-only.
+   - `STORAGE_*` pointing at an external S3-compatible bucket. Cloudflare R2, AWS S3, and Supabase Storage all work; recipes are in [storage.md](/storage/). Garage and RustFS are self-host-only.
    - `BETTER_AUTH_URL` is auto-derived from `VERCEL_PROJECT_PRODUCTION_URL` on production deploys; only set it explicitly if you've added a custom domain you want auth bound to instead of the `*.vercel.app` URL.
 
 The bundled `INIT_GARAGE` / `INIT_RUSTFS` flags should stay unset on Vercel; you're using an external bucket.
@@ -250,8 +250,8 @@ Pin a specific tag in production by setting `APP_IMAGE` in your `.env`. The comp
 
 | Concern                      | Where                                               |
 | ---------------------------- | --------------------------------------------------- |
-| Local development            | [getting-started.md](/docs/getting-started/)        |
-| Docker self-host             | [self-hosting.md](/docs/self-hosting/)              |
-| Storage backends and recipes | [storage.md](/docs/storage/)                        |
-| URL scraping infra           | [scraping.md](/docs/scraping/)                      |
-| Local seeded admin           | [local-dev-admin.md](/docs/guides/local-dev-admin/) |
+| Local development            | [getting-started.md](/getting-started/)        |
+| Docker self-host             | [self-hosting.md](/self-hosting/)              |
+| Storage backends and recipes | [storage.md](/storage/)                        |
+| URL scraping infra           | [scraping.md](/scraping/)                      |
+| Local seeded admin           | [local-dev-admin.md](/guides/local-dev-admin/) |

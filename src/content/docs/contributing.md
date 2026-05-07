@@ -2,7 +2,7 @@
 title: Contributing
 ---
 
-Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Getting started](/docs/getting-started/).
+Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Getting started](/getting-started/).
 
 ## Project layout
 
@@ -45,7 +45,7 @@ scripts/         CLI entry points (admin, seed, storage init)
 | `pnpm db:studio`   | Drizzle Studio.                                                                           |
 | `pnpm db:seed`     | Seed local DB with test users and data. Requires `SEED_SAFE=1`. **Truncates everything.** |
 
-The local seeded admin and other test users are documented in [local-dev-admin.md](/docs/guides/local-dev-admin/).
+The local seeded admin and other test users are documented in [local-dev-admin.md](/guides/local-dev-admin/).
 
 ## Storybook
 
@@ -61,7 +61,7 @@ Component stories live next to their components (`*.stories.tsx`). Storybook run
 
 ### shadcn components
 
-Components in `src/components/ui/` are owned by this repo, not pulled from a package. See [shadcn-upgrades.md](/docs/guides/shadcn-upgrades/) for how to pull upstream improvements without losing local customizations.
+Components in `src/components/ui/` are owned by this repo, not pulled from a package. See [shadcn-upgrades.md](/guides/shadcn-upgrades/) for how to pull upstream improvements without losing local customizations.
 
 ### Styling
 
@@ -110,9 +110,9 @@ See sec-review L6.
 ## Where to find things
 
 - App overview and quick start: [README](https://github.com/shawnphoffman/giftwrapt/blob/main/README.md)
-- Local dev: [getting-started.md](/docs/getting-started/)
-- Self-hosting with Docker: [self-hosting.md](/docs/self-hosting/)
-- Storage backends: [storage.md](/docs/storage/)
-- URL scraping pipeline: [scraping.md](/docs/scraping/)
-- Local dev admin / seeded users: [local-dev-admin.md](/docs/guides/local-dev-admin/)
-- Upgrading shadcn components: [shadcn-upgrades.md](/docs/guides/shadcn-upgrades/)
+- Local dev: [getting-started.md](/getting-started/)
+- Self-hosting with Docker: [self-hosting.md](/self-hosting/)
+- Storage backends: [storage.md](/storage/)
+- URL scraping pipeline: [scraping.md](/scraping/)
+- Local dev admin / seeded users: [local-dev-admin.md](/guides/local-dev-admin/)
+- Upgrading shadcn components: [shadcn-upgrades.md](/guides/shadcn-upgrades/)

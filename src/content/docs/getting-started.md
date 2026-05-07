@@ -2,7 +2,7 @@
 title: Getting started
 ---
 
-Local development setup. For production deployment see [deployment.md](/docs/deployment/).
+Local development setup. For production deployment see [deployment.md](/deployment/).
 
 ## Requirements
 
@@ -27,7 +27,7 @@ At minimum, set:
 - `DATABASE_URL` - point at your local Postgres (the bundled compose stack listens on `localhost:54321`)
 - `BETTER_AUTH_SECRET` - any long random string
 - `BETTER_AUTH_URL` - `http://localhost:3000` for dev
-- `STORAGE_*` - see [storage.md](/docs/storage/) for the recipe matching your chosen backend
+- `STORAGE_*` - see [storage.md](/storage/) for the recipe matching your chosen backend
 
 Optional:
 
@@ -59,7 +59,7 @@ SEED_SAFE=1 pnpm db:seed   # optional, populates test users
 ```
 
 > [!WARNING]
-> `db:seed` truncates the database before inserting fixtures. It refuses to run unless `DATABASE_URL` points at a known-local host AND `SEED_SAFE=1` is set, but it absolutely will clobber your local data. See [local-dev-admin.md](/docs/guides/local-dev-admin/) for the seeded credentials.
+> `db:seed` truncates the database before inserting fixtures. It refuses to run unless `DATABASE_URL` points at a known-local host AND `SEED_SAFE=1` is set, but it absolutely will clobber your local data. See [local-dev-admin.md](/guides/local-dev-admin/) for the seeded credentials.
 
 ## 5. Run the app
 
@@ -84,10 +84,10 @@ docker compose --profile garage down -v   # nuke Postgres + Garage volumes
 # (or --profile rustfs)
 ```
 
-The destructive `pnpm db:reset` script is intentionally not run automatically. See [local-dev-admin.md](/docs/guides/local-dev-admin/#regaining-access-without-reseeding) for the safe break-glass paths.
+The destructive `pnpm db:reset` script is intentionally not run automatically. See [local-dev-admin.md](/guides/local-dev-admin/#regaining-access-without-reseeding) for the safe break-glass paths.
 
 ## Next steps
 
-- [Contributing](/docs/contributing/) - scripts, conventions, PR workflow
-- [Storage](/docs/storage/) - swapping backends, env reference
-- [Scraping](/docs/scraping/) - URL scraping pipeline (browserless, AI extractors)
+- [Contributing](/contributing/) - scripts, conventions, PR workflow
+- [Storage](/storage/) - swapping backends, env reference
+- [Scraping](/scraping/) - URL scraping pipeline (browserless, AI extractors)

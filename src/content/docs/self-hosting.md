@@ -9,7 +9,7 @@ GiftWrapt ships a published Docker image and two compose files - one per bundled
 | [`docker/compose.selfhost-garage.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage.yaml) | [Garage](https://garagehq.deuxfleurs.fr/) | Smaller image, geo-distribution if you ever want it. Bootstraps via Garage's admin HTTP API.       |
 | [`docker/compose.selfhost-rustfs.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-rustfs.yaml) | [RustFS](https://rustfs.com/)             | MinIO-compatible drop-in. Credentials are arbitrary strings, bootstrap is a single `CreateBucket`. |
 
-Already have an external bucket (AWS S3, Cloudflare R2, Supabase, etc.)? Use either compose file with `INIT_GARAGE=false` / `INIT_RUSTFS=false` and point `STORAGE_*` at your bucket. See [storage.md](/docs/storage/).
+Already have an external bucket (AWS S3, Cloudflare R2, Supabase, etc.)? Use either compose file with `INIT_GARAGE=false` / `INIT_RUSTFS=false` and point `STORAGE_*` at your bucket. See [storage.md](/storage/).
 
 ## Prerequisites
 
@@ -55,7 +55,7 @@ The annotated reference is [env.example](https://github.com/shawnphoffman/giftwr
 | `BETTER_AUTH_SECRET` | Long random string. `openssl rand -hex 32` is fine.                                                 |
 | `BETTER_AUTH_URL`    | The public origin clients reach the app from. Drives auth, email links, cookie scope.               |
 | `SERVER_URL`         | Usually the same as `BETTER_AUTH_URL`.                                                              |
-| `STORAGE_*`          | See [storage.md](/docs/storage/). Required - the server refuses to boot without storage configured. |
+| `STORAGE_*`          | See [storage.md](/storage/). Required - the server refuses to boot without storage configured. |
 
 Garage-specific: `GARAGE_RPC_SECRET` and `GARAGE_ADMIN_TOKEN` (each `openssl rand -hex 32`).
 
@@ -167,7 +167,7 @@ Two stateful volumes:
 - `postgres_data` - everything except images
 - `garage_data` / `rustfs_data` - all images
 
-A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough. See [storage.md](/docs/storage/#backup-and-gc) for backend-specific notes.
+A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough. See [storage.md](/storage/#backup-and-gc) for backend-specific notes.
 
 > [!IMPORTANT]
 > **Encrypt your database backups at rest.** better-auth stores session tokens in the `session` table as plaintext (its design - the token IS the cookie). Anyone who can read a `pg_dump` can hijack every active session until those sessions expire. Same goes for the `verification` table (password-reset tokens). Use full-disk encryption (LUKS, EBS encryption, etc.) on the volume that holds your dumps, or pipe the dump through `gpg`/`age` before writing it. The `app_settings.scrapeProviders` rows are already AES-256-GCM encrypted at rest using `BETTER_AUTH_SECRET` as the master key, but everything else is in the clear. See sec-review L4.
@@ -176,5 +176,5 @@ A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough.
 
 - **"Invalid origin" on login**: `BETTER_AUTH_URL` doesn't match the origin the browser is using. See [multi-origin](#multi-origin--lan-access) above.
 - **Login appears to succeed but I'm bounced back to the login page**: cookies aren't being stored. If you're on plain HTTP, set `INSECURE_COOKIES=true`. If you're on HTTPS, check that the proxy forwards `X-Forwarded-Proto`.
-- **Storage init fails on first boot**: see the storage troubleshooting section in [storage.md](/docs/storage/#troubleshooting).
+- **Storage init fails on first boot**: see the storage troubleshooting section in [storage.md](/storage/#troubleshooting).
 - **Migrations fail**: check `docker compose logs app`. Usually a connectivity issue to Postgres - the entrypoint waits for `pg_isready` but doesn't wait forever.

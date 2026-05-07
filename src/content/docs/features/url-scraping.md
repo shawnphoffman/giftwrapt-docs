@@ -17,4 +17,4 @@ If a site is JavaScript-heavy and the basic scrape comes back empty, the **AI ex
 
 Some retailers actively block bots, gate content behind login, or change their markup faster than scrapers can keep up. When that happens you'll see partial or empty results — fall back to filling in the fields manually.
 
-For self-hosters who want to tune the scraping pipeline (browserless, AI extractor providers, queue concurrency, retries), see the operational reference: [URL scraping pipeline](/docs/scraping/).
+For self-hosters who want to tune the scraping pipeline (browserless, AI extractor providers, queue concurrency, retries), see the operational reference: [URL scraping pipeline](/scraping/).
