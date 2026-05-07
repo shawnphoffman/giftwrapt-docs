@@ -1,0 +1,164 @@
+/* Marketing landing page styles. Reuses Starlight theme tokens (--sl-color-*)
+   so dark mode and typography come along for free. */
+
+.landing {
+	max-width: 72rem;
+	margin: 0 auto;
+	padding: 3rem 1.5rem;
+}
+
+.landing__hero {
+	display: grid;
+	gap: 2rem;
+	padding: 4rem 0 3rem;
+	text-align: center;
+	align-items: center;
+	justify-items: center;
+}
+
+.landing__hero h1 {
+	font-size: clamp(2.5rem, 6vw, 4rem);
+	line-height: 1.1;
+	margin: 0;
+	color: var(--sl-color-white);
+}
+
+.landing__tagline {
+	font-size: 1.25rem;
+	color: var(--sl-color-gray-2);
+	max-width: 36rem;
+	margin: 0 auto;
+}
+
+.landing__cta {
+	display: flex;
+	gap: 0.75rem;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.landing__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.75rem 1.5rem;
+	border-radius: 0.5rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition:
+		background-color 0.15s,
+		color 0.15s,
+		border-color 0.15s;
+}
+
+.landing__btn--primary {
+	background: var(--sl-color-text-accent);
+	color: var(--sl-color-black);
+}
+
+.landing__btn--primary:hover {
+	background: var(--sl-color-white);
+}
+
+.landing__btn--secondary {
+	background: transparent;
+	color: var(--sl-color-white);
+	border: 1px solid var(--sl-color-gray-5);
+}
+
+.landing__btn--secondary:hover {
+	border-color: var(--sl-color-text-accent);
+	color: var(--sl-color-text-accent);
+}
+
+.landing__section {
+	padding: 3rem 0;
+	border-top: 1px solid var(--sl-color-hairline);
+}
+
+.landing__section h2 {
+	font-size: 2rem;
+	margin: 0 0 0.5rem;
+	color: var(--sl-color-white);
+}
+
+.landing__section-lede {
+	color: var(--sl-color-gray-2);
+	margin: 0 0 2rem;
+	max-width: 40rem;
+}
+
+.landing__features {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	gap: 1rem;
+}
+
+.landing__feature {
+	padding: 1.25rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-gray-6);
+}
+
+.landing__feature h3 {
+	margin: 0 0 0.5rem;
+	font-size: 1.125rem;
+	color: var(--sl-color-white);
+}
+
+.landing__feature p {
+	margin: 0;
+	color: var(--sl-color-gray-3);
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.landing__deploy {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: 1rem;
+}
+
+.landing__deploy-card {
+	padding: 1.25rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.75rem;
+	background: var(--sl-color-gray-6);
+}
+
+.landing__deploy-card h3 {
+	margin: 0 0 0.25rem;
+	font-size: 1rem;
+	color: var(--sl-color-white);
+}
+
+.landing__deploy-card p {
+	margin: 0 0 0.75rem;
+	color: var(--sl-color-gray-3);
+	font-size: 0.875rem;
+}
+
+.landing__deploy-card a img {
+	height: 2rem;
+}
+
+.landing__footer {
+	margin-top: 4rem;
+	padding-top: 2rem;
+	border-top: 1px solid var(--sl-color-hairline);
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+	color: var(--sl-color-gray-3);
+	font-size: 0.875rem;
+}
+
+.landing__footer a {
+	color: var(--sl-color-gray-2);
+}
+
+.landing__footer a:hover {
+	color: var(--sl-color-text-accent);
+}

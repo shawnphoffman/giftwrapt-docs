@@ -1,0 +1,153 @@
+---
+import { Image } from 'astro:assets'
+import logo from '../assets/logo@2x.png'
+import '../styles/landing.css'
+
+const title = 'GiftWrapt — sharing wish lists made easy'
+const description = 'Self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story.'
+
+const features = [
+	{
+		name: 'Lists & items',
+		body: 'Photos, prices, priorities, quantities, notes, comments, and add-ons. Collaborative list editors for joint lists.',
+	},
+	{
+		name: 'Claims, hidden from the owner',
+		body: '"I\'ve got this" markers visible to other giftgivers but not to the recipient. Reveal flow opens it up after the gift is given.',
+	},
+	{
+		name: 'Guardians & partners',
+		body: "Real household relationships. Guardians manage kids' lists; partners coordinate with each other.",
+	},
+	{
+		name: 'URL scraping',
+		body: 'Paste a product link and the app pulls title, photo, and price. AI extractor falls back when the basic scrape comes up empty.',
+	},
+	{
+		name: 'Self-hostable',
+		body: 'Drop-in Docker compose with Postgres + Garage S3, or deploy to Vercel / Railway / Render / Coolify in one click.',
+	},
+	{
+		name: 'Bring your own storage',
+		body: 'Garage and RustFS bundled for self-host. Recipes for AWS S3, Cloudflare R2, and Supabase Storage.',
+	},
+	{
+		name: 'Optional email',
+		body: 'Resend integration for comment notifications and birthday reminders. Skip it entirely and the app still works fine.',
+	},
+	{ name: 'Multi-theme', body: 'Light, dark, and a Christmas mode. Picks up your system preference by default.' },
+]
+
+const deploys = [
+	{
+		name: 'Vercel + Supabase',
+		description: 'App + Supabase Postgres. Storage paste step.',
+		href: 'https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fshawnphoffman%2Fgiftwrapt&project-name=giftwrapt&repository-name=giftwrapt&buildCommand=pnpm+vercel-build&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22supabase%22%2C%22productSlug%22%3A%22supabase%22%7D%5D&env=BETTER_AUTH_SECRET&envDescription=Generate+with+openssl+rand+-base64+32&envLink=https%3A%2F%2Fgiftwrapt.dev%2Fdocs%2Fdeployment%2F%23one-click-vercel--supabase',
+		img: 'https://vercel.com/button',
+		alt: 'Deploy with Vercel',
+	},
+	{
+		name: 'Railway',
+		description: 'App. Add Postgres + storage in the dashboard.',
+		href: 'https://railway.com/new/github?repo=shawnphoffman%2Fgiftwrapt',
+		img: 'https://railway.com/button.svg',
+		alt: 'Deploy on Railway',
+	},
+	{
+		name: 'Render',
+		description: 'App + managed Postgres via render.yaml.',
+		href: 'https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fshawnphoffman%2Fgiftwrapt',
+		img: 'https://render.com/images/deploy-to-render-button.svg',
+		alt: 'Deploy to Render',
+	},
+	{
+		name: 'Coolify (self-host)',
+		description: 'Full stack: app + Postgres + Garage S3.',
+		href: '/docs/deployment/#one-click-coolify-self-host',
+		img: 'https://img.shields.io/badge/Deploy%20on-Coolify-6B46C1',
+		alt: 'Deploy on Coolify',
+	},
+]
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://giftwrapt.dev" />
+	</head>
+	<body data-theme="dark">
+		<main class="landing">
+			<section class="landing__hero">
+				<Image src={logo} alt="GiftWrapt Logo" width={128} height={128} loading="eager" quality={'max'} />
+				<h1>Sharing wish lists made easy</h1>
+				<p class="landing__tagline">
+					A self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story — without
+					anyone trying to sell you anything.
+				</p>
+				<div class="landing__cta">
+					<a class="landing__btn landing__btn--primary" href="/docs/getting-started/">Get started</a>
+					<a class="landing__btn landing__btn--secondary" href="https://github.com/shawnphoffman/giftwrapt">View on GitHub</a>
+				</div>
+			</section>
+
+			<section class="landing__section">
+				<h2>What's in the box</h2>
+				<p class="landing__section-lede">
+					Built for the kind of household with a couple of adults coordinating gifts for each other and the kids, plus a relative who keeps
+					emailing Etsy links.
+				</p>
+				<div class="landing__features">
+					{
+						features.map(f => (
+							<article class="landing__feature">
+								<h3>{f.name}</h3>
+								<p>{f.body}</p>
+							</article>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="landing__section">
+				<h2>Deploy in one click</h2>
+				<p class="landing__section-lede">
+					Pick the host you already use. Step-by-step recipes and the Coolify self-host bundle live in <a href="/docs/deployment/"
+						>the deployment docs</a
+					>.
+				</p>
+				<div class="landing__deploy">
+					{
+						deploys.map(d => (
+							<div class="landing__deploy-card">
+								<h3>{d.name}</h3>
+								<p>{d.description}</p>
+								<a href={d.href} target="_blank" rel="noopener">
+									<img src={d.img} alt={d.alt} />
+								</a>
+							</div>
+						))
+					}
+				</div>
+			</section>
+
+			<footer class="landing__footer">
+				<div>
+					<a href="/docs/">Docs</a> ·
+					<a href="https://github.com/shawnphoffman/giftwrapt">GitHub</a> ·
+					<a href="https://github.com/shawnphoffman/giftwrapt/blob/main/LICENSE">AGPL-3.0</a>
+				</div>
+				<div>Made with care for the kind of family that has a Christmas list spreadsheet.</div>
+			</footer>
+		</main>
+	</body>
+</html>
