@@ -76,7 +76,6 @@ export default defineConfig({
 					items: [{ autogenerate: { directory: 'docs/guides' } }],
 				},
 			],
-			customCss: ['./src/styles/landing.css'],
 		}),
 	],
 })

@@ -1,0 +1,81 @@
+---
+title: GiftWrapt
+description: Self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story.
+template: splash
+hero:
+  title: Sharing wish lists made easy
+  tagline: A self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story, without anyone trying to sell you anything.
+  image:
+    file: ../../assets/logo.png
+    alt: GiftWrapt logo
+  actions:
+    - text: Get started
+      link: /docs/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/shawnphoffman/giftwrapt
+      icon: external
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+## What's in the box
+
+Built for the kind of household with a couple of adults coordinating gifts for each other and the kids, plus a relative who keeps emailing Etsy links.
+
+<CardGrid>
+	<Card title="Lists & items" icon="list-format">
+		Photos, prices, priorities, quantities, notes, comments, and add-ons. Collaborative list editors for joint lists.
+	</Card>
+	<Card title="Claims, hidden from the owner" icon="approve-check">
+		"I've got this" markers visible to other giftgivers but not to the recipient. Reveal flow opens it up after the gift is given.
+	</Card>
+	<Card title="Guardians & partners" icon="heart">
+		Real household relationships. Guardians manage kids' lists; partners coordinate with each other.
+	</Card>
+	<Card title="URL scraping" icon="external">
+		Paste a product link and the app pulls title, photo, and price. AI extractor falls back when the basic scrape comes up empty.
+	</Card>
+	<Card title="Self-hostable" icon="rocket">
+		Drop-in Docker compose with Postgres + Garage S3, or deploy to Vercel, Railway, Render, or Coolify in one click.
+	</Card>
+	<Card title="Bring your own storage" icon="cloud-download">
+		Garage and RustFS bundled for self-host. Recipes for AWS S3, Cloudflare R2, and Supabase Storage.
+	</Card>
+	<Card title="Optional email" icon="email">
+		Resend integration for comment notifications and birthday reminders. Skip it entirely and the app still works fine.
+	</Card>
+	<Card title="Multi-theme" icon="moon">
+		Light, dark, and a Christmas mode. Picks up your system preference by default.
+	</Card>
+</CardGrid>
+
+## Deploy in one click
+
+Pick the host you already use. Step-by-step recipes and the Coolify self-host bundle live in [the deployment docs](/docs/deployment/).
+
+<CardGrid>
+	<LinkCard
+		title="Vercel + Supabase"
+		description="App + Supabase Postgres. Storage paste step."
+		href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fshawnphoffman%2Fgiftwrapt&project-name=giftwrapt&repository-name=giftwrapt&buildCommand=pnpm+vercel-build&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22supabase%22%2C%22productSlug%22%3A%22supabase%22%7D%5D&env=BETTER_AUTH_SECRET&envDescription=Generate+with+openssl+rand+-base64+32&envLink=https%3A%2F%2Fgiftwrapt.dev%2Fdocs%2Fdeployment%2F%23one-click-vercel--supabase"
+	/>
+	<LinkCard title="Railway" description="App. Add Postgres + storage in the dashboard." href="https://railway.com/new/github?repo=shawnphoffman%2Fgiftwrapt" />
+	<LinkCard
+		title="Render"
+		description="App + managed Postgres via render.yaml."
+		href="https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fshawnphoffman%2Fgiftwrapt"
+	/>
+	<LinkCard title="Coolify (self-host)" description="Full stack: app + Postgres + Garage S3." href="/docs/deployment/#one-click-coolify-self-host" />
+</CardGrid>
+
+## Read the docs
+
+<CardGrid>
+	<LinkCard title="Documentation home" href="/docs/" description="Feature tour, reference, and guides." />
+	<LinkCard title="Local development" href="/docs/getting-started/" description="Spin up Postgres + S3 storage locally and start hacking." />
+	<LinkCard title="Self-host with Docker" href="/docs/self-hosting/" description="One docker compose up, runs anywhere. Includes Postgres + Garage S3." />
+	<LinkCard title="Contributing" href="/docs/contributing/" description="Scripts, conventions, and PR workflow." />
+</CardGrid>
