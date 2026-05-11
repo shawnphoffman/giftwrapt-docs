@@ -1,0 +1,52 @@
+---
+title: Screenshots
+description: Screenshots of the GiftWrapt UI.
+---
+
+import { Image } from 'astro:assets';
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+import SlickCompareInit from '../../../components/SlickCompareInit.astro';
+
+import "slick-image-compare/dist/slick-image-compare.css";
+
+export const lightImages = import.meta.glob(
+  '../../../screenshots/basic/light/*.png',
+  { eager: true, import: 'default' },
+);
+export const darkImages = import.meta.glob(
+  '../../../screenshots/basic/dark/*.png',
+  { eager: true, import: 'default' },
+);
+
+export const pairs = Object.entries(lightImages)
+  .map(([path, light]) => {
+    const name = path.split('/').pop().replace('.png', '');
+    const dark = darkImages[path.replace('/light/', '/dark/')];
+    return { name, light, dark };
+  })
+  .filter((p) => p.dark)
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+export const adminPairs = pairs.filter((p) => p.name.startsWith('admin-'));
+export const userPairs = pairs.filter((p) => !p.name.startsWith('admin-'));
+
+export const Compare = ({ light, dark, name }) => (
+  <div
+    data-sic="{handleAngle: 8, snapToStart: true, startPos: 80}"
+    class="not-content"
+    style="border: 1px solid var(--sl-color-hairline); border-radius: var(--sl-border-radius-medium);"
+  >
+    <Image src={dark} alt={`${name} dark`} />
+    <Image src={light} alt={`${name} light`} />
+  </div>
+);
+
+<SlickCompareInit />
+
+## User Interface
+
+{userPairs.map((p) => <Compare key={p.name} {...p} />)}
+
+## Admin Interface
+
+{adminPairs.map((p) => <Compare key={p.name} {...p} />)}
