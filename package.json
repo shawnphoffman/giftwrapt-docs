@@ -16,6 +16,8 @@
 		"@astrojs/starlight": "^0.39.0",
 		"astro": "^6.3.0",
 		"sharp": "^0.34.0",
+		"slick-image-compare": "^0.4.11",
+		"starlight-changelogs": "^0.5.0",
 		"three": "^0.184.0"
 	}
 }
