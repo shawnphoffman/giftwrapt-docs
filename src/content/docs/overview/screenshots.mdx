@@ -27,8 +27,8 @@ export const pairs = Object.entries(lightImages)
   .filter((p) => p.dark)
   .sort((a, b) => a.name.localeCompare(b.name));
 
-export const adminPairs = pairs.filter((p) => p.name.startsWith('admin-'));
-export const userPairs = pairs.filter((p) => !p.name.startsWith('admin-'));
+export const adminPairs = pairs.filter((p) => p.name.startsWith('admin'));
+export const userPairs = pairs.filter((p) => !p.name.startsWith('admin'));
 
 export const Compare = ({ light, dark, name }) => (
   <div
