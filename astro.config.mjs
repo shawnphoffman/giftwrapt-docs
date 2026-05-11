@@ -20,6 +20,9 @@ export default defineConfig({
 		starlight({
 			title: 'GiftWrapt',
 			description: 'Self-hostable wish list app for families and small groups.',
+			components: {
+				Hero: './src/components/Hero.astro',
+			},
 			logo: {
 				src: './src/assets/logo.png',
 				replacesTitle: false,

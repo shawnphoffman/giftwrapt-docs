@@ -1,0 +1,129 @@
+---
+// Overrides Starlight's default Hero. Renders the same title + tagline + actions
+// layout, but swaps the static image for an interactive three.js gift viewer.
+import DraftContentNotice from 'virtual:starlight/components/DraftContentNotice'
+import { LinkButton } from '@astrojs/starlight/components'
+
+// Starlight's page-title element id (kept stable as '_top').
+const PAGE_TITLE_ID = '_top'
+
+const { data } = Astro.locals.starlightRoute.entry
+const { title = data.title, tagline, actions = [] } = data.hero || {}
+---
+
+<div class="hero">
+	<div class="hero-canvas-wrap">
+		<canvas id="gift3d-canvas" aria-label="Interactive 3D gift" role="img"></canvas>
+	</div>
+	<div class="sl-flex stack">
+		<div class="sl-flex copy">
+			<h1 id={PAGE_TITLE_ID} data-page-title set:html={title} />
+			{data.draft && <DraftContentNotice />}
+			{tagline && <div class="tagline" set:html={tagline} />}
+		</div>
+		{
+			actions.length > 0 && (
+				<div class="sl-flex actions">
+					{actions.map(({ attrs: { class: className, ...attrs } = {}, icon, link: href, text, variant }) => (
+						<LinkButton {href} {variant} icon={icon?.name} class:list={[className]} {...attrs}>
+							{text}
+							{icon?.html && <Fragment set:html={icon.html} />}
+						</LinkButton>
+					))}
+				</div>
+			)
+		}
+	</div>
+</div>
+
+<script>
+	import { initGift3D } from './gift3d.js'
+
+	const canvas = document.getElementById('gift3d-canvas')
+	if (canvas instanceof HTMLCanvasElement) {
+		const viewer = initGift3D(canvas)
+		// Clean up on Astro view transitions / page swaps.
+		document.addEventListener('astro:before-swap', () => viewer.dispose(), { once: true })
+	}
+</script>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 100%;
+		align-items: center;
+		gap: 1rem;
+		padding-bottom: 1rem;
+	}
+
+	.hero-canvas-wrap {
+		width: min(70%, 20rem);
+		aspect-ratio: 1 / 1;
+		margin-inline: auto;
+	}
+
+	.hero-canvas-wrap canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.stack {
+		flex-direction: column;
+		gap: clamp(1.5rem, calc(1.5rem + 1vw), 2rem);
+		text-align: center;
+	}
+
+	.copy {
+		flex-direction: column;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.copy > * {
+		max-width: 50ch;
+	}
+
+	h1 {
+		font-size: clamp(var(--sl-text-3xl), calc(0.25rem + 5vw), var(--sl-text-6xl));
+		line-height: var(--sl-line-height-headings);
+		font-weight: 600;
+		color: var(--sl-color-white);
+	}
+
+	.tagline {
+		font-size: clamp(var(--sl-text-base), calc(0.0625rem + 2vw), var(--sl-text-xl));
+		color: var(--sl-color-gray-2);
+	}
+
+	.actions {
+		gap: 1rem 2rem;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	@media (min-width: 50rem) {
+		.hero {
+			grid-template-columns: 7fr 4fr;
+			gap: 3%;
+			padding-block: clamp(2.5rem, calc(1rem + 10vmin), 10rem);
+		}
+
+		.hero-canvas-wrap {
+			order: 2;
+			width: min(100%, 25rem);
+		}
+
+		.stack {
+			text-align: start;
+		}
+
+		.copy {
+			align-items: flex-start;
+		}
+
+		.actions {
+			justify-content: flex-start;
+		}
+	}
+</style>
