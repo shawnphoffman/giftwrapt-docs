@@ -1,39 +1,41 @@
 ---
 title: GiftWrapt
-description: Self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story.
+description: Self-hosted wish lists for families and small groups. Start simple or scale up with fine-grained permissions, optional email, and AI-powered suggestions.
 template: splash
 hero:
   title: Wish lists made easy
-  tagline: A self-hostable wish list app for families and small groups. Lists, claims, URL scraping, and a saner deploy story, without anyone trying to sell you anything.
+  tagline: Self-hosted wish lists for families and small groups. Start simple or scale up with fine-grained permissions, optional email, and AI-powered suggestions.
   image:
     file: ../../assets/gift-3d.png
     alt: GiftWrapt logo
   actions:
     - text: Get started
-      link: /getting-started/
+      link: /overview/getting-started/
       icon: right-arrow
       variant: primary
-    - text: View on GitHub
-      link: https://github.com/shawnphoffman/giftwrapt
-      icon: external
-      variant: secondary
+    # - text: View on GitHub
+    #   link: https://github.com/shawnphoffman/giftwrapt
+    #   icon: external
+    #   variant: secondary
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
-## What's in the box
+## Why?
 
-Built for the kind of household with a couple of adults coordinating gifts for each other and the kids, plus a relative who keeps emailing Etsy links.
+GiftWrapt is v2 of the labor-of-love wish list app I built for my family back in early 2024. It's a complete rewrite from the ground up taking everything I learned from v1, with a focus on simplicity, ease of use, and privacy.
+
+## What's in the box
 
 <CardGrid>
 	<Card title="Lists & items" icon="list-format">
-		Photos, prices, priorities, quantities, notes, comments, and add-ons. Collaborative list editors for joint lists.
+		Public and private lists for different occassions. URLs, photos, prices, priorities, quantities, and more for every item. Collaborative list editors for joint lists.
 	</Card>
-	<Card title="Claims, hidden from the owner" icon="approve-check">
-		"I've got this" markers visible to other giftgivers but not to the recipient. Reveal flow opens it up after the gift is given.
+	<Card title="No spoiled suprises" icon="approve-check">
+		Mark items as claimed, visible to other giftgivers but not to the recipient. Gifters are revealed to the recipient through configurable schedule or manually.
 	</Card>
-	<Card title="Guardians & partners" icon="heart">
-		Real household relationships. Guardians manage kids' lists; partners coordinate with each other.
+	<Card title="Guardians, dependents, and partners" icon="heart">
+		Real household relationships. Guardians can help manage children's lists; fully manage dependents' lists for pets, babies, and more. Set your partner for joint credit when it matters.
 	</Card>
 	<Card title="URL scraping" icon="external">
 		Paste a product link and the app pulls title, photo, and price. AI extractor falls back when the basic scrape comes up empty.
@@ -48,11 +50,11 @@ Built for the kind of household with a couple of adults coordinating gifts for e
 		Resend integration for comment notifications and birthday reminders. Skip it entirely and the app still works fine.
 	</Card>
 	<Card title="Multi-theme" icon="moon">
-		Light, dark, and a Christmas mode. Picks up your system preference by default.
+		Supports both light and dark mode. Picks up your system preference by default.
 	</Card>
 </CardGrid>
 
-## Deploy in one click
+{/* ## Deploy in one click
 
 Pick the host you already use. Step-by-step recipes and the Coolify self-host bundle live in [the deployment docs](/deployment/).
 
@@ -69,13 +71,13 @@ Pick the host you already use. Step-by-step recipes and the Coolify self-host bu
 		href="https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fshawnphoffman%2Fgiftwrapt"
 	/>
 	<LinkCard title="Coolify (self-host)" description="Full stack: app + Postgres + Garage S3." href="/deployment/#one-click-coolify-self-host" />
-</CardGrid>
+</CardGrid> */}
 
-## Read the docs
+{/* ## Read the docs
 
 <CardGrid>
 	<LinkCard title="Quickstart" href="/getting-started/" description="One docker compose up. App, Postgres, S3 storage, cron - all bundled." />
 	<LinkCard title="Self-host with Docker" href="/self-hosting/" description="Deeper reference: reverse proxy, multi-origin, admin CLI, backups." />
 	<LinkCard title="Storage backends" href="/storage/" description="Garage, RustFS, AWS S3, Cloudflare R2, Supabase Storage recipes." />
 	<LinkCard title="Local development" href="/local-development/" description="Spin up Postgres + S3 storage locally and start hacking." />
-</CardGrid>
+</CardGrid> */}

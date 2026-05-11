@@ -21,7 +21,7 @@ const docsDir = resolve(repoRoot, 'src/content/docs')
 const GITHUB_RAW = 'https://raw.githubusercontent.com/shawnphoffman/giftwrapt/main'
 const LOCAL_CANDIDATES = [resolve(repoRoot, '../core'), resolve(repoRoot, '../giftwrapt')]
 
-const TARGETS = [resolve(docsDir, 'getting-started.mdx')]
+const TARGETS = [resolve(docsDir, 'overview/getting-started.mdx')]
 
 const START = /\{\/\*\s*compose:start\s+file=([^\s*]+)\s*\*\/\}/g
 const END = '{/* compose:end */}'

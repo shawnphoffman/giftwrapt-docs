@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+import starlightChangelogs, { makeChangelogsSidebarLinks } from 'starlight-changelogs'
 
 // See src/shims/nanoid-non-secure.js for why this alias exists.
 const nanoidShim = fileURLToPath(new URL('./src/shims/nanoid-non-secure.js', import.meta.url))
@@ -19,6 +20,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'GiftWrapt',
+			plugins: [starlightChangelogs()],
 			description: 'Self-hostable wish list app for families and small groups.',
 			components: {
 				Hero: './src/components/Hero.astro',
@@ -45,41 +47,64 @@ export default defineConfig({
 					href: 'https://github.com/shawnphoffman/giftwrapt',
 				},
 			],
-			editLink: {
-				baseUrl: 'https://github.com/shawnphoffman/giftwrapt/edit/main/docs/',
-			},
+			// editLink: {
+			// 	baseUrl: 'https://github.com/shawnphoffman/giftwrapt/edit/main/docs/',
+			// },
 			lastUpdated: true,
 			sidebar: [
 				{
-					label: 'Getting Started',
-					items: [{ label: 'Quickstart', slug: 'getting-started' }],
+					label: 'Overview',
+					items: [
+						{ label: 'Getting started', slug: 'overview/getting-started' },
+						{ label: 'Screenshots', slug: 'overview/screenshots' },
+					],
 				},
 				{
 					label: 'Deploy',
 					items: [
-						{ label: 'One-click platforms', slug: 'deployment' },
-						{ label: 'Self-host with Docker', slug: 'self-hosting' },
-						{ label: 'Storage backends', slug: 'storage' },
+						{ label: 'One-click platforms', slug: 'unorganized/deployment' },
+						{ label: 'Self-host with Docker', slug: 'unorganized/self-hosting' },
+						{ label: 'Storage backends', slug: 'unorganized/storage' },
 					],
 				},
 				{
-					label: 'Develop',
+					label: 'Core Features',
+					items: [{ autogenerate: { directory: 'unorganized/features' } }],
+				},
+				{
+					label: 'Advanced Features',
+					items: [{ label: 'URL scraping', slug: 'unorganized/scraping' }],
+					collapsed: true,
+				},
+				{
+					label: 'Contributing',
 					items: [
-						{ label: 'Local development', slug: 'local-development' },
-						{ label: 'Contributing', slug: 'contributing' },
+						{ label: 'Contributing', slug: 'unorganized/contributing' },
+						{ label: 'Local Development', slug: 'unorganized/local-development' },
+						{
+							label: 'Dev Guides',
+							items: [{ autogenerate: { directory: 'unorganized/guides' } }],
+							collapsed: true,
+						},
 					],
+					collapsed: true,
 				},
 				{
-					label: 'Features',
-					items: [{ autogenerate: { directory: 'features' } }],
-				},
-				{
-					label: 'Reference',
-					items: [{ label: 'URL scraping', slug: 'scraping' }],
-				},
-				{
-					label: 'Guides',
-					items: [{ autogenerate: { directory: 'guides' } }],
+					label: 'Changelog',
+					items: [
+						...makeChangelogsSidebarLinks([
+							{
+								type: 'latest',
+								base: 'changelog',
+								label: 'Latest version',
+							},
+							{
+								type: 'all',
+								base: 'changelog',
+								label: 'All versions',
+							},
+						]),
+					],
 				},
 			],
 		}),
