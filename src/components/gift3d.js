@@ -23,6 +23,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 
 const DEFAULTS = {
 	modelUrl: '/models/gift3d.gltf',
+	// color: '#78090f',
 	color: 'darkred',
 	background: null, // null = transparent so Starlight bg shows through
 	targetSize: 2.4,
@@ -45,8 +46,9 @@ export function initGift3D(canvas, options = {}) {
 	})
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 	// Match R3F's Canvas defaults: ACES Filmic deepens reds, kills the washed look.
+	// Slight underexposure deepens the darks for a richer red.
 	renderer.toneMapping = ACESFilmicToneMapping
-	renderer.toneMappingExposure = 1.0
+	renderer.toneMappingExposure = 0.95
 	if (opts.background != null) {
 		renderer.setClearColor(new Color(opts.background), 1)
 	} else {
@@ -64,11 +66,13 @@ export function initGift3D(canvas, options = {}) {
 	scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
 
 	// Lights ------------------------------------------------------------------
-	scene.add(new AmbientLight(0xffffff, 0.22))
-	const key = new DirectionalLight(0xffffff, 3.4)
+	scene.add(new AmbientLight(0xffffff, 0.3))
+	const key = new DirectionalLight(0xffffff, 3.6)
+	// const key = new DirectionalLight(0xffffff, 2.2)
 	key.position.set(-2.5, 10, -2)
 	scene.add(key)
 	const fill = new DirectionalLight(0xffffff, 0.35)
+	// const fill = new DirectionalLight(0xffffff, 0.25)
 	fill.position.set(3, 1, 5)
 	scene.add(fill)
 
@@ -91,11 +95,13 @@ export function initGift3D(canvas, options = {}) {
 
 			const material = new MeshPhysicalMaterial({
 				color: opts.color,
-				roughness: 0.42,
-				metalness: 0.05,
-				clearcoat: 0.6,
-				clearcoatRoughness: 0.3,
-				envMapIntensity: 0.2,
+				roughness: 0.25,
+				metalness: 0.5,
+				// Subtle clearcoat. Higher values wash the base color with white highlights.
+				clearcoat: 0.35,
+				// clearcoat: 0.75,
+				clearcoatRoughness: 0.2,
+				envMapIntensity: 0.1,
 				reflectivity: 0.5,
 				side: DoubleSide,
 			})
@@ -174,12 +180,7 @@ export function initGift3D(canvas, options = {}) {
 		// against the pivot bbox is overkill for a hero; the catcher mesh extends
 		// pointer pickup, but we just gate hover on canvas hover.
 		const rect = canvas.getBoundingClientRect()
-		return (
-			e.clientX >= rect.left &&
-			e.clientX <= rect.right &&
-			e.clientY >= rect.top &&
-			e.clientY <= rect.bottom
-		)
+		return e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom
 	}
 
 	const onPointerEnter = () => {
