@@ -62,32 +62,45 @@ export default defineConfig({
 				{
 					label: 'Deploy',
 					items: [
-						{ label: 'One-click platforms', slug: 'unorganized/deployment' },
-						{ label: 'Self-host with Docker', slug: 'unorganized/self-hosting' },
-						{ label: 'Storage backends', slug: 'unorganized/storage' },
+						{ label: 'Self-hosting', slug: 'deploy/self-hosting' },
+						{ label: 'Hosted (Vercel + Supabase)', slug: 'deploy/hosted' },
 					],
 				},
 				{
-					label: 'Core Features',
-					items: [{ autogenerate: { directory: 'unorganized/features' } }],
-				},
-				{
-					label: 'Advanced Features',
-					items: [{ label: 'URL scraping', slug: 'unorganized/scraping' }],
-					collapsed: true,
-				},
-				{
-					label: 'Contributing',
+					label: 'Features',
 					items: [
-						{ label: 'Contributing', slug: 'unorganized/contributing' },
-						{ label: 'Local Development', slug: 'unorganized/local-development' },
-						{
-							label: 'Dev Guides',
-							items: [{ autogenerate: { directory: 'unorganized/guides' } }],
-							collapsed: true,
-						},
+						{ label: 'Lists', slug: 'features/lists' },
+						{ label: 'Items', slug: 'features/items' },
+						{ label: 'Claims and reveal', slug: 'features/claims' },
+						{ label: 'Received gifts', slug: 'features/received-gifts' },
+						{ label: 'Purchased gifts', slug: 'features/purchased-gifts' },
+						{ label: 'URL scraping', slug: 'features/scraping' },
+						{ label: 'Suggestions (AI)', slug: 'features/suggestions-ai' },
 					],
-					collapsed: true,
+				},
+				{
+					label: 'Permissions',
+					items: [
+						{ label: 'Overview', slug: 'permissions' },
+						{ label: 'Guardians', slug: 'permissions/guardians' },
+						{ label: 'Partners', slug: 'permissions/partners' },
+						{ label: 'Dependents', slug: 'permissions/dependents' },
+						{ label: 'Privacy', slug: 'permissions/privacy' },
+					],
+				},
+				{
+					label: 'Configuration',
+					items: [
+						{ label: 'Admin settings', slug: 'configuration/settings' },
+						{ label: 'Environment variables', slug: 'configuration/environment-variables' },
+						{ label: 'Authentication', slug: 'configuration/auth' },
+						{ label: 'Emails', slug: 'configuration/emails' },
+						{ label: 'Storage', slug: 'configuration/storage' },
+						{ label: 'Scraping', slug: 'configuration/scraping' },
+						{ label: 'AI provider', slug: 'configuration/ai' },
+						{ label: 'Intelligence (AI)', slug: 'configuration/intelligence-ai' },
+						{ label: 'Cron and scheduling', slug: 'configuration/cron' },
+					],
 				},
 				{
 					label: 'Changelog',
