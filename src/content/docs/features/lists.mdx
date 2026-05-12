@@ -9,18 +9,19 @@ A list is a collection of items the owner wants. GiftWrapt supports a few differ
 
 ## List types
 
-There are four list types in active use:
+There are five gift-giving list types in active use:
 
 - **Wishlist** - the default. A general-purpose, evergreen list. Public or private.
 - **Birthday** - tied to the owner's birthday. Claims auto-reveal a configurable number of days after their birthday.
 - **Christmas** - the annual Christmas list. Claims auto-reveal after Dec 25.
+- **Holiday** - pinned to a specific occasion (Easter, Mother's Day, Mexico's Día de la Madre, an admin-defined one-off date, etc.) that an admin has added to the deployment's curated set. Claims auto-reveal a configurable number of days after the holiday's date. Public or private.
 - **Gift ideas** - a private list of ideas *for someone else*. Anyone (except children) can create one, and it can optionally be pinned to a specific person. Never public.
 
 Admins can disable Birthday, Christmas, and generic-holiday list types per deployment via the admin settings, so a small household running just wishlists doesn't need to see the rest.
 
 ## Public vs private
 
-Wishlists, birthday lists, Christmas lists, and generic-holiday lists can each be marked **public** or **private**.
+Wishlists, birthday lists, Christmas lists, and holiday lists can each be marked **public** or **private**.
 
 - **Public** lists are visible to every signed-in user the owner hasn't explicitly blocked. This is the default "share with my family" mode.
 - **Private** lists are only visible to people the owner has explicitly granted access to (via list editors or guardian relationships).
