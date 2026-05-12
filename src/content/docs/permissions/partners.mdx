@@ -1,0 +1,69 @@
+---
+title: Partners
+description: Shared gift credit, anniversary tracking, and household conveniences. Partnership is not a permission.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+A **partner** relationship links two adults who want GiftWrapt to treat them as a unit. It's the link between the two people in a household who coordinate gifts together.
+
+<Aside type="note" title="Partnership is not a permission">
+Setting a partner does **not** give them implicit access to your private lists. Access flows through the normal layers: public/private + access levels + list editors. Partnership only changes the conveniences and credit-tracking below.
+</Aside>
+
+## What partners get
+
+| Capability | Allowed? |
+|---|:-:|
+| See your private lists (without an explicit grant) | ✗ |
+| Edit your lists (without a list-editor row) | ✗ |
+| Share gift credit on each other's claims | ✓ |
+| Auto-added as editor when you create a new public list | ✓ (default on, you can untick) |
+| Anniversary date mirrored to both profiles | ✓ |
+| Be marked Restricted or None by you | ✗ (rejected) |
+
+## Shared gift credit
+
+When asking "did X gift this?", GiftWrapt looks at the claim's gifter **and** their partner. So:
+
+- If your partner claims an item, you both get credit in received-gifts summaries.
+- If you're a co-gifter on a claim, your partner also gets credit.
+- "What I gifted last year" naturally reflects how the household actually shops.
+
+Credit is computed at read time from the **current** partnership. Unlink your partner and they immediately stop appearing in your gift summaries; relink and they come back. There's no historical snapshot of who-was-partnered-when.
+
+## Auto-add as editor on public lists
+
+When you create a public list, the create-list dialog includes a **"Add my partner as an editor"** toggle, defaulted to on. If you leave it ticked, GiftWrapt drops a list-editor row for your partner right after the list is created.
+
+Untick it if you don't want that for this particular list. Private lists never auto-add anyone - if you want your partner to manage a private wishlist, add them as an editor manually.
+
+## Changing your partner
+
+When you change partners in profile settings, GiftWrapt offers to fix existing list-editor grants for you. The prompt shows two pre-checked lists:
+
+- **Public lists the new partner should be added to.**
+- **Lists where the previous partner is still an editor and should be removed.**
+
+You can uncheck anything before applying. Nothing is removed silently, but the default selection covers all the affected lists, so the common case is one click.
+
+## Anniversary tracking
+
+Partners can record an optional anniversary date on their profile. When set:
+
+- The date is **mirrored to both partners' profiles** so reads on either side don't have to resolve through the relationship.
+- Clearing the partner (or switching to a new partner) clears the anniversary on both rows automatically.
+- Stealing a partner from a third user clears that third user's anniversary too.
+- Submitting an anniversary while unpartnered is silently coerced to nothing.
+
+The anniversary drives the [anniversary reminder email](/configuration/emails/#relationship-reminders) when those are enabled. It has no permission semantics; it's purely an annotation on the partnership.
+
+## Constraints
+
+- **One partner at a time.** Partnership is a single nullable column on each user, not a many-to-many table.
+- **Children can't be partners.** A user with the `child` role can't be assigned as anyone's partner.
+- **Partners can't be Restricted or None.** The system rejects the change. The Restrict toggle is disabled in the settings UI for partner rows.
+
+## How partnership is stored
+
+Internally, partnership is a single nullable column (`users.partnerId`), but GiftWrapt treats it **symmetrically** at read time. If A is set as B's partner, the gift-credit code resolves both directions even if the inverse row isn't there. You shouldn't see this; it's just so the schema stays simple while the behavior stays correct.

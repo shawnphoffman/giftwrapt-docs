@@ -1,0 +1,105 @@
+---
+title: Permissions
+description: How GiftWrapt decides who can see, edit, and shop from a list.
+---
+
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components'
+
+GiftWrapt is built around real household relationships, not generic share links. Access decisions come from two layers stacked together:
+
+1. **Relationships** - guardian, partner, list editor. These are the strong grants.
+2. **Per-user access levels** - none, restricted, view, edit. These let you tune what a specific user can see, on top of (or instead of) the default "public lists are visible" baseline.
+
+## Per-user access levels
+
+For each other user, you can dial in their access to your lists. There are four levels:
+
+| Level | What they can do |
+|---|---|
+| **None** | Can't see your lists at all, even public ones. You don't show up in their "people I can shop for" feed either. Useful for distant family who don't gift each other. |
+| **Restricted** | Can see your public lists at the list level. Items where the only claims are from other people are hidden from them. They never see other claimers, co-gifters, or list add-ons. |
+| **View** *(default)* | Can see your public lists and items, claim items, and see other people's claims on items they can see. The standard "family member" experience. |
+| **Edit** | Everything View can do, plus add / edit / delete items on the lists you've granted them as a list editor. Granted per-list, not per-user. |
+
+### Capability matrix
+
+This is what each level can do, assuming a public list with the default settings:
+
+| Capability | None | Restricted | View | Edit |
+|---|:-:|:-:|:-:|:-:|
+| Owner appears in your feed | ✗ | ✓ | ✓ | ✓ |
+| See the owner's public lists | ✗ | ✓ | ✓ | ✓ |
+| See items on those lists | ✗ | filtered\* | ✓ | ✓ |
+| See list add-ons | ✗ | ✗ | ✓ | ✓ |
+| See other people's claims | ✗ | filtered\* | ✓ | ✓ |
+| Claim items | ✗ | ✓ | ✓ | ✓ |
+| Add / edit / delete items | ✗ | ✗ | ✗ | ✓ |
+| Trigger reveal on items | ✗ | ✗ | ✗ | ✓ |
+
+\* Restricted viewers see only items where they (or their partner) are a claimer, or items with no claims yet. Items claimed entirely by other people disappear from their view. Remaining-quantity is still computed from *all* underlying claims, so a restricted viewer can never accidentally over-claim.
+
+<Aside type="note" title="Access levels are per-direction">
+Setting Diana to **None** from your perspective has no effect on how Diana sees you - she'd have to set the same on her side for it to be mutual.
+</Aside>
+
+### When levels can't be used
+
+A few combinations are blocked at write time:
+
+- **Partners can't be marked Restricted or None.** The system rejects the change. Partners share gift credit symmetrically; restricting them would break that.
+- **Guardian-paired users can't be marked Restricted or None.** Guardianship is a stronger grant and bypasses access levels entirely.
+- **Restricting someone removes any list-editor rows you'd granted them.** And you can't add them as an editor again until you change them back.
+
+## Relationships
+
+The four access levels above describe the default "everyone else" axis. The three relationships below are stronger grants that override most of it.
+
+<CardGrid>
+	<LinkCard
+		title="Guardians"
+		href="/permissions/guardians/"
+		description="Full view and edit access to a child's or dependent's lists. The strongest relationship grant."
+	/>
+	<LinkCard
+		title="Partners"
+		href="/permissions/partners/"
+		description="Shared gift credit, anniversary tracking, and auto-add as editor on new public lists. Not a permission."
+	/>
+	<LinkCard
+		title="Dependents"
+		href="/permissions/dependents/"
+		description="Non-user gift recipients (pets, babies). Guardians manage their lists; gifts credit the dependent."
+	/>
+</CardGrid>
+
+### List editors
+
+The general-purpose collaboration mechanism. A **list editor** is an explicit per-list grant: this user can add, edit, and delete items on this specific list. List editors don't get any access to other lists owned by the same person. Used for:
+
+- Joint Christmas lists.
+- Letting a partner manage a private wishlist.
+- Anyone else you want to collaborate with on one specific list.
+
+A child can't be a list editor. A user that you've marked as restricted can't be added either.
+
+## Roles
+
+Every user has one of three roles:
+
+| Role | What it means |
+|---|---|
+| **User** | The default. Owns lists, claims items, manages their own relationships. |
+| **Admin** | Everything a user can do, plus access to the admin panel. The first user to sign up on a fresh deployment becomes admin automatically. |
+| **Child** | A managed account. Can't be set as a partner, can't be a guardian, can't create gift-ideas lists, can't be added as a list editor. Has their own wishlists, managed by their guardian(s). |
+
+## How access decisions get made
+
+Two predicates gate everything: **can-view** and **can-edit**. Both consider, in order:
+
+1. **Owner?** Yes → full access.
+2. **Guardian of the owner, or of the dependent who's the subject of this list?** Yes → full access.
+3. **Marked as None or Restricted by the owner?** None → denied. Restricted → list-level visible but with the item filter on top.
+4. **Public list?** Yes → view OK by default.
+5. **For edit only: explicit list-editor row for this user on this list?** Yes → edit OK.
+
+Gift-ideas lists are always private and never surface in any "lists I can shop from" feed, even for users who would otherwise pass the public-lists filter.

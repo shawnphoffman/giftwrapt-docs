@@ -1,0 +1,62 @@
+---
+title: Privacy
+description: Per-user access levels, restricted viewers, and the spoiler protections built into GiftWrapt.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+GiftWrapt's default is "if both users are signed in, public lists are visible." But "the entire household plus every extended family member" is rarely the right audience. Privacy in GiftWrapt comes in two flavors: **per-user access levels** that you control, and **spoiler protection** that's built in.
+
+## Authenticated-only by design
+
+<Aside type="caution" title="Not a public website">
+There is no anonymous access. Every visitor must be signed in to see anything. Share links redirect unauthenticated visitors to the sign-in page first. Even lists marked "public" are public-among-your-users, not public-on-the-internet.
+</Aside>
+
+## Access levels
+
+For each other user, you can set their access level to your lists. Three values:
+
+- **View** (default) - they can see your public lists and claim items as a normal gifter.
+- **Restricted** - between full view and none. They can still see your public lists at the list level and can claim items, but the *items* they can see are filtered: any item where the only claims are from other people is hidden from them. They never see who else claimed an item, and they never see list add-ons at all.
+- **None** - they can't see your lists at all, even public ones, and you don't show up in their feed of other users either. Useful for distant in-laws or extended family who don't gift each other.
+
+<Aside type="note" title="Per-direction, not mutual">
+Setting Diana to "none" from your perspective has no effect on how Diana sees you - she'd have to set the same on her side for it to be mutual.
+</Aside>
+
+### Restricted gotchas
+
+A few rules worth knowing:
+
+- **Restricted always wins over edit grants.** If you mark someone restricted and they were a list editor, the editor row is removed. They can't be re-added until you change them back.
+- **Partners and guardian-paired users can't be restricted.** The system rejects the change. Partners share gift credit symmetrically; guardians have a stronger grant that bypasses access levels entirely.
+- **Restricted viewers still see correct remaining quantities.** GiftWrapt computes "remaining" from *all* underlying claims, not just the ones the viewer can see, so a restricted viewer can never accidentally over-claim.
+
+## Spoiler protection
+
+The other half of privacy is keeping surprises secret. GiftWrapt does this automatically, no configuration required.
+
+### List owners can't see claims
+
+When a giftgiver claims an item, the list owner's view stays clean - no badge, no claimer name, no indicator that anything changed. The item still appears as if it's unclaimed. This is the entire point of the claim system.
+
+### Reveal is recipient-driven
+
+Claims become visible to the owner only when the owner archives the item (or the [auto-archive cron](/features/claims/#auto-reveal) does it for them after a configurable delay past their birthday / Christmas / configured holiday). Gifters can never force a reveal.
+
+### Gift-ideas lists are always private
+
+A gift-ideas list is a list of things to buy *for someone else*. It's always private, never publicly listed, and excluded from every "lists I can see" or "lists I can shop from" feed. This is true even if the target is public about their own lists.
+
+### AI recommendations never see claim data
+
+When the optional AI recommendation features are enabled, the analyzers see only the user's own items and metadata. Claim information - who claimed what, when - is excluded from every prompt sent to a model, and the prompts explicitly instruct the model never to mention gifters or claims.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Permissions overview" href="/permissions/" description="The full access-level capability matrix." />
+	<LinkCard title="Claims and reveal" href="/features/claims/" description="The recipient-driven reveal flow." />
+	<LinkCard title="Suggestions (AI)" href="/features/suggestions-ai/" description="What AI analyzers can and can't see." />
+</CardGrid>

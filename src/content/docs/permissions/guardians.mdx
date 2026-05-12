@@ -1,0 +1,67 @@
+---
+title: Guardians
+description: Full view + edit access to a child's or dependent's lists. The strongest relationship grant in GiftWrapt.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+A **guardian** has full access to a child's or [dependent's](/permissions/dependents/) lists, public or private, with no per-list opt-in required. Guardianship is the strongest grant in GiftWrapt and bypasses every other access setting.
+
+## What a guardian can do
+
+| Capability | Allowed? |
+|---|:-:|
+| See all of the child's lists (public and private) | ✓ |
+| Create new lists on the child's behalf | ✓ |
+| Edit / delete items on any of the child's lists | ✓ |
+| See claims and add-ons that giftgivers leave | ✓ |
+| Trigger the reveal flow on the child's behalf | ✓ |
+| Claim items on the child's list (counts as a gift to them) | ✓ |
+| Be marked Restricted or None by the child | ✗ (rejected) |
+| Inherit any access on the *guardian's* own lists | ✗ |
+
+The guardian effectively acts as the child for list management. The child still owns the list row (`ownerId`); the guardian is just the one with the keys.
+
+## Direction
+
+Guardianship is one-way: the guardian has access on the child's lists, the child has no special access on the guardian's lists. If you want bidirectional coordination, that's what [partners](/permissions/partners/) and [list editors](/permissions/) are for.
+
+## Multiple guardians
+
+A child can have any number of guardians. All of them have the same full-access grant in parallel. Typical setups:
+
+- **Two parents** sharing access to their kid's lists.
+- **A parent and a grandparent** who help manage a young child's birthday list.
+- **Co-parents in separate households** each managing their own copy of the relationship.
+
+Removing a guardian doesn't remove the others, and doesn't archive the child's lists.
+
+## Who can be a guardian, and of whom
+
+A few hard rules:
+
+- **Children can't be guardians.** A user with the `child` role can't be assigned as a guardian, either of another child or of a [dependent](/permissions/dependents/). Enforced in the admin UI today; if you build any new programmatic surface that creates guardianships, add the check.
+- **Children can't be partners.** Related rule; same constraint.
+- **You can be a guardian of as many children and dependents as you like.** No cap.
+
+## How privacy and access levels interact
+
+Guardianship overrides every other access setting:
+
+- Marking a child or their guardian as Restricted has no effect - the resolver short-circuits to View.
+- A list-editor row is unnecessary on the child's lists; the guardian has edit already.
+- The child can't deny their guardian via the access-level UI; the controls are hidden for that pair.
+
+This is intentional. Guardianship implies "I'm responsible for managing this person's account," which is a stronger claim than any user-set privacy override.
+
+## Claiming on a child's list
+
+A guardian can claim items on their own child's list. They're treated as a normal gifter for that claim - the child is the recipient, the guardian is the gifter. Gift credit follows the [normal partner-aware predicate](/features/claims/#gift-credit-and-partners).
+
+<Aside type="caution" title="Heads up">
+The self-claim block (you can't claim on your own list) only applies when the list's owner *is* the user claiming. For a child's list, the owner is the child, not the guardian, so the guardian claiming is fine.
+</Aside>
+
+## Setting up guardian relationships
+
+Guardian relationships are managed from the admin panel. There's no end-user "request to be my guardian" flow today; an admin sets up the link, and the child's parents take it from there.
