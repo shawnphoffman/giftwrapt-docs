@@ -1,0 +1,149 @@
+---
+title: Hosted (Vercel + Supabase)
+description: Deploy GiftWrapt to Vercel with a Supabase Postgres database and Supabase Storage for image uploads. The tried-and-true managed path.
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components'
+
+The tried-and-true managed path for GiftWrapt is **Vercel** for the app, **Supabase** for Postgres, and **Supabase Storage** for image uploads. Three services, one repo, no infrastructure to babysit.
+
+This is the configuration I run in production. It's the recommended choice if you don't want to manage a host.
+
+## What you'll need
+
+- A [Vercel](https://vercel.com) account (free Hobby tier works for a single household).
+- A [Supabase](https://supabase.com) account (free tier covers a small deployment).
+- A fork or clone of [shawnphoffman/giftwrapt](https://github.com/shawnphoffman/giftwrapt).
+
+## Deploy
+
+<Steps>
+
+1. **Create a Supabase project.**
+
+   From the Supabase dashboard, **New project**. Pick a region close to your users and a strong database password (you won't need to copy it - Supabase wires the connection string for you).
+
+   Wait for the project to provision (60-90 seconds).
+
+2. **Enable Supabase Storage S3 access.**
+
+   In your project's dashboard:
+
+   - **Project Settings > Storage > S3 Connection** -> click **Enable**.
+   - Note the **Region** value Supabase shows.
+   - Generate an **Access Key ID** and **Secret Access Key**. Save both somewhere safe.
+
+3. **Create a storage bucket.**
+
+   - **Storage > New bucket** -> name it `giftwrapt` (or anything you like; you'll plug the name into env later).
+   - Public vs. private doesn't matter for GiftWrapt - the app proxies images through `/api/files/*` by default.
+
+4. **Get the Postgres connection string.**
+
+   - **Project Settings > Database > Connection String > URI**.
+   - Use the **Connection pooling** variant (the "session" or "transaction" mode pooler) for a production app on Vercel. Copy it.
+
+5. **Import the repo into Vercel.**
+
+   From [vercel.com/new](https://vercel.com/new):
+
+   - **Import Git Repository** -> point at your fork of `shawnphoffman/giftwrapt`.
+   - **Framework Preset**: Vercel should detect TanStack Start automatically. If it doesn't, set the build command to `pnpm vercel-build` (runs migrations + Vite build) and the output directory to `.output/public`.
+   - Don't click **Deploy** yet - set env vars first.
+
+6. **Set the environment variables.**
+
+   In the Vercel project's **Environment Variables** section, add:
+
+   | Var | Value |
+   |---|---|
+   | `DATABASE_URL` | The pooled Postgres URI from step 4 |
+   | `BETTER_AUTH_SECRET` | `openssl rand -base64 32` (paste the output) |
+   | `STORAGE_ENDPOINT` | `https://<project-ref>.supabase.co/storage/v1/s3` |
+   | `STORAGE_REGION` | The region from step 2 (e.g. `us-east-1`) |
+   | `STORAGE_BUCKET` | `giftwrapt` (or whatever you named it in step 3) |
+   | `STORAGE_ACCESS_KEY_ID` | The S3 access key from step 2 |
+   | `STORAGE_SECRET_ACCESS_KEY` | The S3 secret from step 2 |
+   | `STORAGE_FORCE_PATH_STYLE` | `true` |
+
+   `BETTER_AUTH_URL` doesn't need to be set on production deploys - it's auto-derived from `VERCEL_PROJECT_PRODUCTION_URL`. Set it explicitly only if you're binding to a custom domain.
+
+   <Aside type="note" title="Cron secret on Vercel">
+   Vercel auto-attaches a bearer token to its Cron invocations matching `CRON_SECRET`. The default `vercel.json` in the repo schedules all five endpoints at daily cadences; the secret is auto-generated. You don't need to set `CRON_SECRET` yourself unless you want to pin a specific value.
+   </Aside>
+
+7. **Deploy.**
+
+   Click **Deploy** in Vercel. The build runs `pnpm vercel-build`, which applies migrations against your Supabase Postgres before bundling the app.
+
+8. **Sign up.**
+
+   Open the assigned `*.vercel.app` URL. The first user to register is auto-promoted to admin.
+
+</Steps>
+
+That's it. App is up, image uploads work, cron runs daily.
+
+## What's running
+
+| Service | Where | Notes |
+|---|---|---|
+| App | Vercel | TanStack Start running on Vercel Functions. |
+| Database | Supabase Postgres | Migrations run on every build via `pnpm vercel-build`. |
+| Storage | Supabase Storage (S3 API) | Bucket created in step 3. The app proxies images via `/api/files/*` unless you set `STORAGE_PUBLIC_URL`. |
+| Cron | Vercel Cron | Daily schedules from `vercel.json`. See [Cron and scheduling](/configuration/cron/). |
+| Email | Optional | See [Emails](/configuration/emails/). Add `RESEND_API_KEY` to your Vercel env vars to enable. |
+
+## Custom domain
+
+In Vercel **Settings > Domains**, add your domain and point it per Vercel's instructions. Once the domain is live:
+
+1. Set `BETTER_AUTH_URL` to the canonical HTTPS URL (e.g. `https://giftwrapt.example.com`) in your Vercel env vars.
+2. Redeploy.
+
+If you serve from multiple hostnames (custom domain + the Vercel-assigned URL), add the others to `TRUSTED_ORIGINS` instead of switching `BETTER_AUTH_URL`.
+
+## Direct image URLs (faster, optional)
+
+By default the app proxies image fetches through `/api/files/<key>`. That works fine but spends a Vercel function invocation per image. To hand clients direct Supabase URLs and skip the proxy:
+
+1. In Supabase **Storage**, mark the bucket as **public** (or set up a custom RLS policy that allows public read).
+2. Set `STORAGE_PUBLIC_URL` in Vercel to your Supabase Storage public base URL (something like `https://<project-ref>.supabase.co/storage/v1/object/public/giftwrapt`).
+3. Redeploy.
+
+Existing uploads pick up the new URL on next render.
+
+## The vercel.json that ships with the repo
+
+For reference, the [`vercel.json`](https://github.com/shawnphoffman/giftwrapt/blob/main/vercel.json) in the repo declares:
+
+- The build command (`pnpm vercel-build`).
+- Cron schedules for all five `/api/cron/*` endpoints at daily UTC cadences (Hobby-tier compatible).
+- An auto-generated `CRON_SECRET`.
+
+Don't edit it unless you have a reason to. On Vercel Pro you can crank specific crons to sub-daily; on Hobby you're capped at daily.
+
+## Updating
+
+Push to `main` (or merge a release PR) - Vercel auto-deploys. Migrations run as part of the build, so schema changes ship with the app.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| "Invalid origin" on sign-up | Custom domain set but `BETTER_AUTH_URL` not updated, or you're hitting a preview deploy URL. Set `BETTER_AUTH_URL` to the production URL. |
+| Image uploads return 503 | One of the `STORAGE_*` vars is wrong. Check **Project Settings > Storage > S3 Connection** in Supabase to confirm the endpoint and region match what you pasted into Vercel. |
+| Migrations fail on build | `DATABASE_URL` is the un-pooled "direct" URL instead of the pooled one. Switch to the **Connection pooling** URI from Supabase. |
+| Cron not firing | Vercel's free tier supports daily-only schedules - that's the default. If you've edited `vercel.json` to use a sub-daily cron, you need Vercel Pro. |
+
+## Other hosted platforms
+
+GiftWrapt also ships config files for **Railway** ([`railway.json`](https://github.com/shawnphoffman/giftwrapt/blob/main/railway.json)) and **Render** ([`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml)). Both work - I just don't run them in production myself, so I don't document them as the recommended path.
+
+If you're set on one of those, the config files are the source of truth; treat them as templates and adapt to your needs.
+
+## One-click deploys (WIP)
+
+One-click "deploy to Vercel" / "deploy to Railway" / "deploy to Render" buttons are a work in progress. The Vercel + Supabase Marketplace integration mostly works but the storage paste step still has to happen by hand, and the Railway button currently lands the app only (no database or storage wired up). Rather than ship something half-broken, I'm holding off on the buttons until the flow is genuinely one click for at least one target.
+
+For now, the seven-step Vercel + Supabase walkthrough above is the recommended path.

@@ -1,0 +1,375 @@
+---
+title: Self-hosting
+description: Run GiftWrapt on your own hardware with one docker compose up. Base stack first, addons one section at a time.
+---
+
+import { Tabs, TabItem, Aside, LinkCard, CardGrid } from '@astrojs/starlight/components'
+
+Self-hosting GiftWrapt is meant to be boring: one published image, one compose file, one `.env`. The base stack is app + Postgres. Everything else - storage, cron, email, MCP - is an addon you opt into when you need it.
+
+This page walks the base deployment first, then each addon in its own section. Read them in order if you're starting from scratch.
+
+## Prerequisites
+
+- Docker 24+ with Compose v2
+- A host reachable over HTTP(S) at the URL you'll use as `BETTER_AUTH_URL`
+- The published image: `ghcr.io/shawnphoffman/giftwrapt:latest` (or pin a tag like `:vX.Y.Z`)
+
+<Aside type="tip" title="Pin a tag in production">
+`:latest` follows the main branch. Once you're past "does it work," set `APP_IMAGE=ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z` in `.env` so you control when you upgrade.
+</Aside>
+
+## Base deployment
+
+The base stack is the app container plus a Postgres database. Migrations run automatically on container startup, so there's nothing to do by hand.
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/shawnphoffman/giftwrapt.git
+cd giftwrapt
+cp env.example docker/.env
+$EDITOR docker/.env
+```
+
+At minimum, set these in `docker/.env`:
+
+| Var | Value |
+|---|---|
+| `POSTGRES_PASSWORD` | Any strong random string |
+| `BETTER_AUTH_SECRET` | `openssl rand -hex 32` |
+| `BETTER_AUTH_URL` | Public origin, e.g. `https://giftwrapt.example.com` |
+| `CRON_SECRET` | `openssl rand -base64 48 \| tr -d '/+=' \| head -c 48` |
+
+<Aside type="caution" title="Don't rotate BETTER_AUTH_SECRET">
+It's also the master key for every encrypted value in `app_settings` (scraper API keys, AI keys, OIDC client secret). Rotating it invalidates those.
+</Aside>
+
+### 2. Bring up the stack
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml up -d
+```
+
+Open `BETTER_AUTH_URL` in a browser - the first user to sign up is auto-promoted to admin.
+
+### 3. Done
+
+That's it. You're running. If you need image uploads, scheduled jobs, email, or the MCP sidecar, keep reading.
+
+## Addon: Storage
+
+The bundled compose files ship one of two storage sidecars: **Garage** or **RustFS**. Both are S3-compatible; both are managed by the app's entrypoint, which creates the bucket and imports keys on first boot. Pick one - they're functionally equivalent for GiftWrapt's needs.
+
+<Tabs>
+<TabItem label="Garage (default)">
+
+Garage is a small Rust S3 server with admin-API-driven bootstrap. The Garage compose file is the default in `getting-started`.
+
+```bash
+# Add to docker/.env
+GARAGE_RPC_SECRET=<openssl rand -hex 32>
+GARAGE_ADMIN_TOKEN=<openssl rand -hex 32>
+INIT_GARAGE=true
+
+# Standard storage vars (Garage enforces specific formats):
+STORAGE_ENDPOINT=http://garage:3900
+STORAGE_REGION=garage
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=GK<24 hex chars>    # printf 'GK%s' "$(openssl rand -hex 12)"
+STORAGE_SECRET_ACCESS_KEY=<64 hex chars>  # openssl rand -hex 32
+STORAGE_FORCE_PATH_STYLE=true
+```
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml up -d
+```
+
+</TabItem>
+<TabItem label="RustFS">
+
+RustFS is a MinIO-compatible drop-in. Credentials are arbitrary strings, bootstrap is a single `CreateBucket`.
+
+```bash
+# Add to docker/.env
+INIT_RUSTFS=true
+STORAGE_ENDPOINT=http://rustfs:9000
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=<any string>
+STORAGE_SECRET_ACCESS_KEY=<any string>
+STORAGE_FORCE_PATH_STYLE=true
+```
+
+```bash
+docker compose -f docker/compose.selfhost-rustfs.yaml up -d
+```
+
+</TabItem>
+<TabItem label="External bucket">
+
+Already have AWS S3, Cloudflare R2, or Supabase Storage? Use either compose file with `INIT_GARAGE=false` (or `INIT_RUSTFS=false`) and point `STORAGE_*` at your bucket. See [Storage](/configuration/storage/) for per-provider recipes.
+
+</TabItem>
+</Tabs>
+
+If you're not sure: **start with Garage**. It's the path the bundled compose was designed around. If you outgrow it or want geo-distribution, swap to RustFS or an external bucket without app changes.
+
+## Addon: Scheduled jobs (cron)
+
+GiftWrapt has five scheduled endpoints under `/api/cron/*`:
+
+- `/auto-archive` - triggers the recipient-side reveal flow
+- `/birthday-emails` - day-of greetings, post-event summaries, reminders
+- `/cleanup-verification` - retention sweeps
+- `/intelligence-recommendations` - AI suggestion runs
+- `/item-scrape-queue` - bulk-import drain
+
+The bundled compose files ship with a **cron sidecar** by default - a tiny alpine container running busybox `crond` that curls each endpoint on a daily UTC schedule. No setup beyond `CRON_SECRET`. The sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set it.
+
+To customize schedules: edit `docker/cron-entrypoint.sh` and recreate the sidecar.
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml up -d --force-recreate cron
+```
+
+Per-user advisory locks make higher cadences safe. See [Cron and scheduling](/configuration/cron/) for the full reference.
+
+## Addon: Email
+
+Email is fully optional. The app boots and runs without it. To enable, sign up for [Resend](https://resend.com) and add to `docker/.env`:
+
+```bash
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=giftwrapt@yourdomain.example
+RESEND_FROM_NAME=GiftWrapt           # optional
+RESEND_BCC_ADDRESS=                  # optional
+```
+
+Restart the app. The admin **Settings** page surfaces the email-family toggles once these are set; before that, those toggles are hidden.
+
+See [Emails](/configuration/emails/) for which features each toggle controls.
+
+## Addon: AI features
+
+GiftWrapt's optional [URL scraping AI extractor](/features/scraping/), title cleaner, and [Suggestions](/features/suggestions-ai/) all share one LLM provider config. Configure it from **Admin > AI** in the UI (recommended), or pin it via env vars:
+
+```bash
+AI_PROVIDER_TYPE=openai           # openai | anthropic | openai-compatible
+AI_API_KEY=sk-...
+AI_MODEL=gpt-4o-mini
+AI_BASE_URL=                      # required for openai-compatible
+```
+
+Every AI feature ships **off by default**. See [AI provider](/configuration/ai/) for the full story.
+
+## Addon: MCP
+
+The bundled compose ships an optional **Model Context Protocol** sidecar so you can talk to your wishlist from Claude Desktop / Claude Code. It's a thin shim over the mobile API.
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
+```
+
+You'll need to mint an API key from `/settings/devices` first. See the [giftwrapt-mcp repo](https://github.com/shawnphoffman/giftwrapt-mcp) for client wiring.
+
+## Multi-origin and LAN access
+
+By default the app trusts exactly one origin (`BETTER_AUTH_URL`). Requests from any other origin are rejected with "Invalid origin." Two env vars cover the common cases:
+
+```bash
+# Comma-separated extra origins. BETTER_AUTH_URL is always trusted.
+TRUSTED_ORIGINS=http://192.168.1.137:3888,http://giftwrapt.local:3888
+
+# Required if any trusted origin is plain HTTP. Drops the Secure flag on
+# auth cookies, which weakens the HTTPS path too. Leave unset unless you
+# actually need HTTP origin login to work.
+INSECURE_COOKIES=true
+```
+
+The server refuses to boot with both `INSECURE_COOKIES=true` and an HTTPS `BETTER_AUTH_URL`.
+
+## Reverse proxy (Traefik, Caddy, nginx)
+
+If a proxy terminates TLS in front of the container:
+
+- Point `BETTER_AUTH_URL` at the public HTTPS URL.
+- The proxy must forward the `Host` header and `X-Forwarded-Proto: https` (Traefik and Caddy do this by default).
+
+## Admin CLI
+
+If the first-user auto-promotion didn't fire (you're recovering from a deleted admin), you can mint one from the container:
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml exec app \
+  node .output/scripts/admin-create.mjs \
+  --email=admin@example.com --password=SecurePass123 --name=Admin
+```
+
+Other bundled CLIs under `.output/scripts/`:
+
+- `admin-reset-password.mjs` - reset a user's password and revoke their sessions
+- `migrate.mjs` - run pending migrations manually
+- `seed.mjs` - destructive, do not run in production
+
+## Updating
+
+```bash
+docker compose -f docker/compose.selfhost-garage.yaml pull
+docker compose -f docker/compose.selfhost-garage.yaml up -d
+```
+
+Migrations run on the first container start of the new image. **Always back up Postgres and your storage volume before pulling a new major version.**
+
+## Backups
+
+Two stateful volumes:
+
+- `postgres_data` - everything except images
+- `garage_data` (or `rustfs_data`) - all images
+
+A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough.
+
+<Aside type="danger" title="Encrypt your database backups">
+better-auth stores session tokens in the `session` table as plaintext (the token IS the cookie). Anyone who can read a `pg_dump` can hijack every active session until those sessions expire. Same for `verification` (password-reset tokens). Use full-disk encryption on the volume that holds your dumps, or pipe the dump through `gpg`/`age`.
+</Aside>
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| "Invalid origin" on login | `BETTER_AUTH_URL` doesn't match the browser's origin. See multi-origin. |
+| Login appears to succeed but bounces to sign-in | Cookies aren't being stored. Plain HTTP needs `INSECURE_COOKIES=true`; HTTPS needs the proxy to forward `X-Forwarded-Proto`. |
+| Storage init fails on first boot | Check `docker compose logs app`. Garage / RustFS bootstrap runs from the app entrypoint and reports failures there. |
+| Migrations fail | Usually Postgres connectivity. The entrypoint waits for `pg_isready` but not forever. |
+| Cron sidecar restart loops | `CRON_SECRET` is unset. |
+
+## The full compose file
+
+For reference, here's the complete bundled compose with all addons wired up. The canonical version lives at [`docker/compose.selfhost-garage.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage.yaml).
+
+{/* compose:start file=docker/compose.selfhost-garage.yaml */}
+```yaml
+# Synced from docker/compose.selfhost-garage.yaml
+# =============================================================================
+# Self-Hosted Production Stack
+# =============================================================================
+# Two services: app + database. Migrations run automatically on app startup.
+#
+# Quick start:
+#   1. cp env.example docker/.env
+#   2. Edit docker/.env - at minimum set POSTGRES_PASSWORD, BETTER_AUTH_SECRET,
+#      and BETTER_AUTH_URL (the public URL you'll reach the app from, e.g.
+#      http://192.168.1.137:3888 or https://giftwrapt.example.com).
+#   3. docker compose -f docker/compose.selfhost-garage.yaml up -d
+#   4. Open BETTER_AUTH_URL in your browser and sign up.
+#
+# Admin CLI (if locked out):
+#   docker compose -f docker/compose.selfhost-garage.yaml exec app \
+#     node .output/scripts/admin-create.mjs \
+#     --email=admin@example.com --password=SecurePass123 --name=Admin
+#
+# Other bundled CLIs under .output/scripts/:
+#   admin-reset-password.mjs, seed.mjs, migrate.mjs
+#
+# Optional MCP sidecar (talk to your wishlist through Claude Desktop / Code):
+#   docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
+# The `mcp` service is a thin shim over /api/mobile/v1/*. See
+# https://github.com/shawnphoffman/giftwrapt-mcp for setup details.
+
+services:
+  app:
+    image: ${APP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt:latest}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-giftwrapt}
+      NODE_ENV: production
+      # Structured logging. LOG_LEVEL can be flipped without a rebuild; valid
+      # values: fatal|error|warn|info|debug|trace|silent. LOG_PRETTY forces
+      # human-readable output even in prod (otherwise NDJSON is emitted).
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_PRETTY: ${LOG_PRETTY:-false}
+      # When the bundled Garage sidecar is part of the stack, the app
+      # entrypoint bootstraps it via Garage's admin HTTP API (layout assign,
+      # bucket create, key import, permission grant) before running DB
+      # migrations. Idempotent on re-run. Set to "false" (or omit) if you're
+      # pointing STORAGE_* at an external S3-compatible bucket.
+      INIT_GARAGE: ${INIT_GARAGE:-true}
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      garage:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-giftwrapt}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-giftwrapt}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mcp:
+    image: ${MCP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt-mcp:latest}
+    profiles: ['mcp']
+    environment:
+      GIFTWRAPT_BASE_URL: http://app:3000
+      GIFTWRAPT_API_KEY: ${GIFTWRAPT_MCP_API_KEY:-}
+      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
+      MCP_PORT: 8787
+      MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-info}
+    ports:
+      - '${MCP_PORT:-8787}:8787'
+    depends_on:
+      app:
+        condition: service_started
+    restart: unless-stopped
+
+  cron:
+    image: alpine:3.20
+    env_file: .env
+    environment:
+      CRON_APP_URL: ${CRON_APP_URL:-http://app:3000}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./cron-entrypoint.sh:/cron-entrypoint.sh:ro
+    command: ['sh', '/cron-entrypoint.sh']
+    depends_on:
+      app:
+        condition: service_started
+    restart: unless-stopped
+
+  garage:
+    image: dxflrs/garage:v1.0.1
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN}
+    volumes:
+      - garage_meta:/var/lib/garage/meta
+      - garage_data:/var/lib/garage/data
+      - ./garage.toml:/etc/garage.toml:ro
+    healthcheck:
+      test: ['CMD', '/garage', 'status']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  garage_meta:
+  garage_data:
+```
+{/* compose:end */}
+
+The RustFS variant lives at [`docker/compose.selfhost-rustfs.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-rustfs.yaml).
