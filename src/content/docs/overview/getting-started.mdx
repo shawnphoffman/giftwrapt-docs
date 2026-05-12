@@ -1,238 +1,88 @@
 ---
 title: Get started
-description: Run GiftWrapt with a single docker compose up, on any host.
+description: The fastest path from "I'd like to try GiftWrapt" to "my family is using it."
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components'
+import { Card, CardGrid, LinkCard, Aside } from '@astrojs/starlight/components'
 
-The fastest path to a running GiftWrapt instance is the bundled Docker stack: app + Postgres + S3-compatible storage + cron, in one `docker compose up`. If you'd rather use a managed platform (Vercel, Railway, Render, Coolify) jump to [one-click deploys](/deployment/#one-click-deployment). To hack on the code, see [Local development](/local-development/).
+GiftWrapt runs as a single Docker container plus a Postgres database. Anything S3-compatible handles image storage. There are two supported deployment shapes:
 
-## Prerequisites
+<CardGrid>
+	<LinkCard
+		title="Self-host with Docker"
+		href="/deploy/self-hosting/"
+		description="One docker compose up. Bundled Postgres, optional bundled storage. Runs anywhere."
+	/>
+	<LinkCard
+		title="Hosted (Vercel + Supabase)"
+		href="/deploy/hosted/"
+		description="Zero-ops. Vercel for the app, Supabase for Postgres and S3 storage."
+	/>
+</CardGrid>
 
-- Docker 24+ with Compose v2
-- A host reachable over HTTP(S) at the URL you'll set as `BETTER_AUTH_URL`
+## The five-minute version
 
-## 1. Clone and configure
+Want to kick the tires before reading any more? This boots a complete stack locally with bundled Postgres + storage:
 
 ```bash
 git clone https://github.com/shawnphoffman/giftwrapt.git
 cd giftwrapt
 cp env.example docker/.env
-$EDITOR docker/.env
-```
-
-At minimum, set in `docker/.env`:
-
-| Var                                            | Value                                                            |
-| ---------------------------------------------- | ---------------------------------------------------------------- |
-| `POSTGRES_PASSWORD`                            | Any strong random string.                                        |
-| `BETTER_AUTH_SECRET`                           | `openssl rand -hex 32`                                           |
-| `BETTER_AUTH_URL`                              | Public origin, e.g. `https://giftwrapt.example.com`              |
-| `CRON_SECRET`                                  | `openssl rand -base64 48 \| tr -d '/+=' \| head -c 48`           |
-| `GARAGE_RPC_SECRET`, `GARAGE_ADMIN_TOKEN`      | Each `openssl rand -hex 32` (Garage profile only).               |
-
-## 2. Bring up the stack
-
-Pick one storage backend. Both ship the same compose layout - app, Postgres, cron, and one storage sidecar.
-
-<Tabs>
-<TabItem label="Garage (default)">
-
-```bash
+$EDITOR docker/.env        # set POSTGRES_PASSWORD, BETTER_AUTH_SECRET, BETTER_AUTH_URL, CRON_SECRET
 docker compose -f docker/compose.selfhost-garage.yaml up -d
 ```
 
-</TabItem>
-<TabItem label="RustFS (MinIO-compatible)">
+Open `BETTER_AUTH_URL` in a browser. The first user to sign up is auto-promoted to admin.
 
-```bash
-docker compose -f docker/compose.selfhost-rustfs.yaml up -d
-```
+<Aside type="note" title="What you'll need before this works">
+At a minimum: `POSTGRES_PASSWORD` (any strong random string), `BETTER_AUTH_SECRET` (`openssl rand -hex 32`), `BETTER_AUTH_URL` (the public URL you'll reach the app from), `CRON_SECRET` (`openssl rand -base64 48 | tr -d '/+=' | head -c 48`), and for Garage specifically `GARAGE_RPC_SECRET` and `GARAGE_ADMIN_TOKEN` (each `openssl rand -hex 32`).
+</Aside>
 
-</TabItem>
-</Tabs>
+## Bare-minimum compose
 
-Migrations run automatically on first boot. Open `BETTER_AUTH_URL` in a browser - the first user to sign up is auto-promoted to admin.
+If you'd rather inline the compose file in your own deploy config, here's the smallest possible shape: app + Postgres only. Storage and cron are addons; see [Self-hosting](/deploy/self-hosting/) for the full version.
 
-## What's in the box
-
-The bundled compose file (`docker/compose.selfhost-garage.yaml`) wires four services - app, Postgres, Garage S3, and a cron sidecar:
-
-{/* compose:start file=docker/compose.selfhost-garage.yaml */}
 ```yaml
-# Synced from docker/compose.selfhost-garage.yaml
-# =============================================================================
-# Self-Hosted Production Stack
-# =============================================================================
-# Two services: app + database. Migrations run automatically on app startup.
-#
-# Quick start:
-#   1. cp env.example docker/.env
-#   2. Edit docker/.env - at minimum set POSTGRES_PASSWORD, BETTER_AUTH_SECRET,
-#      and BETTER_AUTH_URL (the public URL you'll reach the app from, e.g.
-#      http://192.168.1.137:3888 or https://giftwrapt.example.com).
-#   3. docker compose -f docker/compose.selfhost-garage.yaml up -d
-#   4. Open BETTER_AUTH_URL in your browser and sign up.
-#
-# Admin CLI (if locked out):
-#   docker compose -f docker/compose.selfhost-garage.yaml exec app \
-#     node .output/scripts/admin-create.mjs \
-#     --email=admin@example.com --password=SecurePass123 --name=Admin
-#
-# Other bundled CLIs under .output/scripts/:
-#   admin-reset-password.mjs, seed.mjs, migrate.mjs
-#
-# Optional MCP sidecar (talk to your wishlist through Claude Desktop / Code):
-#   docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
-# The `mcp` service is a thin shim over /api/mobile/v1/*. See
-# https://github.com/shawnphoffman/giftwrapt-mcp for setup details.
-
 services:
   app:
-    image: ${APP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt:latest}
-    env_file: .env
+    image: ghcr.io/shawnphoffman/giftwrapt:latest
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-giftwrapt}
-      NODE_ENV: production
-      # Structured logging. LOG_LEVEL can be flipped without a rebuild; valid
-      # values: fatal|error|warn|info|debug|trace|silent. LOG_PRETTY forces
-      # human-readable output even in prod (otherwise NDJSON is emitted).
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      LOG_PRETTY: ${LOG_PRETTY:-false}
-      # When the bundled Garage sidecar is part of the stack, the app
-      # entrypoint bootstraps it via Garage's admin HTTP API (layout assign,
-      # bucket create, key import, permission grant) before running DB
-      # migrations. Idempotent on re-run. Set to "false" (or omit) if you're
-      # pointing STORAGE_* at an external S3-compatible bucket.
-      INIT_GARAGE: ${INIT_GARAGE:-true}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/giftwrapt
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
     ports:
-      - '${APP_PORT:-3000}:3000'
+      - '3000:3000'
     depends_on:
       postgres:
         condition: service_healthy
-      # service_started, not service_healthy: the container's healthcheck
-      # (`garage status`) returns non-zero on a fresh node with no layout
-      # assigned, which is the exact state on cold boot before INIT_GARAGE
-      # has had a chance to run. INIT_GARAGE itself runs from this app's
-      # entrypoint and polls Garage's admin /health endpoint with a 60s
-      # deadline (see scripts/init-garage.ts), so daemon-readiness is
-      # already gated app-side; the docker dep just needs the process up.
-      garage:
-        condition: service_started
-    # Health check is built into the image via HEALTHCHECK instruction.
     restart: unless-stopped
 
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-giftwrapt}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: giftwrapt
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-giftwrapt}']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d giftwrapt']
       interval: 5s
       timeout: 5s
       retries: 10
     restart: unless-stopped
 
-  # Optional Model Context Protocol sidecar (`--profile mcp`). Lets you
-  # interact with your wishlist via Claude Desktop / Code / Web. Talks to
-  # the app over the compose network using a giftwrapt apiKey (mint one
-  # at /settings/devices). The image is published from the
-  # shawnphoffman/giftwrapt-mcp repo. Default deployments don't include
-  # this service - you opt in with the profile flag above.
-  mcp:
-    image: ${MCP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt-mcp:latest}
-    profiles: ['mcp']
-    environment:
-      GIFTWRAPT_BASE_URL: http://app:3000
-      # Single-tenant pin: leave unset for multi-user pass-through (each
-      # client sends its own Bearer header). See the giftwrapt-mcp README.
-      GIFTWRAPT_API_KEY: ${GIFTWRAPT_MCP_API_KEY:-}
-      # Shared-secret port gate; only meaningful when GIFTWRAPT_API_KEY is set.
-      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
-      MCP_PORT: 8787
-      MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-info}
-    ports:
-      - '${MCP_PORT:-8787}:8787'
-    depends_on:
-      app:
-        condition: service_started
-    restart: unless-stopped
-
-  # Cron sidecar. Reads CRON_SECRET from the env file and curls the app's
-  # /api/cron/* endpoints on a daily schedule (mirrors vercel.json). To
-  # disable, run with `--profile no-cron` (the default profile is empty so
-  # it always runs, but compose ignores undefined services on stop). To
-  # change schedules, edit ./cron-entrypoint.sh and recreate the service.
-  # Higher cadences are safe: per-user advisory locks de-duplicate work.
-  cron:
-    image: alpine:3.20
-    env_file: .env
-    environment:
-      # Talks to the app over the compose network. Override CRON_APP_URL if
-      # the app service is named differently or you want crons to hit a
-      # public URL (slower, but exercises the same code path as Vercel).
-      CRON_APP_URL: ${CRON_APP_URL:-http://app:3000}
-      TZ: ${TZ:-UTC}
-    volumes:
-      - ./cron-entrypoint.sh:/cron-entrypoint.sh:ro
-    command: ['sh', '/cron-entrypoint.sh']
-    depends_on:
-      app:
-        condition: service_started
-    restart: unless-stopped
-
-  garage:
-    image: dxflrs/garage:v1.0.1
-    environment:
-      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
-      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN}
-    volumes:
-      - garage_meta:/var/lib/garage/meta
-      - garage_data:/var/lib/garage/data
-      - ./garage.toml:/etc/garage.toml:ro
-    # Intentionally no host port: Garage is only reachable on the compose
-    # network. The app serves images via /api/files/* so clients never need
-    # direct bucket access. If you want direct S3 URLs (faster, offloads
-    # bandwidth), add a reverse-proxy rule for 3900 and set STORAGE_PUBLIC_URL
-    # in .env - see docs/storage.md.
-    healthcheck:
-      test: ['CMD', '/garage', 'status']
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    restart: unless-stopped
-
 volumes:
   postgres_data:
-  garage_meta:
-  garage_data:
-```
-{/* compose:end */}
-
-The canonical files live in the main repo:
-
-- [`docker/compose.selfhost-garage.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage.yaml)
-- [`docker/compose.selfhost-rustfs.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-rustfs.yaml)
-- [`env.example`](https://github.com/shawnphoffman/giftwrapt/blob/main/env.example) - annotated reference for every env var
-
-The `cron` sidecar hits the five `/api/cron/*` endpoints (auto-archive, birthday emails, verification cleanup, intelligence recommendations, item-scrape queue) on a daily UTC schedule. To customize, edit `docker/cron-entrypoint.sh` and recreate the service. See [Deploy → Docker](/self-hosting/#cron-and-background-jobs) for the full breakdown.
-
-## Updating
-
-```bash
-docker compose -f docker/compose.selfhost-garage.yaml pull
-docker compose -f docker/compose.selfhost-garage.yaml up -d
 ```
 
-Migrations run on the first container start of the new image. Always back up Postgres and your storage volume before pulling a new major version.
+This runs but **without image uploads** (no storage configured) and **without scheduled jobs** (no cron sidecar). Both are easy to add - the full bundled compose includes both, plus an MCP option.
 
-## Next steps
+## Next
 
-- [Self-host with Docker](/self-hosting/) - deeper reference: reverse proxy, multi-origin, admin CLI, backups
-- [One-click deploys](/deployment/) - Vercel, Railway, Render, Coolify
-- [Storage backends](/storage/) - swap to AWS S3, R2, or Supabase Storage
-- [Local development](/local-development/) - hacking on the codebase
+<CardGrid>
+	<LinkCard title="Self-hosting" href="/deploy/self-hosting/" description="The full compose, plus addons for storage, cron, email, and MCP." />
+	<LinkCard title="Hosted (Vercel + Supabase)" href="/deploy/hosted/" description="The tried-and-true managed path." />
+	<LinkCard title="Environment variables" href="/configuration/environment-variables/" description="Every var, grouped and commented." />
+	<LinkCard title="Screenshots" href="/overview/screenshots/" description="See what you're getting." />
+</CardGrid>
