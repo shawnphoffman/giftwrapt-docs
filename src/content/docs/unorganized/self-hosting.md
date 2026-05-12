@@ -54,7 +54,6 @@ The annotated reference is [env.example](https://github.com/shawnphoffman/giftwr
 | `POSTGRES_PASSWORD`  | Used by both the `postgres` service and the auto-built `DATABASE_URL`.                              |
 | `BETTER_AUTH_SECRET` | Long random string. `openssl rand -hex 32` is fine.                                                 |
 | `BETTER_AUTH_URL`    | The public origin clients reach the app from. Drives auth, email links, cookie scope.               |
-| `SERVER_URL`         | Usually the same as `BETTER_AUTH_URL`.                                                              |
 | `STORAGE_*`          | See [storage.md](/storage/). Required - the server refuses to boot without storage configured. |
 
 Garage-specific: `GARAGE_RPC_SECRET` and `GARAGE_ADMIN_TOKEN` (each `openssl rand -hex 32`).
@@ -90,9 +89,9 @@ Other bundled CLIs under `.output/scripts/`:
 
 If a proxy terminates TLS in front of the container:
 
-- Point `BETTER_AUTH_URL` and `SERVER_URL` at the public HTTPS URL (e.g. `https://giftwrapt.example.com`). Better-auth uses these to validate origins, derive the cookie `Secure` flag, and build links in outbound emails.
+- Point `BETTER_AUTH_URL` at the public HTTPS URL (e.g. `https://giftwrapt.example.com`). Better-auth uses it to validate origins, derive the cookie `Secure` flag, and build links in outbound emails.
 - The proxy must forward the `Host` header and `X-Forwarded-Proto: https` (Traefik and Caddy do this by default).
-- `VITE_SERVER_URL` is baked at image build time. Leave it unset when using the published image; the client falls back to `window.location.origin`.
+- The browser-side auth client falls back to `window.location.origin`, so no extra build-time URL var is needed.
 
 ## Multi-origin / LAN access
 

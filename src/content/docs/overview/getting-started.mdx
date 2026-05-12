@@ -28,7 +28,6 @@ At minimum, set in `docker/.env`:
 | `POSTGRES_PASSWORD`                            | Any strong random string.                                        |
 | `BETTER_AUTH_SECRET`                           | `openssl rand -hex 32`                                           |
 | `BETTER_AUTH_URL`                              | Public origin, e.g. `https://giftwrapt.example.com`              |
-| `SERVER_URL`                                   | Same as `BETTER_AUTH_URL`.                                       |
 | `CRON_SECRET`                                  | `openssl rand -base64 48 \| tr -d '/+=' \| head -c 48`           |
 | `GARAGE_RPC_SECRET`, `GARAGE_ADMIN_TOKEN`      | Each `openssl rand -hex 32` (Garage profile only).               |
 

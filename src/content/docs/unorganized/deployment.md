@@ -77,7 +77,7 @@ The Render button reads [`render.yaml`](https://github.com/shawnphoffman/giftwra
 
 1. Click the badge. Render reads the blueprint and creates both the database and the web service.
 2. `DATABASE_URL` is wired automatically; `BETTER_AUTH_SECRET` is auto-generated.
-3. After the first deploy, set `BETTER_AUTH_URL` and `SERVER_URL` to your Render-assigned URL (or your custom domain).
+3. After the first deploy, set `BETTER_AUTH_URL` to your Render-assigned URL (or your custom domain).
 4. To enable image uploads, fill in the `STORAGE_*` vars (left as `sync: false` so Render prompts for them). Same recipes as the other targets - see [storage.md](/storage/).
 
 Pin a specific image tag (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) in `render.yaml` once you're past the "does it work" phase, otherwise every deploy pulls the latest published image.
@@ -153,10 +153,10 @@ Cron`). Use the same daily UTC schedules as the other targets and a
 curl start command:
 
 ```bash
-curl -fsSL --retry 3 -H "Authorization: Bearer $CRON_SECRET" $SERVER_URL/api/cron/auto-archive
+curl -fsSL --retry 3 -H "Authorization: Bearer $CRON_SECRET" $BETTER_AUTH_URL/api/cron/auto-archive
 ```
 
-Set `CRON_SECRET` and `SERVER_URL` once at the project (shared) env
+Set `CRON_SECRET` and `BETTER_AUTH_URL` once at the project (shared) env
 group so every Cron inherits them.
 
 ### Render
