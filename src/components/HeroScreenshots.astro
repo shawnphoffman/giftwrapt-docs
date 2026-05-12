@@ -1,0 +1,225 @@
+---
+import { Image } from 'astro:assets'
+
+import allLists from '../assets/hero_all-lists.png'
+import listDetail from '../assets/hero_list-detail.png'
+import myLists from '../assets/hero_my-lists.png'
+
+const shots = [
+	{ id: 'all-lists', label: 'All Lists', caption: 'Everyone you follow at a glance.', src: allLists },
+	{ id: 'my-lists', label: 'My Lists', caption: 'Organize your public, private, and household lists.', src: myLists },
+	{ id: 'list-detail', label: 'List Detail', caption: 'Claim, comment, and collaborate.', src: listDetail },
+]
+---
+
+<section class="screens not-content" aria-label="App screenshots">
+	<div class="grid">
+		{
+			shots.map((shot) => (
+				<button class="thumb" type="button" data-open={shot.id} aria-label={`Open ${shot.label} screenshot`}>
+					<span class="frame">
+						<Image src={shot.src} alt={shot.label} widths={[400, 700, 1000]} sizes="(min-width: 60rem) 28vw, (min-width: 40rem) 45vw, 90vw" />
+					</span>
+					<span class="meta">
+						<span class="label">{shot.label}</span>
+						<span class="caption">{shot.caption}</span>
+					</span>
+				</button>
+			))
+		}
+	</div>
+
+	{
+		shots.map((shot) => (
+			<dialog class="lightbox" data-dialog={shot.id} aria-label={`${shot.label} screenshot`}>
+				<form method="dialog" class="lightbox-inner">
+					<button class="close" aria-label="Close" type="submit" formnovalidate>
+						<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+							<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						</svg>
+					</button>
+					<Image src={shot.src} alt={shot.label} widths={[800, 1200, 1800, 2120]} sizes="(min-width: 80rem) 1200px, 95vw" />
+					<p class="lightbox-caption">
+						<span class="label">{shot.label}</span>
+						<span class="caption">{shot.caption}</span>
+					</p>
+				</form>
+			</dialog>
+		))
+	}
+</section>
+
+<script>
+	const openers = document.querySelectorAll<HTMLButtonElement>('[data-open]')
+	openers.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const id = btn.getAttribute('data-open')
+			const dlg = document.querySelector<HTMLDialogElement>(`[data-dialog="${id}"]`)
+			dlg?.showModal()
+		})
+	})
+
+	// Close when clicking outside the inner content.
+	document.querySelectorAll<HTMLDialogElement>('.lightbox').forEach((dlg) => {
+		dlg.addEventListener('click', (event) => {
+			if (event.target === dlg) dlg.close()
+		})
+	})
+</script>
+
+<style>
+	.screens {
+		margin-block: 0 clamp(1rem, 3vw, 2rem);
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	@media (min-width: 40rem) {
+		.grid {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 1.25rem;
+		}
+	}
+
+	.thumb {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 0;
+		background: transparent;
+		border: 0;
+		color: inherit;
+		text-align: left;
+		cursor: zoom-in;
+		font: inherit;
+	}
+
+	.thumb:focus-visible {
+		outline: 2px solid var(--sl-color-accent);
+		outline-offset: 4px;
+		border-radius: 0.75rem;
+	}
+
+	.frame {
+		display: block;
+		overflow: hidden;
+		border-radius: 0.6rem;
+		border: 1px solid var(--sl-color-hairline);
+		background: var(--sl-color-bg);
+		box-shadow:
+			0 1px 2px rgba(0, 0, 0, 0.2),
+			0 8px 24px rgba(0, 0, 0, 0.25);
+		transition:
+			transform 200ms ease,
+			box-shadow 200ms ease,
+			border-color 200ms ease;
+	}
+
+	.frame :global(img) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.thumb:hover .frame,
+	.thumb:focus-visible .frame {
+		transform: translateY(-3px);
+		border-color: var(--sl-color-accent);
+		box-shadow:
+			0 2px 4px rgba(0, 0, 0, 0.25),
+			0 16px 36px rgba(0, 0, 0, 0.35);
+	}
+
+	.meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		padding-inline: 0.1rem;
+	}
+
+	.label {
+		font-weight: 600;
+		color: var(--sl-color-white);
+		font-size: var(--sl-text-sm);
+	}
+
+	.caption {
+		color: var(--sl-color-gray-3);
+		font-size: var(--sl-text-xs);
+		line-height: 1.4;
+	}
+
+	.lightbox {
+		padding: 0;
+		border: 0;
+		background: transparent;
+		width: min(95vw, 1400px);
+		max-width: min(95vw, 1400px);
+		max-height: 95vh;
+		margin: auto;
+		inset: 0;
+		color: var(--sl-color-white);
+	}
+
+	.lightbox::backdrop {
+		background: rgba(0, 0, 0, 0.78);
+		backdrop-filter: blur(4px);
+	}
+
+	.lightbox-inner {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.lightbox-inner :global(img) {
+		display: block;
+		width: 100%;
+		max-height: 82vh;
+		height: auto;
+		object-fit: contain;
+		border-radius: 0.5rem;
+		border: 1px solid var(--sl-color-hairline);
+		background: var(--sl-color-bg);
+	}
+
+	.lightbox-caption {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		margin: 0;
+		padding-inline: 0.25rem;
+		text-align: center;
+	}
+
+	.close {
+		position: absolute;
+		top: -0.75rem;
+		right: -0.75rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 999px;
+		border: 1px solid var(--sl-color-hairline);
+		background: var(--sl-color-bg);
+		color: var(--sl-color-white);
+		cursor: pointer;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	}
+
+	.close:hover,
+	.close:focus-visible {
+		border-color: var(--sl-color-accent);
+		color: var(--sl-color-accent);
+		outline: none;
+	}
+</style>
