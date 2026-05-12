@@ -1,0 +1,98 @@
+---
+title: Cron and scheduling
+description: How GiftWrapt's scheduled jobs run, what each one does, and how to wire them up for self-host vs. hosted.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbound email, retention cleanup, and the background queues. They're all HTTP endpoints under `/api/cron/*`, gated by a bearer token, and meant to be poked by an external scheduler.
+
+## The endpoints
+
+| Endpoint | Suggested schedule | What it does |
+|---|---|---|
+| `/api/cron/auto-archive` | `0 6 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. |
+| `/api/cron/birthday-emails` | `0 7 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, and relationship reminders. |
+| `/api/cron/cleanup-verification` | `0 3 * * *` | Deletes expired better-auth verification rows; sweeps cron-run retention rows. |
+| `/api/cron/intelligence-recommendations` | `0 4 * * *` | Runs the per-user analyzer pipeline; persists recommendations + run rows. |
+| `/api/cron/item-scrape-queue` | `0 5 * * *` | Drains pending `item_scrape_jobs` rows from bulk-import. |
+
+All five are **daily** in the default schedule, deliberately staggered so they don't pile up at the same minute.
+
+<Aside type="note" title="Schedules are documented defaults, not hard caps">
+The runners themselves are idempotent and safe to run more frequently. Self-hosters can crank cadence up if they want faster turnaround on the scrape queue or Intelligence; the suggested schedules just match the daily cadence shipped in `vercel.json`.
+</Aside>
+
+## The cron secret
+
+All `/api/cron/*` endpoints check an `Authorization: Bearer <secret>` header against the `CRON_SECRET` env var. If the env var is unset, the handlers **fail closed** with HTTP 503 - they don't accidentally run publicly.
+
+- **Self-host**: required. The bundled cron sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set this.
+- **Vercel / Render / Railway**: the bundled platform configs (`vercel.json`, `render.yaml`) auto-generate or auto-attach the secret. You only need to set it yourself if you're hitting the endpoints from your own scheduler.
+
+Generate one with:
+
+```bash
+openssl rand -base64 48 | tr -d '/+=' | head -c 48
+```
+
+## Skip states and idempotency
+
+Cron handlers return JSON describing what they did. Every run is also persisted as a row in `cron_runs` (start, finish, status, duration, structured `summary` jsonb, plus `error` / `skipReason`) so operators can answer "did the scheduler actually fire today?" without SSHing into a host or wiring an external observability stack.
+
+Common skip states:
+
+| `skipReason` | When |
+|---|---|
+| `disabled` | Feature flag off in app_settings (e.g. Intelligence disabled). |
+| `no-provider` | AI / email / storage config missing. |
+| `not-due` | Date math says today isn't the right day (e.g. auto-archive for a list whose birthday is in 200 days). |
+| `unchanged-input` | Intelligence: inputs haven't changed since last successful run AND we're inside the refresh window. |
+| `lock-held` | Intelligence: another run is in flight for this user. |
+| `unread-recs-exist` | Intelligence: cron path only, the user has active recs from a prior batch. |
+
+## Deployment shapes
+
+### Vercel
+
+Schedules live in `vercel.json` and run via Vercel Cron. The `CRON_SECRET` is set automatically by the deploy config. Don't override anything unless you're moving the schedule.
+
+### Render
+
+`render.yaml` defines the schedules and provisions `CRON_SECRET` as a generated secret. The cron jobs run as separate Render Cron services hitting the deployed web service URL.
+
+### Railway
+
+No `railway.toml` cron config. Either wire up Railway's cron through the dashboard (one cron service per endpoint), or run an external scheduler.
+
+### Self-host (Docker compose)
+
+The bundled compose files include a **cron sidecar** - a tiny container that runs system `crond` and curls the endpoints on the schedules above. It reads `CRON_SECRET` from the same `.env` as the app and fatals at boot if the secret is unset.
+
+You can disable the sidecar and run your own scheduler if you prefer; just hit the URLs with the bearer header.
+
+### External scheduler
+
+Any scheduler that can fire an HTTP request with a bearer header works:
+
+```bash
+curl -fsSL -H "Authorization: Bearer $CRON_SECRET" \
+  https://giftwrapt.example.com/api/cron/auto-archive
+```
+
+Cron-job.org, GitHub Actions schedules, EasyCron, AWS EventBridge, plain `crontab` - all fine.
+
+## Admin > Scheduling
+
+The admin scheduling page shows every endpoint, its documented schedule, the next-fire time computed from the cron expression, and the recent history pulled from `cron_runs`. Use it to:
+
+- Confirm cron is actually firing.
+- Inspect the structured `summary` jsonb for each run.
+- Look at failures and their `error` payloads.
+- See how long each run took.
+
+The page doesn't *control* the scheduler - it just reads what the scheduler-of-record (Vercel, your sidecar, etc.) actually did. If a job hasn't fired and the admin page agrees, the issue is in the scheduler, not GiftWrapt.
+
+## Retention
+
+`cron_runs` rows are pruned by the daily verification-cleanup tick. The retention window is `cronRunsRetentionDays` (default 90), tunable in admin settings. Set to 0 to disable retention sweeps (rows accumulate forever).

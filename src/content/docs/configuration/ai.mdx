@@ -1,0 +1,89 @@
+---
+title: AI provider
+description: Configure an LLM provider for GiftWrapt's optional AI features. One provider config powers everything.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt has several optional features that call an LLM. **All of them share a single provider configuration.** Set it up once at **Admin > AI** (or via env vars) and every AI feature picks it up.
+
+## What AI is used for
+
+| Feature | What it does | Where to enable |
+|---|---|---|
+| **AI URL extractor** | Reads raw HTML when the basic scrape can't get useful fields. Parallel racer in the scraping chain. | [Scraping](/configuration/scraping/) - `scrapeAiProviderEnabled`. |
+| **AI title cleaner** | Post-scrape normalises noisy titles ("Amazon.com: Brand X Foo - 4-Pack, Black, Size M - Free Shipping" -> "Brand X Foo (4-Pack, Black, M)"). | [Scraping](/configuration/scraping/) - `scrapeAiCleanTitlesEnabled`. |
+| **Intelligence (recommendations)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | [Intelligence](/configuration/intelligence-ai/). |
+
+If you don't configure an AI provider, the toggles for these features disable themselves in the admin UI. The rest of GiftWrapt works fine.
+
+<Aside type="caution" title="AI is opt-in and admin-gated">
+Every AI feature ships **off by default**. Enabling them costs money against whichever provider you've configured. Watch token usage during the first week.
+</Aside>
+
+## Supported providers
+
+Three provider families via the Vercel AI SDK:
+
+| Type | Notes |
+|---|---|
+| **`openai`** | OpenAI's hosted API. `baseUrl` ignored. |
+| **`anthropic`** | Anthropic's hosted API. `baseUrl` ignored. |
+| **`openai-compatible`** | Any OpenAI-shape endpoint. Works with OpenRouter, Groq, Together, Mistral, DeepSeek, Ollama, LM Studio, vLLM, and other gateways. `baseUrl` is required. |
+
+The `openai-compatible` route is the catch-all: if your provider speaks the OpenAI HTTP shape, point GiftWrapt at it.
+
+## Configuring it
+
+You have two equivalent options.
+
+### Option 1: Admin UI (recommended)
+
+Go to **Admin > AI**:
+
+- **Provider type** - one of the three above.
+- **Base URL** - required for `openai-compatible`. Examples: `https://openrouter.ai/api/v1`, `https://api.groq.com/openai/v1`, `http://localhost:11434/v1` for Ollama.
+- **API key** - encrypted at rest using a key derived from `BETTER_AUTH_SECRET`.
+- **Model** - the model ID to use. Examples: `gpt-4o-mini`, `claude-haiku-4-5`, `meta-llama/llama-3.1-8b-instruct`.
+- **Max output tokens** - optional cap on generated tokens per call.
+
+Changes apply on the next read (no restart needed). A "Send test prompt" button verifies the config end-to-end.
+
+### Option 2: Env vars
+
+If you'd rather pin AI config in your deploy config, set these on boot:
+
+```bash
+AI_PROVIDER_TYPE=openai           # openai | anthropic | openai-compatible
+AI_API_KEY=sk-...
+AI_MODEL=gpt-4o-mini
+AI_BASE_URL=                      # required for openai-compatible
+AI_MAX_OUTPUT_TOKENS=
+```
+
+When set, env vars take precedence over the admin form's stored values. The admin UI shows a "managed via env" banner in that case.
+
+## Picking a model
+
+GiftWrapt doesn't care which model you use; it cares about cost and latency.
+
+| Use case | Reasonable choices |
+|---|---|
+| Title cleaner | Smallest available. Output is one short string. |
+| URL extractor | Small or medium. Reads HTML, emits structured JSON. |
+| Intelligence analyzers | Small to medium. Most prompts are small (per-user item lists). |
+
+Costs ballpark for a single-family deployment running everything on: pennies a month with a cheap small model, dollars a month with a frontier model.
+
+## Per-feature model override
+
+[Intelligence](/configuration/intelligence-ai/) supports a `intelligenceModelOverride` setting that swaps just the model ID for analyzer calls. The provider, API key, and base URL still come from the global AI config; the override only swaps the model within that provider.
+
+Use this when you want frontier-tier scraping AI but cheap-tier Intelligence, or vice versa.
+
+## Security notes
+
+- API keys saved via the admin UI are encrypted at rest with AES-256-GCM. The master key is derived via scrypt from `BETTER_AUTH_SECRET`. Rotating `BETTER_AUTH_SECRET` invalidates every stored AI key.
+- API keys set via env vars are passed through as-is and not stored in the database.
+- Outbound calls to the AI provider go directly from the GiftWrapt server. There's no Anthropic / OpenAI proxy in the path.
+- Prompts include item data (titles, notes, prices, URLs) but **never** include claim/gifter data. See [Privacy](/permissions/privacy/) for the spoiler-protection rule that extends to AI.

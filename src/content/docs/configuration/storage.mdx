@@ -1,0 +1,134 @@
+---
+title: Storage
+description: GiftWrapt stores user avatars and item photos in any S3-compatible bucket. Pick a backend, set five env vars, done.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt stores user avatars and item photos in an S3-compatible bucket. The app doesn't care which backend you use - any service that speaks the S3 API works. The bundled compose files include **Garage** and **RustFS** as sidecar options; for hosted deploys, **AWS S3**, **Cloudflare R2**, and **Supabase Storage** all work fine.
+
+<Aside type="note" title="Storage is optional">
+If you leave storage unconfigured, GiftWrapt still boots. Upload endpoints return 503 and an in-app banner explains the limitation. The rest of the app works.
+</Aside>
+
+## How uploads flow
+
+1. The browser uploads to a server function.
+2. Sharp transcodes the image to webp (256x256 cover for avatars, 1200px long edge for item photos) before writing to storage.
+3. The object is written to your bucket via S3 `PutObject`.
+4. Public URLs are either **direct** (when `STORAGE_PUBLIC_URL` is set) or **proxied** through `/api/files/<key>` (the default).
+5. Each upload uses a fresh nanoid suffix in the key, so URLs are immutable and safe to cache aggressively.
+
+## Required env vars
+
+Five vars do the work. See [Environment variables](/configuration/environment-variables/#storage-optional) for the full reference.
+
+```bash
+STORAGE_ENDPOINT=
+STORAGE_REGION=
+STORAGE_BUCKET=
+STORAGE_ACCESS_KEY_ID=
+STORAGE_SECRET_ACCESS_KEY=
+```
+
+Plus two important toggles:
+
+| Var | When to set it |
+|---|---|
+| `STORAGE_FORCE_PATH_STYLE` | `true` for Garage, RustFS, MinIO. `false` (default) for AWS S3, Cloudflare R2. |
+| `STORAGE_PUBLIC_URL` | Set to a CDN base URL to hand clients direct URLs and skip the per-image proxy. **Recommended on Vercel** to avoid function invocations. |
+
+## Backend recipes
+
+### Garage (self-host)
+
+The default for the bundled compose stack. Garage is a small Rust S3 server that runs alongside the app and Postgres in the same compose file.
+
+```bash
+STORAGE_ENDPOINT=http://garage:3900
+STORAGE_REGION=garage
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=GK<24 hex chars>
+STORAGE_SECRET_ACCESS_KEY=<64 hex chars>
+STORAGE_FORCE_PATH_STYLE=true
+
+# Bootstrap Garage on first boot
+INIT_GARAGE=true
+GARAGE_RPC_SECRET=<64 hex chars>
+GARAGE_ADMIN_TOKEN=<64 hex chars>
+```
+
+Garage requires specific key formats:
+
+- **Access key ID**: `GK` + 24 hex chars → `printf 'GK%s' "$(openssl rand -hex 12)"`
+- **Secret key**: 64 hex chars → `openssl rand -hex 32`
+
+When `INIT_GARAGE=true`, the app's entrypoint runs Garage's admin HTTP API on first boot to assign cluster layout, create the bucket, import the key, and grant permissions. Idempotent.
+
+### RustFS (self-host)
+
+Alternative to Garage. Pick one. RustFS is simpler in that it reads its root user directly from the standard `STORAGE_*` vars, no admin token needed.
+
+```bash
+STORAGE_ENDPOINT=http://rustfs:9000
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=<any string>
+STORAGE_SECRET_ACCESS_KEY=<any string>
+STORAGE_FORCE_PATH_STYLE=true
+INIT_RUSTFS=true
+```
+
+### AWS S3
+
+```bash
+STORAGE_ENDPOINT=https://s3.us-east-1.amazonaws.com
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=your-bucket
+STORAGE_ACCESS_KEY_ID=AKIA...
+STORAGE_SECRET_ACCESS_KEY=...
+STORAGE_FORCE_PATH_STYLE=false
+STORAGE_PUBLIC_URL=https://your-bucket.s3.us-east-1.amazonaws.com   # optional
+```
+
+### Cloudflare R2
+
+```bash
+STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+STORAGE_REGION=auto
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=<R2 access key id>
+STORAGE_SECRET_ACCESS_KEY=<R2 secret>
+STORAGE_FORCE_PATH_STYLE=false
+STORAGE_PUBLIC_URL=https://cdn.example.com    # your R2 public bucket / custom domain
+```
+
+### Supabase Storage
+
+Supabase exposes an S3-compatible endpoint at `<project>.supabase.co/storage/v1/s3`. The Vercel + Supabase Marketplace integration auto-derives this from `SUPABASE_URL` if you don't set `STORAGE_ENDPOINT` yourself.
+
+```bash
+STORAGE_ENDPOINT=https://<project>.supabase.co/storage/v1/s3
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=<Supabase storage access key>
+STORAGE_SECRET_ACCESS_KEY=<Supabase storage secret>
+STORAGE_FORCE_PATH_STYLE=true
+```
+
+## Admin > Storage
+
+The admin panel has a **Storage** page that exposes a few read-only diagnostics:
+
+- Bucket connectivity check.
+- Object count and approximate disk usage.
+- Recent uploads with previews.
+- A test-upload button to verify writes end-to-end without leaving a screenshot in someone's wishlist.
+
+There's no admin UI for switching backends - storage is environment configuration only. To change provider, update the env vars and restart.
+
+## Mirroring external images
+
+`mirrorExternalImagesOnSave` is an admin toggle (off by default). When on, every image URL the scraper hands back gets re-fetched and copied into your bucket on item save. This decouples your lists from the source URL's lifetime - useful if you've been burned by Amazon swapping product images out from under you.
+
+Trade-off: each save costs a fetch and an upload, and your bucket grows faster. Leave it off for small deployments.

@@ -1,0 +1,293 @@
+---
+title: Environment variables
+description: All of the environment variables GiftWrapt reads, what each one does, and when you actually need to set it.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt reads most of its configuration from `app_settings` in the database (managed via the admin UI), but a handful of boot-time secrets and connection strings have to live in the environment.
+
+A working `env.example` is included in the repo. This page is the reference for what's in it.
+
+## Core (required)
+
+```bash
+DATABASE_URL=postgresql://postgres:password@localhost:5432/giftwrapt
+
+BETTER_AUTH_SECRET=change-me           # openssl rand -base64 32
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+`DATABASE_URL` is the canonical Postgres connection string. The bundled compose files build it from `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` for convenience; the app itself only reads `DATABASE_URL`.
+
+`BETTER_AUTH_SECRET` is also used as the master key for encrypting other secrets stored in `app_settings` (scraper API keys, AI keys, etc.).
+
+<Aside type="danger" title="Don't rotate BETTER_AUTH_SECRET casually">
+Rotating it invalidates every encrypted value in `app_settings` - scraper API keys, AI keys, OIDC client secret. You'd have to re-enter them all.
+</Aside>
+
+`BETTER_AUTH_URL` is the canonical origin for the app. It's used to build absolute URLs in emails and as the WebAuthn relying-party ID. Set it to the exact URL the browser loads. On Vercel production, it's auto-derived from `VERCEL_PROJECT_PRODUCTION_URL` if unset.
+
+## Multi-origin / LAN (optional)
+
+If you need to reach the same instance from more than one hostname (a public domain plus a LAN IP, for example):
+
+```bash
+# Comma-separated extra origins. BETTER_AUTH_URL is always trusted.
+TRUSTED_ORIGINS=http://192.168.1.137:3888
+
+# Required if any trusted origin is plain HTTP. Drops the Secure flag
+# on auth cookies, which weakens the HTTPS path too. Leave unset unless
+# you actually need HTTP-origin login to work.
+INSECURE_COOKIES=true
+```
+
+The server refuses to boot with both `INSECURE_COOKIES=true` and an HTTPS `BETTER_AUTH_URL` - it's a footgun guard.
+
+## Cron secret
+
+```bash
+CRON_SECRET=<32+ random chars>
+```
+
+The internal cron endpoints (`/api/cron/auto-archive`, `/api/cron/birthday-emails`, `/api/cron/cleanup-verification`, `/api/cron/intelligence-recommendations`, `/api/cron/item-scrape-queue`) are protected by a bearer token. If `CRON_SECRET` is unset the handlers **fail closed** with HTTP 503, so they can't run publicly.
+
+- **Self-host**: required. The bundled cron sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set this.
+- **Vercel / Render / Railway**: the bundled config files auto-generate or auto-attach the secret. You only need to set this yourself if you're hitting the endpoints from your own scheduler.
+
+Generate one with `openssl rand -base64 48 | tr -d '/+=' | head -c 48`.
+
+## Email (optional)
+
+See [Emails](/configuration/emails/) for the full story. If left unset, every email send no-ops.
+
+```bash
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+RESEND_FROM_NAME=
+RESEND_BCC_ADDRESS=
+```
+
+## AI provider (optional)
+
+GiftWrapt's AI features (the smart URL extractor, the AI title cleaner, and the recommendation analyzers) need an AI provider. Admins can configure all of this through the admin UI without ever setting env vars, but the env vars exist as an optional bootstrap path.
+
+```bash
+AI_PROVIDER_TYPE=openai           # openai | anthropic | openai-compatible
+AI_API_KEY=sk-...
+AI_MODEL=gpt-4o-mini
+AI_BASE_URL=                      # required for openai-compatible
+AI_MAX_OUTPUT_TOKENS=
+```
+
+Three provider families are supported via the Vercel AI SDK:
+
+- **`openai`** - OpenAI's hosted API. `AI_BASE_URL` is ignored.
+- **`anthropic`** - Anthropic's hosted API. `AI_BASE_URL` is ignored.
+- **`openai-compatible`** - any OpenAI-shape endpoint (OpenRouter, Groq, Together, Mistral, DeepSeek, Ollama, LM Studio, vLLM, etc.). `AI_BASE_URL` is required.
+
+## Storage (optional)
+
+Any S3-compatible bucket works. The bundled compose files include Garage or RustFS as sidecars; for hosted deploys you'd typically use AWS S3, Cloudflare R2, or Supabase Storage.
+
+If storage isn't configured, the app boots fine without image uploads - the upload endpoints return 503 and an in-app banner explains the limitation.
+
+```bash
+STORAGE_ENDPOINT=http://garage:3900
+STORAGE_REGION=garage
+STORAGE_BUCKET=giftwrapt
+STORAGE_ACCESS_KEY_ID=...
+STORAGE_SECRET_ACCESS_KEY=...
+STORAGE_FORCE_PATH_STYLE=true   # true for Garage / MinIO / RustFS, false for AWS / R2
+
+# Optional. Unset = app serves via /api/files/*. Set to a CDN base
+# URL to hand clients direct-CDN URLs instead. Recommended on Vercel
+# to avoid per-image function invocations.
+STORAGE_PUBLIC_URL=
+
+# Optional. Max upload size in MB, enforced before Sharp runs.
+STORAGE_MAX_UPLOAD_MB=8
+```
+
+See the Storage backends docs for per-provider recipes.
+
+### Garage
+
+When using the bundled Garage sidecar, the app's entrypoint can bootstrap Garage on first boot via its admin HTTP API (layout assign, bucket create, key import, grants). Idempotent.
+
+```bash
+INIT_GARAGE=true
+GARAGE_RPC_SECRET=<64 hex chars>
+GARAGE_ADMIN_TOKEN=<64 hex chars>
+GARAGE_ADMIN_URL=http://garage:3903   # default matches the compose service
+```
+
+Garage enforces specific key formats:
+
+- **Access key ID**: `GK` + 24 hex chars → `printf 'GK%s' "$(openssl rand -hex 12)"`
+- **Secret key**: 64 hex chars → `openssl rand -hex 32`
+
+### RustFS
+
+Alternative to Garage. Pick one, not both.
+
+```bash
+INIT_RUSTFS=true
+# Plus the standard STORAGE_* vars pointing at the rustfs service.
+# RustFS reads its root user from STORAGE_ACCESS_KEY_ID /
+# STORAGE_SECRET_ACCESS_KEY - no admin token, no extra credentials.
+```
+
+## Seeding Scraper URLs (optional)
+
+```bash
+BROWSERLESS_URL=
+BROWSER_TOKEN=
+FLARESOLVERR_URL=
+```
+
+These are first-boot seed values only. On the first server start after upgrading, if no `browserless` or `flaresolverr` entry exists yet and these env vars are set, GiftWrapt inserts the corresponding entries. After that the admin owns the configuration via the scraping settings UI, and these env vars are ignored.
+
+New deploys should configure scraping providers directly in the admin UI rather than using these.
+
+## Logging
+
+```bash
+LOG_LEVEL=info        # trace | debug | info | warn | error | fatal | silent
+LOG_PRETTY=           # true forces human-readable output even in prod
+```
+
+`LOG_LEVEL` defaults to `info` and can be changed at runtime (in docker-compose, for example) without a rebuild. The better-auth library uses a slightly narrower set internally; `fatal` collapses to `error` and `trace` to `debug` for its purposes.
+
+`LOG_PRETTY` defaults to true in development (`NODE_ENV !== 'production'`) and false in production.
+
+## The kitchen sink
+
+Copy-pasteable reference of every variable GiftWrapt reads, grouped and commented.
+
+```bash
+# ===================================================================
+# Core (required)
+# ===================================================================
+
+# Postgres connection string. Self-host compose builds this from the
+# POSTGRES_* vars below; hosted deploys just set this directly.
+DATABASE_URL=postgresql://postgres:password@localhost:5432/giftwrapt
+
+# Master secret. Used by better-auth AND as the master key for
+# encrypting scraper / AI / email secrets stored in app_settings.
+# DO NOT rotate casually - rotating invalidates every encrypted
+# app_settings value.
+#   openssl rand -base64 32
+BETTER_AUTH_SECRET=change-me
+
+# The exact origin the browser loads. Used for absolute URLs in
+# emails and as the WebAuthn relying-party ID. On Vercel production,
+# auto-derived from VERCEL_PROJECT_PRODUCTION_URL if unset.
+BETTER_AUTH_URL=http://localhost:3000
+
+
+# ===================================================================
+# Bundled compose only - used to build DATABASE_URL
+# ===================================================================
+
+POSTGRES_DB=giftwrapt
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=change-me
+
+
+# ===================================================================
+# Multi-origin / LAN (optional)
+# ===================================================================
+
+# Comma-separated extra origins. BETTER_AUTH_URL is always trusted.
+# TRUSTED_ORIGINS=http://192.168.1.137:3888
+
+# Drop the Secure flag on auth cookies, required for plain-HTTP
+# origins. Weakens the HTTPS path too; the server refuses to boot
+# with this set alongside an HTTPS BETTER_AUTH_URL.
+# INSECURE_COOKIES=true
+
+
+# ===================================================================
+# Cron secret
+# ===================================================================
+
+# Bearer token for /api/cron/* endpoints. Min 32 chars.
+# Self-host: REQUIRED (cron sidecar fatals without it).
+# Vercel/Render/Railway: auto-attached by the platform configs.
+#   openssl rand -base64 48 | tr -d '/+=' | head -c 48
+# CRON_SECRET=
+
+
+# ===================================================================
+# Email (optional - all sends no-op when unset)
+# ===================================================================
+
+# RESEND_API_KEY=
+# RESEND_FROM_EMAIL=
+# RESEND_FROM_NAME=
+# RESEND_BCC_ADDRESS=
+
+
+# ===================================================================
+# AI provider (optional - admin UI can configure instead)
+# ===================================================================
+
+# Provider family: openai | anthropic | openai-compatible
+# AI_PROVIDER_TYPE=openai
+# AI_API_KEY=
+# AI_MODEL=gpt-4o-mini
+# AI_BASE_URL=                # required for openai-compatible
+# AI_MAX_OUTPUT_TOKENS=
+
+
+# ===================================================================
+# Storage (optional - no image uploads without it)
+# ===================================================================
+
+# STORAGE_ENDPOINT=http://garage:3900
+# STORAGE_REGION=garage
+# STORAGE_BUCKET=giftwrapt
+# STORAGE_ACCESS_KEY_ID=
+# STORAGE_SECRET_ACCESS_KEY=
+# STORAGE_FORCE_PATH_STYLE=true   # true for Garage/MinIO/RustFS, false for AWS/R2
+# STORAGE_PUBLIC_URL=             # CDN base URL, optional
+# STORAGE_MAX_UPLOAD_MB=8
+
+
+# ===================================================================
+# Garage sidecar (self-host only)
+# ===================================================================
+
+# INIT_GARAGE=true
+# GARAGE_RPC_SECRET=              # 64 hex chars
+# GARAGE_ADMIN_TOKEN=             # 64 hex chars
+# GARAGE_ADMIN_URL=http://garage:3903
+
+
+# ===================================================================
+# RustFS sidecar (self-host only - alternative to Garage)
+# ===================================================================
+
+# INIT_RUSTFS=true
+
+
+# ===================================================================
+# Scraper URL seeding (optional, first-boot only)
+# ===================================================================
+
+# Inserted as scrape-provider entries on first boot if no matching
+# entry exists. After that the admin UI owns scraper config.
+# BROWSERLESS_URL=
+# BROWSER_TOKEN=
+# FLARESOLVERR_URL=
+
+
+# ===================================================================
+# Logging
+# ===================================================================
+
+# LOG_LEVEL=info                  # trace | debug | info | warn | error | fatal | silent
+# LOG_PRETTY=                     # true forces pretty output in prod
+```

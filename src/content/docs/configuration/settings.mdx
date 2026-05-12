@@ -1,0 +1,98 @@
+---
+title: Admin settings
+description: The admin panel and what each section controls. Most of GiftWrapt's configuration lives in app_settings, not env vars.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+GiftWrapt has two configuration surfaces:
+
+- **Environment variables** - boot-time secrets and connection strings. See [Environment variables](/configuration/environment-variables/).
+- **Admin settings** - everything else, stored in the `app_settings` table and editable from the admin UI without a restart.
+
+This page is the map: what each admin section controls and where to read more.
+
+<Aside type="note" title="First admin">
+The first user to sign up on a fresh deployment is automatically promoted to admin. If you lose every admin account, the next signup re-bootstraps - useful for recovery.
+</Aside>
+
+## Where to find it
+
+The admin panel lives at `/admin`. Once you're signed in as an admin, the top-right user menu shows the link. Each section is a sub-route:
+
+| Section | Path | What it controls |
+|---|---|---|
+| Dashboard | `/admin` | At-a-glance counts and recent activity. |
+| Users | `/admin/users` | User list, roles, partner/guardian relationships, user-detail pages, impersonation. |
+| Settings | `/admin/settings` | App-level toggles: list types, archive timing, comments, mobile, OIDC, passkeys. |
+| Email | `/admin/email` | Email-family toggles (comments, birthday, Christmas, holiday, reminders, relationship reminders) and a test-send button. |
+| Auth | `/admin/auth` | OIDC client config; passkey toggle. |
+| Scraping | `/admin/scraping` | URL scraping providers, tiers, quality threshold, cache, AI toggles. |
+| AI | `/admin/ai` | LLM provider (OpenAI / Anthropic / OpenAI-compatible), model, base URL, API key. |
+| Intelligence | `/admin/intelligence` | Recommendations feature: enable, schedule, analyzers, retention, notifications. |
+| Storage | `/admin/storage` | Bucket connectivity, recent uploads, test-upload. |
+| Scheduling | `/admin/scheduling` | Cron-run history and next-fire times per endpoint. |
+| Data | `/admin/data` | DB-level diagnostics and one-off admin actions. |
+
+## What lives in app_settings vs. env
+
+A rough heuristic:
+
+| In env | In app_settings |
+|---|---|
+| Database connection | List type toggles |
+| Master encryption key | Email family toggles |
+| Cron secret | Reveal-delay offsets |
+| Storage credentials | Scraper provider configs |
+| Default Resend API key (optional) | AI provider config |
+| Default AI provider (optional) | Intelligence settings |
+| Logging | Cron-run retention |
+
+Env vars are baked in at boot; changes need a restart. `app_settings` changes apply on the next read (cron tick, next request, etc.) without a restart.
+
+A few **secret fields** in `app_settings` (scraper API keys, AI keys, OIDC client secret) are AES-256-GCM-encrypted using a key derived from `BETTER_AUTH_SECRET`. Don't rotate `BETTER_AUTH_SECRET` without re-entering those.
+
+## Top-level toggles worth knowing
+
+A few app-wide toggles that shape what users see:
+
+| Setting | Default | What it does |
+|---|---|---|
+| `appTitle` | `GiftWrapt` | Rendered in nav, emails, OG tags. |
+| `defaultListType` | `wishlist` | Pre-selected type in the new-list dialog. |
+| `enableChristmasLists` | true | Christmas list type available. Disables related reminders and emails when off. |
+| `enableBirthdayLists` | true | Same, for birthday lists. |
+| `enableGenericHolidayLists` | true | Same, for admin-curated custom holidays. |
+| `enableTodoLists` | true | Todo lists, a separate row shape from gift items. |
+| `enableComments` | true | Item comments. |
+| `enableMobileApp` | false | Exposes the mobile API and shows passkey + API key UI. |
+| `enablePasskeys` | false | WebAuthn passkey enrollment. |
+
+The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
+
+## Reveal timing
+
+These control when claims auto-archive (which is also when the recipient sees them):
+
+| Setting | Default (days) | When it fires |
+|---|---|---|
+| `archiveDaysAfterBirthday` | 14 | N days after the recipient's birthday. Applies to birthday and wishlist lists owned by that user. |
+| `archiveDaysAfterChristmas` | 14 | N days after Dec 25. Applies to all Christmas lists. |
+| `archiveDaysAfterHoliday` | 14 | N days after the configured holiday's occurrence. Per-list via `customHolidayId`. |
+
+The auto-archive runs **regardless** of whether the corresponding email toggle is on. Disabling the post-birthday email doesn't disable the reveal.
+
+## Cross-references
+
+Each admin section has its own configuration page in these docs:
+
+<CardGrid>
+	<LinkCard title="Authentication" href="/configuration/auth/" description="Email + password, OIDC, passkeys, 2FA, API keys." />
+	<LinkCard title="Emails" href="/configuration/emails/" description="Every email family, when they fire, what they require." />
+	<LinkCard title="Scraping" href="/configuration/scraping/" description="Provider chain, tiers, quality threshold, queue." />
+	<LinkCard title="AI provider" href="/configuration/ai/" description="LLM provider configuration." />
+	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="The recommendations feature, on top of AI." />
+	<LinkCard title="Storage" href="/configuration/storage/" description="S3 backends, mirror toggle." />
+	<LinkCard title="Cron and scheduling" href="/configuration/cron/" description="The five scheduled endpoints." />
+	<LinkCard title="Environment variables" href="/configuration/environment-variables/" description="Every env var, grouped and commented." />
+</CardGrid>

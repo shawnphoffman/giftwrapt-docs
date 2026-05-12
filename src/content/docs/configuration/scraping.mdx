@@ -1,0 +1,166 @@
+---
+title: Scraping
+description: Configure the URL scraping pipeline - providers, tiers, quality threshold, cache, and SSRF protection.
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+The user-facing version of this feature is documented at [URL scraping](/features/scraping/). This page is the operator's reference: how the pipeline works, what the admin can configure, and how to add a new provider.
+
+The scraping admin lives at **Admin > Scraping**. Everything except the env-var first-boot seeds is database-backed and takes effect without a restart.
+
+## The pipeline at a glance
+
+```
+  add-item dialog                    /admin/scraping
+        |                                  |
+        | paste URL                        | tune knobs
+        v                                  v
+  +-------------------------------------------------+
+  | GET /api/scrape/stream (SSE)                    |
+  |   - auth + URL validate                         |
+  |   - build provider chain                        |
+  +-------------------------------------------------+
+                       |
+                       v
+  +-------------------------------------------------+
+  | orchestrator                                    |
+  |   - sequential chain (fall through on low score)|
+  |   - parallel racers (fire alongside)            |
+  |   - cache lookup / dedup                        |
+  |   - post-passes (clean-title)                   |
+  +-------------------------------------------------+
+                       ^
+                       |
+   +-------------------+---------------------+
+   | fetch-provider      scrapeProviders[]   |
+   | (always on, free)   (admin-configurable)|
+   +-----------------------------------------+
+```
+
+The always-on **fetch-provider** runs first. Everything else is opt-in.
+
+## Tiers
+
+Each configured provider has a **tier** (1-5). The orchestrator runs all tier-1 entries in parallel, merges their results, and only advances to tier 2 if the merged result fell below the **quality threshold**. Same for tier 2 to tier 3, etc.
+
+The implicit fetch-provider is tier 0; it runs first, alone. The AI provider is a parallel racer that fires alongside the tier loop and competes via final scoring.
+
+**Why tiers:** cost control. Put cheap providers in tier 1 and paid hosted services in tier 2/3. Pages where tier 1 gets a usable result never spend money on Browserbase or ScrapFly.
+
+Default tier on new entries:
+
+| Provider type | Default tier |
+|---|:-:|
+| browserless | 1 |
+| flaresolverr | 1 |
+| custom-http | 1 |
+| giftwrapt-scraper *(planned)* | 1 |
+| browserbase-fetch | 2 |
+| scrapfly | 2 |
+| browserbase-stagehand | 3 |
+
+Adjust the tier from the Tier dropdown on each card in `/admin/scraping`.
+
+## Provider types
+
+All configured at **Admin > Scraping**. Secret fields are encrypted at rest in `app_settings` (AES-256-GCM, master key derived from `BETTER_AUTH_SECRET`).
+
+| Type | Mode | Secret | Best for |
+|---|---|---|---|
+| `browserless` | sequential | `token` | Self-hosted JS rendering |
+| `flaresolverr` | sequential | - | Self-hosted Cloudflare bypass |
+| `browserbase-fetch` | sequential | `apiKey` | Hosted JS rendering, no LLM |
+| `browserbase-stagehand` | **parallel** | `apiKey` | Hosted structured extraction with LLM |
+| `scrapfly` | sequential | `apiKey` | Hosted scraping with anti-bot |
+| `custom-http` | sequential | `customHeaders` | Bring-your-own scraper service |
+| `ai-provider` | **parallel** | - | LLM extraction from raw HTML |
+
+You can add multiple entries of the same type (e.g. two Browserless instances) and drag to reorder within a tier.
+
+## Merging within a tier
+
+When a tier has multiple entries that all succeed, the orchestrator does **fill-the-gaps merging** before scoring:
+
+- The highest-scoring result is the "base."
+- For each scalar field (`title`, `description`, `price`, `currency`, `siteName`, `finalUrl`) the base left empty, fill from runners-up.
+- `imageUrls` always concatenates and dedupes across all contributors.
+- Re-score the merged result. If it now clears the quality threshold, the tier wins and later tiers don't fire.
+
+The merged result is persisted with `scraperId: 'merged:a,b,c'` so the admin can trace which providers contributed. `/admin/scrapes` renders that as `Provider A + Provider B (merged)`.
+
+## Quality threshold
+
+`scrapeQualityThreshold` (default `3`) is the score a tier's merged result has to hit to short-circuit the chain. Lower the threshold to escalate to expensive providers less often; raise it to be pickier.
+
+The score is computed from how many fields came back and how confident the extractor is in each. The exact algorithm lives in `src/lib/scrapers/scoring.ts`.
+
+## Knobs
+
+| Setting | Default | What it does |
+|---|---|---|
+| `scrapeProviderTimeoutMs` | 20000 | Per-provider HTTP budget |
+| `scrapeOverallTimeoutMs` | 45000 | Overall scrape budget incl. parallel racers |
+| `scrapeQualityThreshold` | 3 | Score needed to short-circuit the chain |
+| `scrapeCacheTtlHours` | 24 | URL-based dedup cache TTL (0 = disable) |
+| `scrapeAiProviderEnabled` | false | Flips the parallel AI scraper on |
+| `scrapeAiCleanTitlesEnabled` | false | Post-pass: AI normalises the winning title |
+
+The AI features here depend on a configured [AI provider](/configuration/ai/). The toggles disable themselves in the admin UI if no AI provider exists.
+
+## Item scrape queue
+
+Items can be **imported in bulk** from an external source (CSV, JSON, etc.). The scraper doesn't run inline for those - imported rows get queued in `item_scrape_jobs` and drained by the `/api/cron/item-scrape-queue` cron tick. Three knobs control the drain:
+
+| Setting | Default | What |
+|---|---|---|
+| `scrapeQueueUsersPerInvocation` | 25 | Distinct users handled per cron tick |
+| `scrapeQueueConcurrency` | 3 | Max parallel jobs per user inside one tick |
+| `scrapeQueueMaxAttempts` | 3 | Max attempts before a job is marked `failed` |
+| `importEnabled` | true | Master kill switch for the import flow |
+
+Failed jobs are kept for diagnostics. The parent item retains whatever fields were already set at create time.
+
+## SSRF protection
+
+Authenticated users supply the URL, so the scraper has to refuse to fetch addresses inside your own infrastructure. The always-on fetch-provider and the AI provider both go through `safeFetch`, which:
+
+- Rejects non-`http(s)` schemes.
+- DNS-resolves the hostname and rejects any address in a private, loopback, link-local, CGNAT, multicast, or reserved range.
+- Walks redirects manually (`redirect: 'manual'`) and re-runs the same check on every hop.
+- Caps the redirect chain (default 5).
+- Sets `credentials: 'omit'`.
+
+Hosted providers (Browserbase, ScrapFly, Browserless, etc.) make outbound calls from outside your infra, so they don't need this hostname check on the user-supplied URL - their upstreams apply their own rules.
+
+## Encryption at rest
+
+Secret fields on configured providers (`token`, `apiKey`, `customHeaders` containing auth) are AES-256-GCM-encrypted in `app_settings` JSONB. The master key is derived via scrypt from `BETTER_AUTH_SECRET`. New writes encrypt; reads accept either an envelope or legacy plaintext.
+
+<Aside type="caution" title="Don't rotate BETTER_AUTH_SECRET">
+Rotating `BETTER_AUTH_SECRET` invalidates every encrypted value in `app_settings`, including these provider secrets. You'd have to re-enter them all.
+</Aside>
+
+## Deployment matrix
+
+| Scenario | Working chain | Notes |
+|---|---|---|
+| Vercel, no extras | `fetch-provider` only | Best-effort; manual entry fallback. |
+| Vercel + Browserbase Fetch | `fetch -> browserbase-fetch` | Cheapest hosted upgrade. |
+| Vercel + ScrapFly | `fetch -> scrapfly` | Anti-bot bypass via `asp=true`. Pay per credit. |
+| Vercel + Browserbase + Stagehand | `fetch -> browserbase-fetch -> ai \| stagehand` | Stagehand races; wins on thin tier-1 data. |
+| Vercel + custom HTTP | `fetch -> custom-http` | Bring-your-own scraper, no vendor cost. |
+| Self-host containers | Full chain incl. browserless + flaresolverr | Run them as sidecars. |
+| AI on top of any of the above | adds `ai-provider` as a parallel racer | Off by default. Costs money. |
+
+## Adding a new provider type
+
+1. Add a discriminated variant to `scrapeProviderEntrySchema` in `src/lib/settings.ts`. Mark secret fields with `appSecretField()`.
+2. If a new secret field type, include it in `encryptScrapeProviderSecrets`.
+3. Create `src/lib/scrapers/providers/<id>.ts` exporting a `create<Id>Provider(entry)` factory.
+4. Choose `mode: 'sequential'` unless the provider is independent enough to race.
+5. Wire the factory into `loadConfiguredProviders()`.
+6. Add a card component in `scraper-providers-form-view.tsx` plus a default entry shape in `makeDefaultEntry()`.
+7. Add a fixture test covering the success path and each error code.
+
+Errors should classify into the small enum (`bot_block`, `http_4xx`, `http_5xx`, `network_error`, `timeout`, `invalid_response`, `config_missing`, `unknown`) via `ScrapeProviderError` so the orchestrator surfaces the right wire code.
