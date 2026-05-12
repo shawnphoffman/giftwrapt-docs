@@ -1,0 +1,86 @@
+---
+title: Claims and reveal
+description: How giftgivers coordinate without spoiling the surprise.
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+Two giftgivers shouldn't buy the same dishwasher. GiftWrapt solves this with **claims** that are invisible to the list owner until they choose to reveal them.
+
+## Claiming an item
+
+When a giftgiver opens a list they can mark any item as **"I've got this"**. Other giftgivers see the claim immediately and know to pick something else. The list owner sees a normal list - no claim indicators, no spoilers.
+
+A claim can include:
+
+- **Quantity** - how many you're taking (for `quantity > 1` items).
+- **Total cost** - what you actually paid, optional.
+- **Notes** - private to other giftgivers.
+- **Co-gifters** - additional users who share credit for the gift.
+
+Claims are reversible. If plans change, the giftgiver can release the claim and the item goes back into the unclaimed pool. (Unclaiming is a hard delete; there's no history.)
+
+## You can't claim items on your own list
+
+The server rejects self-claims. Guardians claiming items on their child's or dependent's list are fine - they're a gifter to the recipient, even though they own the list row.
+
+<Aside type="note" title="No pending or reserved state">
+A claim either exists or it doesn't. There's no "I'm thinking about it" middle state - the row's existence is the state. `notes` and `totalCost` capture intent, not state.
+</Aside>
+
+## Gift credit and partners
+
+GiftWrapt tracks "who gifted what" for received-gifts summaries. Credit follows **both partners** and **co-gifters**:
+
+- If you and your partner are linked, claims by either of you count for both in personal gifting summaries.
+- Anyone listed as a co-gifter on a claim also gets credit.
+
+This means "what I gifted last year" naturally reflects how households actually shop. Unlink a partner and they immediately stop appearing in your summaries; relink and they come back. There's no historical snapshot.
+
+## Reveal
+
+After the gift has been given, the list owner can trigger the **reveal flow** to see who claimed what.
+
+Reveal is **recipient-driven**. Gifters can never trigger a reveal themselves, even on items they've already given. The owner archives an item (or the auto-archive cron does it for them on birthdays / Christmas / configured holidays), and at that point - and only at that point - the claim data becomes visible to them.
+
+### Auto-reveal
+
+GiftWrapt auto-reveals claims on a schedule per list type. Operators control the offset via admin settings:
+
+- **Birthday lists** - reveal claims N days after the owner's birthday.
+- **Christmas lists** - reveal claims N days after Dec 25.
+- **Generic-holiday lists** - reveal claims N days after the configured holiday date.
+
+The reveal is independent of email notifications. Disabling the post-birthday email doesn't disable the reveal, and vice versa.
+
+### What the reveal surfaces
+
+- **Gifter names and co-gifters** for each claimed item.
+- **List add-ons** - extra gifts the giftgivers volunteered. The owner can decide whether to add them to a future list.
+- **Total cost** if the gifter recorded one (optional).
+
+There's no separate "received" or "delivered" state. A claim either exists or doesn't.
+
+## End-to-end flow
+
+A typical gift goes through these states:
+
+<Steps>
+
+1. **Item is added** to a list by the recipient (or their guardian / list editor).
+2. **A giftgiver claims it.** Other gifters see the claim immediately; the recipient sees nothing change.
+3. **(Optional) Co-gifters are added** to the claim. Everyone shares credit.
+4. **The event happens** - birthday, Christmas, etc.
+5. **The recipient archives the item**, manually or via the auto-archive cron.
+6. **Claims become visible** to the recipient on the [Received gifts](/features/received-gifts/) page.
+
+</Steps>
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Received gifts" href="/features/received-gifts/" description="The recipient's post-reveal view." />
+	<LinkCard title="Purchased gifts" href="/features/purchased-gifts/" description="Your gifter ledger - what you've claimed across everyone's lists." />
+	<LinkCard title="Partners" href="/permissions/partners/" description="How partner credit works on claims." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="The spoiler-protection rule that hides claims from the recipient." />
+</CardGrid>

@@ -1,0 +1,68 @@
+---
+title: Items
+description: What lives on each row of a GiftWrapt list - fields, quantities, groups, and how items move through their lifecycle.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+An **item** is a single row on a list - the thing the owner actually wants. GiftWrapt items carry more than a title and a link; the extra fields exist to make claiming and gifting unambiguous.
+
+## What's on an item
+
+Every item has:
+
+- **Title and notes** - what it is. Notes are markdown and a great place for sizing, color preferences, "the small one not the large one," etc.
+- **Photo** - uploaded directly or pulled in by the [URL scraper](/features/scraping/).
+- **Price and currency** - typed in or scraped from the source URL.
+- **Priority** - so giftgivers can see what matters most.
+- **Quantity** - for items where multiples make sense (socks, books, replacement parts).
+- **URL** - the product page or store link. Optional.
+- **Availability** - mark an item **unavailable** when it's out of stock or no longer wanted. Unavailable items can't be claimed.
+- **Comments** - back-and-forth between owner and giftgivers.
+
+## Quantity and split claims
+
+If an item has `quantity > 1`, multiple giftgivers can claim partial quantities. Each claim is independent: one giftgiver might take 2 of the 5 socks, another takes the remaining 3. GiftWrapt enforces the invariant that claims never exceed the item's total quantity.
+
+If the owner later lowers the quantity below the existing claim total, the system stays consistent - the item just shows "all claimed" until someone unclaims. The owner doesn't see the over-claimed state because they can't see claims at all (see [Claims and reveal](/features/claims/)).
+
+<Aside type="tip" title="Owners can edit freely">
+Recipient-side edits to quantity, title, or notes never reveal whether claims exist - the owner just edits, and the system reconciles any over-claim quietly. This is intentional spoiler protection.
+</Aside>
+
+## Item groups
+
+Sometimes an item isn't really one item - it's "any one of these three" or "this set in order." GiftWrapt has **groups** for that:
+
+- **Pick one** - mark a set of items as a group, and once *any* one of them is claimed the rest lock out. Use this for "I'd like one of these three coffee mugs."
+- **In order** - claims must happen in sequence. Item 2 can't be claimed until item 1 is fully claimed. Use this for "starter set, then the upgrade."
+
+Items in a group inherit the group's priority for sorting; the group is the unit, not the individual rows.
+
+## Availability and claims
+
+Availability and claims are mutually exclusive by design. An unavailable item can't be claimed (the server rejects), and an item with existing claims can't be marked unavailable from the UI. If you want to retire an already-claimed item, unclaim it first or delete it.
+
+## Archive vs delete
+
+Two different "remove" actions:
+
+- **Delete an unclaimed item** - hard-deleted. Gone. The edit view stays tidy.
+- **Archive a claimed item** - flips the item to `archived`, which is also what triggers the [reveal flow](/features/claims/#reveal) for the recipient. Archive is the recipient's "this gift is given, show me who got it for me" action; it isn't a generic soft-delete.
+
+You can re-open archived items from the organize view if you need to bulk-unarchive.
+
+## Add-ons
+
+A **list add-on** is a gifter-volunteered suggestion: "I'm also bringing X, you might want to add it to the list." Add-ons live alongside the list but in their own table, and they only surface on the recipient's received-gifts view after the reveal - never on the normal list. The recipient (not the gifter) decides when they've been received.
+
+A user can't create an add-on on their own list. Add-ons are a gifter-side concept by design.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Lists" href="/features/lists/" description="Where items live." />
+	<LinkCard title="Claims and reveal" href="/features/claims/" description="How giftgivers coordinate on items." />
+	<LinkCard title="Received gifts" href="/features/received-gifts/" description="The post-reveal view for recipients." />
+	<LinkCard title="URL scraping" href="/features/scraping/" description="Auto-fill items from a product URL." />
+</CardGrid>

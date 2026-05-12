@@ -1,0 +1,88 @@
+---
+title: Received gifts
+description: The recipient's view after the reveal - who gifted what, plus the add-ons giftgivers suggested.
+---
+
+import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+The **Received gifts** page is where the list owner sees what they actually got: the items their giftgivers claimed, who claimed each one, and any add-ons giftgivers volunteered along the way. Until the reveal happens, this page is empty for an item.
+
+## How an item gets here
+
+Items show up on Received gifts when both conditions are true:
+
+<Steps>
+
+1. Someone has **claimed** the item (created a `giftedItems` row).
+2. The item has been **archived** (its `isArchived` flag is set to true).
+
+</Steps>
+
+Archive is the visibility trigger. Until archive, the list owner sees a normal list - no badges, no claimer names, no spoilers. After archive, the claim data becomes visible.
+
+Two things can flip the archive:
+
+- **You** archive it manually from the list. This is the "I've already opened this gift, show me who gave it" action.
+- **The auto-archive cron** flips it on a schedule per list type. See [Claims and reveal](/features/claims/#auto-reveal) for the per-type defaults; admins tune the offsets at `archiveDaysAfter*`.
+
+<Aside type="note" title="The reveal is one-way">
+There's no "un-reveal." Once an item is archived, you've seen the claim data. Gifters can't reverse it either; the reveal is recipient-driven by design.
+</Aside>
+
+## What shows up on each entry
+
+| Field | Source |
+|---|---|
+| **Item** | Title, photo, price, your original notes. |
+| **Gifter** | The user who claimed it (or first claimer for split claims). Renders avatar + name. |
+| **Co-gifters** | Other users listed in the claim's `additionalGifterIds`. |
+| **Total cost** | Optional. Some gifters record what they actually paid; some don't. |
+| **Gifter notes** | Optional. Anything the gifter wanted you to know ("got it on sale", "the green one was sold out so I went with blue"). |
+| **Quantity** | For items where multiple people claimed partial quantities, each claim is its own row. |
+
+If your [partner](/permissions/partners/) was a co-gifter or claimed it, they're credited too - that's how partner-shared gift credit works on the receiving side as well.
+
+## List add-ons
+
+Below your items, the Received gifts page surfaces **list add-ons**: extra gifts giftgivers volunteered that weren't on your original list. Each add-on shows:
+
+- The title and description the gifter typed.
+- The gifter (or co-gifters).
+- An optional photo and URL.
+
+Add-ons only appear on Received gifts, never on the normal list view. You can decide whether to add an add-on to a future list, send a thank-you for it, or just acknowledge it - GiftWrapt doesn't enforce a workflow.
+
+<Aside type="caution" title="No 'mark as received' on add-ons">
+There was briefly a gifter-facing "mark as given" action on add-ons; it was removed in 2026-04. The recipient is the only one who decides when a gift counts as received.
+</Aside>
+
+## Dependents
+
+When a list has a [dependent](/permissions/dependents/) as its subject, the Received gifts view for that list's guardian still shows everything correctly attributed - the dependent's identity renders as the recipient, the guardian's identity renders nowhere (they're the list manager, not the recipient).
+
+A dependent never sees a Received gifts page of their own (they don't have an account). Their guardians see one per dependent they manage.
+
+## Why no "received-at" timestamp?
+
+There's no dedicated reveal timestamp on items. The Received gifts query uses `items.updatedAt` as a proxy for "archived at," which works because the archive write is the most recent change for an archived item.
+
+If your deployment ever needs an exact reveal time (audit, accounting), treat that as a new column - don't overload `updatedAt`.
+
+## Privacy
+
+The recipient can always see claim data for items they've revealed. That's the whole point. But the page never exposes things the recipient shouldn't see:
+
+- **Other people's restricted-filtered claims** stay hidden (Received gifts is owner-facing, where the [Restricted](/permissions/privacy/) filter doesn't apply, but the principle holds for any future cross-user view).
+- **Pending unclaimed items** don't show up here. The page only renders archived items with at least one claim.
+
+## Where to find it
+
+The user menu has a **Received** link, or go directly to `/me/received`.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Claims and reveal" href="/features/claims/" description="What the claim is and when the reveal happens." />
+	<LinkCard title="Purchased gifts" href="/features/purchased-gifts/" description="The gifter-side equivalent of this page." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="Spoiler protections that hide claims until reveal." />
+</CardGrid>

@@ -1,0 +1,69 @@
+---
+title: URL scraping
+description: Paste a product URL and let GiftWrapt fill in the title, photo, and price.
+---
+
+import { Steps, Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+Adding items by hand is tedious. GiftWrapt lets you paste a product URL and tries its best to pull back the title, photo, price, and a few other fields automatically. Results vary by site, but even a partial fill saves typing - whatever doesn't come back, you fill in manually.
+
+## How it feels
+
+<Steps>
+
+1. Click **Add item** on a list.
+2. Paste a URL (Amazon, Etsy, an indie shop, anywhere).
+3. The form fills itself in. Edit anything you want; save.
+
+</Steps>
+
+The scrape runs as a live progress indicator so you can see which provider is working and stop early if you don't need to wait.
+
+## What gets pulled
+
+When it works, the scraper extracts:
+
+- **Title** - the product name.
+- **Photo(s)** - the main product image, plus any extras you can swap between.
+- **Price and currency** - parsed from the page.
+- **Vendor** - derived from the URL itself (the domain), not from the page content, so this one is reliable even when the rest of the scrape comes back empty.
+
+If a field is missing, just fill it in. The form never clobbers fields you've already typed in - once you touch a field, the scraper leaves it alone.
+
+<Aside type="tip" title="Best effort, not guaranteed">
+Some sites change their markup faster than scrapers can keep up; others block scrapers entirely. A partial fill is normal. Fill in the rest by hand and move on.
+</Aside>
+
+## When sites push back
+
+Some retailers actively block bots, gate content behind login, or change their markup faster than scrapers can keep up. When the basic scrape can't get a usable result, GiftWrapt can fall back to other providers:
+
+- A **JS-rendering provider** (self-hosted Browserless or hosted Browserbase) for sites that only render content via JavaScript.
+- A **Cloudflare-bypass provider** (FlareSolverr) for sites gated by a Cloudflare challenge.
+- An **anti-bot provider** (ScrapFly) for retailers with aggressive WAFs like Amazon.
+- An optional **AI extractor** that reads the raw HTML and extracts fields, when nothing else works.
+
+A first-party **giftwrapt-scraper** sidecar is also planned for the future - a small self-hostable companion service that bundles scraping enhancements specific to GiftWrapt. Not available yet, but the provider type is already wired up so it'll drop in as a chain entry when it ships.
+
+Operators configure these through the admin scraping settings. Pages where the cheap providers work never escalate to the paid ones, so a typical deployment spends very little.
+
+If none of that works, you'll see a clean failure and the form will prompt you to fill in fields manually.
+
+## For self-hosters
+
+The scraping pipeline is fully configurable per deployment:
+
+- Add multiple providers and arrange them into **tiers**. Tier 1 runs first; tier 2 only runs if tier 1 didn't get a good enough result. Same for tier 2 → tier 3.
+- Each provider has its own timeout, secret fields (encrypted at rest), and admin-controlled enable/disable.
+- A small **always-on fetch provider** runs first on every scrape; everything else is opt-in.
+- A **per-URL cache** dedups repeat scrapes for a configurable TTL.
+- **SSRF protection** is built in: the fetcher refuses to call into private IP ranges, and re-checks on every redirect hop.
+
+See the contributor reference for the full architecture diagram and per-provider configuration recipes.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Scraping (admin config)" href="/configuration/scraping/" description="Pipeline architecture, provider types, tiers, and tuning." />
+	<LinkCard title="Items" href="/features/items/" description="What the scraper actually fills in on each item row." />
+</CardGrid>

@@ -1,0 +1,75 @@
+---
+title: Suggestions
+description: Optional AI-assisted hints that surface stale items, possible duplicates, and grouping ideas. Off by default.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+GiftWrapt has an optional layer of AI-assisted hints called **Suggestions** (internally: Intelligence). It looks at your own lists and items and surfaces a small, focused set of recommendations: items that look stale, items that might be duplicates, sets of items that could be grouped together.
+
+This feature is opt-in and off by default. Your admin has to enable it.
+
+<Aside type="note" title="Your data, your lists">
+Suggestions only ever look at *your own* items - the things on lists you own. It never analyzes other people's lists, never sees claim data, and never references gifters or gifts. If you can't see it, the AI can't either.
+</Aside>
+
+## What it can suggest
+
+| Kind | What it spots |
+|---|---|
+| **Primary list** | Picks the list you seem to be using most actively and surfaces it on your dashboard. Pure heuristic, no AI. |
+| **Stale items** | Items you added a long time ago and haven't touched - probably worth removing or refreshing. |
+| **Possible duplicates** | Items that look like they refer to the same thing ("AirPods Pro" and "Apple AirPods Pro 2nd Gen"). |
+| **Grouping** | Sets of items that look like "I want one of these" or "this set in order," and could become an [item group](/features/items/#item-groups). |
+
+Each suggestion shows up as a card with a short rationale. Most are advisory - click through and decide what to do. A few are **apply-able** in one click (see below).
+
+## What you can do with a suggestion
+
+Every suggestion has three actions:
+
+- **Apply** *(when available)* - the change happens server-side without leaving the page. Grouping is the first analyzer with a one-click apply; clicking "Group as Pick One" creates the item group and links the items immediately.
+- **Dismiss** - hide this specific suggestion. It won't come back even when the analyzer re-runs, unless the underlying items change enough that GiftWrapt no longer recognizes it as the same suggestion.
+- **Ignore** - just close the card. It'll likely reappear on the next run.
+
+Dismissed suggestions stay dismissed across regenerations until the underlying items shift. So once you tell GiftWrapt "no, these aren't duplicates," that exact pair stays quiet.
+
+## When suggestions refresh
+
+By default the analyzer runs once a day per user, but it skips you if:
+
+- You still have un-reviewed suggestions from the previous run (no point churning tokens before you engage with what's there).
+- Your inputs haven't changed since the last successful run.
+
+You can also manually refresh from the Suggestions page, subject to a per-user cooldown (default 60 minutes between manual triggers).
+
+## What the AI sees
+
+Just your items. Specifically:
+
+- **Item titles, notes, prices, URLs, priorities** - the obvious stuff.
+- **Item update timestamps** - so "stale" can be a meaningful concept.
+- **Item availability** - unavailable items are excluded from duplicate / grouping consideration.
+
+What the AI doesn't see:
+
+- **Anyone else's items or lists.**
+- **Any claim data.** GiftWrapt never sends gifter, claim, or purchase information to the AI. Prompts also explicitly instruct the model never to mention gifts or gifters in its output.
+- **Revealed (archived) items.** Those have moved past the active-list flow.
+- **Gift-ideas or todo lists.** Gift-ideas are spoiler surfaces for someone else; todos have no fields to analyze.
+
+See [Privacy](/permissions/privacy/#spoiler-protection) for the full spoiler-protection rule.
+
+## Where to find it
+
+The user menu has a **Suggestions** link (when the feature is enabled), or go directly to `/me/suggestions`. If the feature is off, the page shows a "feature offline" notice rather than a 404.
+
+## For operators
+
+If you're configuring this for a deployment, the admin side lives across two pages:
+
+<CardGrid>
+	<LinkCard title="AI provider" href="/configuration/ai/" description="The LLM that powers Suggestions." />
+	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="Feature-specific knobs: schedule, retention, per-analyzer toggles." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="What the AI can and can't see." />
+</CardGrid>

@@ -1,0 +1,74 @@
+---
+title: Purchased gifts
+description: Your gifter-side ledger - what you've claimed across everyone's lists, who you gifted, and what your partner claimed too.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+The **Purchased gifts** page is the gifter-side counterpart to [Received gifts](/features/received-gifts/). It's your personal ledger of everything you've claimed across all the lists you can see, organized by recipient.
+
+This is what you check when you can't remember whether you've already gotten Mom something for her birthday, or when you want to see what you and your partner have collectively picked up for the kids.
+
+## What shows up
+
+Every claim where you're credited as a gifter appears here. "Credited" follows GiftWrapt's [partner-aware predicate](/features/claims/#gift-credit-and-partners):
+
+- Claims you made directly.
+- Claims your **partner** made (if you have one).
+- Claims where you're a **co-gifter** (you're in the claim's `additionalGifterIds`).
+- Claims where your **partner is a co-gifter**.
+
+If any of those, the item appears under that recipient's section on your Purchased gifts page.
+
+| Surface | Source |
+|---|---|
+| **Recipient** | The list owner (or the dependent who's the subject of the list). |
+| **Item** | Title, photo, price, the recipient's notes. |
+| **Your claim notes** | What you typed when you claimed (private to other gifters too). |
+| **Total cost** | Optional. What you paid. |
+| **Quantity** | Your share if it's a split claim. |
+| **Co-gifters** | Anyone you're sharing the gift with. |
+
+## Per-recipient grouping
+
+Claims are grouped by **recipient**, not by date. Each group's header shows the recipient's avatar and name, with a count of items you've claimed for them. Within a group, items sort by most recent claim first.
+
+For dependent recipients (a pet, a baby) the section renders the dependent's identity rather than the guardian who owns the list - same recipient-identity rules as everywhere else.
+
+## Partner credit on this page
+
+A claim made by your partner shows up here exactly like one you made yourself. The gifter avatar on the row tells you who actually claimed, but the item appears in your ledger either way.
+
+<Aside type="note" title="Partner credit is live, not snapshotted">
+If you unlink your partner, their claims immediately drop out of your Purchased gifts. Relink them and the claims come back. There's no historical snapshot of who-was-partnered-when - the predicate runs fresh on every page load.
+</Aside>
+
+## What's NOT here
+
+A few things deliberately don't appear:
+
+- **Your own list's items.** You can't claim on your own list, so there's nothing to show.
+- **Items you considered but didn't claim.** No "wishlist of things to gift" here; that's what [Suggestions](/features/suggestions-ai/) and your gifter-side list views are for.
+- **Add-ons.** [List add-ons](/features/received-gifts/#list-addons) are recipient-facing only; they don't show up in your gifter ledger.
+- **Unclaimed items.** Unclaim is a hard delete, so an item you released stops appearing here entirely.
+
+## Editing or releasing a claim
+
+Each row has the same controls as the original list:
+
+- **Edit** - change quantity, total cost, notes, co-gifters.
+- **Unclaim** - releases the item back into the unclaimed pool. The row disappears from your ledger.
+
+Edits and unclaims here behave exactly the same as edits and unclaims from the source list.
+
+## Where to find it
+
+The user menu has a **Purchased** link, or go directly to `/me/purchases`.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Claims and reveal" href="/features/claims/" description="The claim mechanism that puts items here." />
+	<LinkCard title="Received gifts" href="/features/received-gifts/" description="The recipient-side equivalent of this page." />
+	<LinkCard title="Partners" href="/permissions/partners/" description="How partner credit shows up in your ledger." />
+</CardGrid>

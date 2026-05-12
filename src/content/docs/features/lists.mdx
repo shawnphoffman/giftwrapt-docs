@@ -1,0 +1,64 @@
+---
+title: Lists
+description: How wish lists work in GiftWrapt - types, privacy, sharing, and the rules that hold it all together.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+A list is a collection of items the owner wants. GiftWrapt supports a few different shapes of list, and each one has slightly different rules about who can see it and what happens when items get claimed.
+
+## List types
+
+There are four list types in active use:
+
+- **Wishlist** - the default. A general-purpose, evergreen list. Public or private.
+- **Birthday** - tied to the owner's birthday. Claims auto-reveal a configurable number of days after their birthday.
+- **Christmas** - the annual Christmas list. Claims auto-reveal after Dec 25.
+- **Gift ideas** - a private list of ideas *for someone else*. Anyone (except children) can create one, and it can optionally be pinned to a specific person. Never public.
+
+Admins can disable Birthday, Christmas, and generic-holiday list types per deployment via the admin settings, so a small household running just wishlists doesn't need to see the rest.
+
+## Public vs private
+
+Wishlists, birthday lists, Christmas lists, and generic-holiday lists can each be marked **public** or **private**.
+
+- **Public** lists are visible to every signed-in user the owner hasn't explicitly blocked. This is the default "share with my family" mode.
+- **Private** lists are only visible to people the owner has explicitly granted access to (via list editors or guardian relationships).
+- **Gift-ideas** lists are always private. There is no toggle to make one public, and they never surface in any "lists I can shop from" feed.
+
+<Aside type="note" title='"Public" still means signed-in'>
+Even public lists are only visible to authenticated users. GiftWrapt has no anonymous access - share links redirect to sign-in first. This is not a public website.
+</Aside>
+
+## Collaboration
+
+Two ways to let someone else help manage a list:
+
+- **List editors** - explicit per-list grants. A list editor can add, edit, and delete items just like the owner. Useful for joint Christmas lists, or for letting a partner manage a shared wishlist.
+- **Guardian access** - guardians automatically have full edit access to every list their child or dependent owns. No per-list opt-in required.
+
+When the owner creates a new **public** list, GiftWrapt auto-ticks "add my partner as an editor" by default. The owner can untick it before saving. Private lists never auto-add anyone.
+
+If you change your partner later, GiftWrapt offers to fix existing list-editor grants for you: pre-checked lists to add the new partner to, pre-checked lists to remove the old partner from. Nothing is removed silently.
+
+## Archive vs delete
+
+When the owner deletes a list:
+
+- If there are **no claims** on any item, the list is hard-deleted.
+- If there are **any claims**, the list is force-archived instead. This preserves gift history for the people who already claimed. Archived lists disappear from the owner's normal UI but remain queryable in received-gifts history.
+
+## Lists for dependents
+
+Lists can be created on behalf of a **dependent** - a non-user gift recipient like a baby or a pet. The guardian owns the list; the dependent is the subject. Recipient-identity UI (avatars, "whose list is this?" labels) renders the dependent rather than the guardian.
+
+A guardian opening their dependent's list sees the *gifter* view, not the recipient view. They're shopping for the dependent, not receiving gifts from themselves.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Items" href="/features/items/" description="What lives on each row of a list." />
+	<LinkCard title="Claims and reveal" href="/features/claims/" description="How giftgivers coordinate without spoiling the surprise." />
+	<LinkCard title="Permissions" href="/permissions/" description="Who can see and edit which lists." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="Access-level options between users." />
+</CardGrid>
