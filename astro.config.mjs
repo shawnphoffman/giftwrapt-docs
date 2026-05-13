@@ -61,49 +61,19 @@ export default defineConfig({
 				},
 				{
 					label: 'Deploy',
-					items: [
-						{ label: 'Overview', slug: 'deploy/deployment' },
-						{ label: 'Self-hosting', slug: 'deploy/self-hosting' },
-						{ label: 'Hosted (Vercel + Supabase)', slug: 'deploy/hosted' },
-						{ label: 'Hosted (Railway)', slug: 'deploy/railway' },
-						{ label: 'Hosted (Render)', slug: 'deploy/render' },
-					],
+					items: [{ autogenerate: { directory: 'deploy' } }],
 				},
 				{
 					label: 'Features',
-					items: [
-						{ label: 'Lists', slug: 'features/lists' },
-						{ label: 'Items', slug: 'features/items' },
-						{ label: 'Claims and reveal', slug: 'features/claims' },
-						{ label: 'Received gifts', slug: 'features/received-gifts' },
-						{ label: 'Purchased gifts', slug: 'features/purchased-gifts' },
-						{ label: 'URL scraping', slug: 'features/scraping' },
-						{ label: 'Suggestions (AI)', slug: 'features/suggestions-ai' },
-					],
+					items: [{ autogenerate: { directory: 'features' } }],
 				},
 				{
 					label: 'Permissions',
-					items: [
-						{ label: 'Overview', slug: 'permissions' },
-						{ label: 'Guardians', slug: 'permissions/guardians' },
-						{ label: 'Partners', slug: 'permissions/partners' },
-						{ label: 'Dependents', slug: 'permissions/dependents' },
-						{ label: 'Privacy', slug: 'permissions/privacy' },
-					],
+					items: [{ autogenerate: { directory: 'permissions' } }],
 				},
 				{
 					label: 'Configuration',
-					items: [
-						{ label: 'Admin settings', slug: 'configuration/settings' },
-						{ label: 'Environment variables', slug: 'configuration/environment-variables' },
-						{ label: 'Authentication', slug: 'configuration/auth' },
-						{ label: 'Emails', slug: 'configuration/emails' },
-						{ label: 'Storage', slug: 'configuration/storage' },
-						{ label: 'Scraping', slug: 'configuration/scraping' },
-						{ label: 'AI provider', slug: 'configuration/ai' },
-						{ label: 'Intelligence (AI)', slug: 'configuration/intelligence-ai' },
-						{ label: 'Cron and scheduling', slug: 'configuration/cron' },
-					],
+					items: [{ autogenerate: { directory: 'configuration' } }],
 				},
 				{
 					label: 'Changelog',
