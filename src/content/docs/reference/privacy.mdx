@@ -1,0 +1,67 @@
+---
+title: Privacy and telemetry
+description: GiftWrapt does not phone home. No analytics, no error tracking, no usage telemetry, no SaaS dependency by default. This page explains what that means in practice and what the few opt-in network calls are.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt is built for families running it for themselves. The default posture is **nothing leaves your server unless you turned it on**. No analytics, no usage telemetry, no error reporting, no anonymous pings.
+
+## What this means concretely
+
+- **No third-party error tracker is integrated.** Not Sentry, not LogRocket, not Bugsnag, not Datadog, not Highlight. Errors land in your server logs (`stdout`, accessible via `docker logs` / Vercel logs / your runtime's log viewer) and stay there.
+- **No analytics SDK.** No Google Analytics, no Plausible, no Posthog, no Vercel Web Analytics, not even a hit counter.
+- **No "anonymous metrics" backchannel.** The app does not check in with us to report version numbers, deploy counts, or anything else.
+
+This is a deliberate design choice, not an oversight. Reporting errors to an external service is a useful operator convenience that we trade away because the cost - exfiltrating fragments of user data through stack traces, payload dumps, breadcrumbs, and source maps - isn't justified for a family-scale wish-list app. Self-hosters running this for their household shouldn't have to audit a telemetry config to be confident their data stays local.
+
+## What about runtime errors?
+
+When something blows up in production:
+
+- The error is logged to `stdout` via `pino` ([src/lib/logger.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/core/src/lib/logger.ts)) with the surrounding context (request id, user id where applicable, never session tokens or PII bodies).
+- The web app's `ErrorBoundary` renders a generic fallback page. Server-side handlers return sanitized JSON (the mobile API uses a coded envelope, the web side returns Nitro's generic 500 shape with no stack trace).
+- **Nothing is transmitted to anyone but you.**
+
+If you hit a bug worth reporting, the manual path is the only path: grab the relevant log lines, screenshot the UI if applicable, and open an issue at [github.com/shawnphoffman/giftwrapt](https://github.com/shawnphoffman/giftwrapt/issues). That's a feature, not a bug.
+
+<Aside type="note" title="If you self-host and want error tracking">
+You can add your own if you really want it - Sentry, GlitchTip, or whatever - by patching the relevant init points yourself. The app deliberately ships without integration points wired up so that doing so is an opt-in fork, not a config-flag flip that ships errors somewhere by accident.
+</Aside>
+
+## What does go out over the network
+
+There are a small number of outbound network calls. **All of them are explicitly opt-in by the operator** (configured via env or admin UI) and serve a feature the operator chose to enable. None are telemetry.
+
+| Destination | When | What | Toggle |
+|---|---|---|---|
+| Your AI provider (Anthropic / OpenAI / etc.) | Only when Intelligence / scraping features run | Item titles, URLs, scraped page content | Admin UI: AI provider settings; env `AI_*` |
+| Resend | Only when email features are enabled | Recipient address, email body | Admin UI: email settings; env `RESEND_API_KEY` |
+| Your scraper provider (browserless / FlareSolverr / etc.) | Only when scraping a URL | The URL being fetched | Admin UI: scraper settings; env `BROWSERLESS_URL` / `FLARESOLVERR_URL` |
+| Your object storage (R2 / AWS / your Garage cluster) | Always, for image uploads | The image bytes themselves | env `STORAGE_*` |
+| Vercel `live.vercel.com` script | Only on Vercel preview deploys | The page URL (for preview-comment overlay) | Use a different host, or drop the entry from CSP |
+
+Notably **not** in the list: WebAuthn / passkey registration. Passkeys are negotiated between the browser and your operating system's authenticator (Touch ID, Windows Hello, a YubiKey); the only network traffic is between the user's browser and your own GiftWrapt server. No external "passkey provider" is involved.
+
+Source of truth for outbound calls is the CSP `connect-src` directive in [vite.config.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/core/vite.config.ts). If a new dependency tries to phone home, that's where it surfaces.
+
+## What about cookies and local storage?
+
+- Session cookie (`better-auth.session_token`) is `httpOnly`, `Secure` over HTTPS, `SameSite=Lax`. Set by your own server.
+- `localStorage` holds UI preferences only (theme, list-view density, etc.). Never tokens. Never analytics IDs.
+- No third-party cookies. The app never embeds an external `<iframe>` or `<script>` that could set one.
+
+## Source maps
+
+Production builds **do not ship source maps** to the client. Stack traces in your server logs reference minified line numbers; rebuild with maps locally if you need to deobfuscate.
+
+## What if a contributor proposes adding telemetry?
+
+The position is "no, by default." A contributor PR that wires in error tracking, analytics, or any other phone-home gets:
+
+- Rejected outright if it's enabled by default.
+- Considered for inclusion only if (a) it's strictly opt-in via env, (b) it ships with a PII-scrubbing config that's enabled by default, (c) the docs are updated to describe what's collected and where it goes.
+
+Even then, the bar is high. The simple absence of telemetry is a feature this project commits to.
