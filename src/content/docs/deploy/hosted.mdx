@@ -138,12 +138,12 @@ Push to `main` (or merge a release PR) - Vercel auto-deploys. Migrations run as 
 
 ## Other hosted platforms
 
-GiftWrapt also ships config files for **Railway** ([`railway.json`](https://github.com/shawnphoffman/giftwrapt/blob/main/railway.json)) and **Render** ([`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml)). Both work - I just don't run them in production myself, so I don't document them as the recommended path.
+**Railway** has a published multi-service template at [railway.com/deploy/giftwrapt](https://railway.com/deploy/giftwrapt). One click provisions the web service, Postgres, and five scheduled cron services, with `BETTER_AUTH_SECRET` and `CRON_SECRET` auto-generated. See [Railway in deployment.md](/deployment/#one-click-railway) for the full walkthrough.
 
-If you're set on one of those, the config files are the source of truth; treat them as templates and adapt to your needs.
+**Render** is driven by [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml) in the repo, which declares Postgres + the web service + five cron services with env wiring between them. See [Render in deployment.md](/deployment/#one-click-render).
 
-## One-click deploys (WIP)
+Both are good paths; I run Vercel + Supabase in production, but Railway and Render are documented and supported.
 
-One-click "deploy to Vercel" / "deploy to Railway" / "deploy to Render" buttons are a work in progress. The Vercel + Supabase Marketplace integration mostly works but the storage paste step still has to happen by hand, and the Railway button currently lands the app only (no database or storage wired up). Rather than ship something half-broken, I'm holding off on the buttons until the flow is genuinely one click for at least one target.
+## One-click deploys
 
-For now, the seven-step Vercel + Supabase walkthrough above is the recommended path.
+Vercel still requires the seven-step walkthrough above because the Supabase Marketplace integration doesn't cover the storage paste step yet. Railway and Render both deliver a true one-click deploy via their respective templates — see [deployment.md](/deployment/) for badges and walkthroughs.

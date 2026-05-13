@@ -50,26 +50,26 @@ Supabase Storage S3 details and a longer recipe live in [storage.md → Supabase
 
 ### One-click: Railway
 
-> **Heads up:** the Railway button is _not_ truly one-click yet. It deploys the app service only - you have to add Postgres and wire env vars yourself before the app will boot. The steps below get you to a working deploy in about 3 minutes.
+The Railway button deploys a published multi-service template at [railway.com/deploy/giftwrapt](https://railway.com/deploy/giftwrapt). It provisions the full stack in one click:
 
-The button creates a single service that builds from this repo's `Dockerfile`, using [`railway.json`](https://github.com/shawnphoffman/giftwrapt/blob/main/railway.json) for the healthcheck and restart policy. Railway's GitHub deploy URL has no concept of multi-service blueprints (unlike Render's `render.yaml`), so the database and env wiring are manual.
+- The web service (built from `Dockerfile`, tracking `main`).
+- A Postgres database with a persistent volume.
+- Five scheduled cron services, one per `/api/cron/*` endpoint, mirroring [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml).
+- Auto-generated `BETTER_AUTH_SECRET` and `CRON_SECRET`.
+- Internal wiring for `DATABASE_URL`, `BETTER_AUTH_URL`, and the cron services' callbacks via Railway's private network.
+
+The template prompts only for the optional inputs: `RESEND_API_KEY` / `RESEND_FROM_EMAIL` for outbound email, and the `STORAGE_*` vars for image uploads. Leave them blank to deploy without those features and wire them in later.
 
 **After clicking the badge:**
 
-1. **Wait for the first build to fail.** It will - the app exits because `DATABASE_URL` is unset. That's expected.
-2. **Add Postgres.** In the Railway project canvas: **+ New → Database → Add PostgreSQL**. Wait for it to go green.
-3. **Wire the database.** Click your app service → **Variables** tab → **+ New Variable**:
-   - Name: `DATABASE_URL`
-   - Value: click the `{}` icon and pick `Postgres → DATABASE_URL` (or type `${{Postgres.DATABASE_URL}}` - the service name must match exactly, including case).
-4. **Set the auth vars** (same Variables tab, **+ New Variable** for each):
-   - `BETTER_AUTH_SECRET` = output of `openssl rand -base64 32` (run locally, paste the result).
-   - `BETTER_AUTH_URL` = `https://${{RAILWAY_PUBLIC_DOMAIN}}` - Railway substitutes the assigned `*.up.railway.app` host automatically. If you've already added a custom domain, hardcode that instead (e.g. `https://giftwrapt.example.com`).
-5. **Redeploy.** The variable changes trigger a new deploy. Watch the deploy logs - you should see migrations run and then `starting giftwrapt`.
-6. **(Optional) Image uploads.** The app boots fine without storage; upload endpoints return 503 until you wire `STORAGE_*` vars to an external S3 bucket (Cloudflare R2, AWS S3, Supabase Storage). Recipes in [storage.md](/storage/).
+1. Sign in to Railway and select the project name + region.
+2. Skip or fill in the optional Resend / Storage inputs.
+3. Wait for the first deploy. Migrations run on boot; the web service goes green when `/api/health` returns 200.
+4. Open the assigned `*.up.railway.app` URL. The first user to sign up is auto-promoted to admin.
 
-**Common issue: `DATABASE_URL is not set; cannot run migrations`** in deploy logs after step 3. Either the Postgres service has a different name than `Postgres` (check the canvas tile, edit the reference to match), or you saved the variable but didn't redeploy - reference resolution happens at deploy time, not on save.
+**Custom domain:** add it under the giftwrapt service's **Settings → Networking**. Railway-assigned URLs already work out of the box via `${{RAILWAY_PUBLIC_DOMAIN}}`; only change `BETTER_AUTH_URL` if you want auth bound to your custom domain instead.
 
-**Common issue: `Invalid origin` on `/sign-up`.** `BETTER_AUTH_URL` is missing or doesn't match the URL you're visiting. The app falls back to `http://localhost:3000`, which rejects the Railway-assigned origin. Set it per step 4 and redeploy.
+**Image uploads:** the app boots fine without storage; upload endpoints return 503 until you wire `STORAGE_*` vars to an external S3 bucket (Cloudflare R2, AWS S3, Supabase Storage). Recipes in [storage.md](/storage/).
 
 ### One-click: Render
 
