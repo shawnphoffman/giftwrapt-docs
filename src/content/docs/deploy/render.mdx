@@ -1,0 +1,70 @@
+---
+title: Hosted (Render)
+description: Deploy GiftWrapt to Render with the bundled render.yaml blueprint. Web service, managed Postgres, and five cron jobs in one click.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+
+Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml) at the repo root, which declares the full GiftWrapt stack: a managed Postgres database, an `image`-runtime web service that pulls `ghcr.io/shawnphoffman/giftwrapt:latest`, five Cron Jobs (one per `/api/cron/*` endpoint), and the env-var wiring between them.
+
+## Deploy
+
+<Steps>
+
+1. **Click the deploy button on the [README](https://github.com/shawnphoffman/giftwrapt).** Render reads the blueprint and creates the database, web service, and all five cron jobs.
+
+2. **First boot.** `DATABASE_URL` is wired automatically. `BETTER_AUTH_SECRET` and `CRON_SECRET` are auto-generated. Migrations run on the first start via the entrypoint.
+
+3. **Set `BETTER_AUTH_URL`.** After the first deploy completes, set this on the web service to your Render-assigned URL (e.g. `https://giftwrapt.onrender.com`) or your custom domain. Redeploy.
+
+4. **Sign up.** The first user to register is auto-promoted to admin.
+
+</Steps>
+
+## Optional features
+
+**Image uploads:** fill in the `STORAGE_*` vars on the web service. Render leaves them as `sync: false` so it prompts at deploy time; you can also add them later. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. live in [storage.md](/storage/).
+
+**Email (Resend):** add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` on the web service.
+
+**AI suggestions:** see [Suggestions (AI)](/features/suggestions-ai/) for provider env vars.
+
+## Cron jobs
+
+`render.yaml` ships all five cron services configured with daily UTC schedules:
+
+| Endpoint | Schedule |
+|---|---|
+| `/api/cron/cleanup-verification` | `0 3 * * *` |
+| `/api/cron/intelligence-recommendations` | `0 4 * * *` |
+| `/api/cron/item-scrape-queue` | `0 5 * * *` |
+| `/api/cron/auto-archive` | `0 6 * * *` |
+| `/api/cron/birthday-emails` | `0 7 * * *` |
+
+Each cron job uses the `curlimages/curl` image and inherits `CRON_SECRET` and `BETTER_AUTH_URL` from the web service via `fromService:` references. There's no manual env paste.
+
+To customize: edit the `schedule:` field on any cron service block in `render.yaml` and redeploy. To drop a job (e.g. you don't have Resend configured and don't need birthday emails) delete that service block.
+
+<Aside type="caution">
+Render Cron Jobs require a paid plan (Hobby+); the free tier does not include cron. If you're on the free tier, the web service still runs but no cron will fire and `/admin/scheduling` will report "never" everywhere.
+</Aside>
+
+## Pinning a version
+
+By default `render.yaml` pulls `ghcr.io/shawnphoffman/giftwrapt:latest`. Once you're past the "does it work" phase, pin a specific tag (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) so future image pushes don't auto-deploy. Edit the `image.url` field in `render.yaml` and redeploy.
+
+## Custom domain
+
+Add the domain under the web service's **Settings → Custom Domains** and point DNS per Render's instructions. Once it's live, set `BETTER_AUTH_URL` to the canonical HTTPS URL and redeploy.
+
+If you serve from multiple hostnames, add the others to `TRUSTED_ORIGINS` instead of switching `BETTER_AUTH_URL`.
+
+## Updating
+
+Render pulls `:latest` on every deploy. Trigger a manual deploy from the dashboard to pick up a new image, or pin a specific tag and bump it explicitly when you want to upgrade.
+
+## Other options
+
+- [Hosted (Railway)](/railway/) - one-click template with internal cron services
+- [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path
+- [Self-hosting with Docker](/self-hosting/) - full control, runs anywhere

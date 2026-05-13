@@ -1,0 +1,100 @@
+---
+title: Deployment
+---
+
+GiftWrapt is a regular [TanStack Start](https://tanstack.com/start) app, so it runs anywhere a Node.js server runs. The supported paths:
+
+| Path | When to pick it |
+|---|---|
+| [Hosted (Vercel + Supabase)](/hosted/) | Tried-and-true managed path. The configuration I run in production. |
+| [Hosted (Railway)](/railway/) | One-click multi-service template. Web + Postgres + 5 cron services in a single deploy. |
+| [Hosted (Render)](/render/) | One-click `render.yaml` blueprint. Web + managed Postgres + 5 cron jobs. |
+| [Self-hosting with Docker](/self-hosting/) | Full control. One `docker compose up`, runs anywhere. |
+| [Coolify](#coolify) | Self-hosted PaaS. Uses the same compose files as Docker self-hosting. |
+| [Custom Node deploy](#custom-node-deploy) | Fly, a VPS, bare metal, etc. |
+
+## Coolify
+
+Coolify is self-hosted, so there's no public deploy button - you trigger the deploy from your own Coolify dashboard.
+
+1. In your Coolify instance: **+ New → Public Repository**.
+2. Repository: `https://github.com/shawnphoffman/giftwrapt`.
+3. Build pack: **Docker Compose**.
+4. Compose file: `docker/compose.selfhost-garage.yaml` (or `compose.selfhost-rustfs.yaml`).
+5. Coolify reads the compose file and spins up app + Postgres + Garage in one go.
+6. Fill in the env vars Coolify prompts for (same set as `env.example`): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `POSTGRES_PASSWORD`, `STORAGE_*`, `GARAGE_*`. The bundled `INIT_GARAGE=true` handles bucket creation on first boot.
+
+This lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [self-hosting.md](/self-hosting/).
+
+## Cron and background jobs
+
+The app exposes five `/api/cron/*` endpoints (auto-archive, birthday emails, intelligence recommendations, item-scrape queue, verification cleanup). They are protected by `CRON_SECRET` and **only fire if a scheduler is wired up** - the app does not self-schedule. Always set `CRON_SECRET` to a long random string before relying on cron.
+
+Confirm what's actually firing in production via `/admin/scheduling`. Each row shows last run, last success (amber when stale > 3× the expected interval), next fire time computed from the schedule, and the last 24h count of runs and errors. There is also a "Run now" button per endpoint that bypasses the schedule - the fastest way to verify each route is healthy after a deploy.
+
+Per-platform cron details:
+
+- **Vercel**: schedules ship in `vercel.json`. See [Hosted (Vercel + Supabase)](/hosted/).
+- **Railway**: schedules ship as separate cron services in the template. See [Hosted (Railway)](/railway/#cron-services).
+- **Render**: schedules ship as Cron Jobs in `render.yaml`. See [Hosted (Render)](/render/#cron-jobs).
+- **Self-hosted Docker Compose**: a busybox crond sidecar runs alongside the app. See [Self-hosting → Scheduled jobs](/self-hosting/#addon-scheduled-jobs-cron).
+
+### Customizing schedules across deployments
+
+Cron expressions live in several places that should stay in sync:
+
+| File | Used by |
+|---|---|
+| `vercel.json` | Vercel's scheduler at deploy time |
+| `render.yaml` | Render Cron Jobs |
+| Railway template | Railway cron services (dashboard-managed; republish the template to change defaults) |
+| `docker/cron-entrypoint.sh` | Self-hosted Docker Compose cron sidecar |
+| `src/lib/cron/registry.ts` | `/admin/scheduling` "next fire" estimates |
+
+When you change a schedule, update every file your deployment uses _plus_ the registry so the admin page's expectations match reality. The registry is the only one that affects what's shown to the user; the others drive actual firing.
+
+The full deployment-platform matrix, the lock-key namespace convention for adding a new cron-tick runner, and the complete sample-schedule table live in [.notes/cron-and-jobs.md](https://github.com/shawnphoffman/giftwrapt/blob/main/.notes/cron-and-jobs.md).
+
+## Custom Node deploy
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+node .output/server/index.mjs
+```
+
+The build emits a self-contained Nitro bundle in `.output/server/`. Run migrations once before first boot:
+
+```bash
+node .output/scripts/migrate.mjs
+```
+
+All env vars from [env.example](https://github.com/shawnphoffman/giftwrapt/blob/main/env.example) apply. The runtime needs:
+
+- A reachable Postgres (`DATABASE_URL`)
+- An S3-compatible bucket (`STORAGE_*`)
+- A long-random `BETTER_AUTH_SECRET` and the public `BETTER_AUTH_URL`
+
+The Dockerfile in the repo root is the canonical reference for what a minimal production runtime looks like. Note that it sets `HOST=::` so the server binds IPv6 by default - required for PaaS platforms with IPv6-only private networking (Railway, Fly). Override with `HOST=0.0.0.0` if you need IPv4-only.
+
+## Releases and the GHCR image
+
+`release-please` watches `main` and opens a release PR with the next semver bump and a generated `CHANGELOG.md` entry. Merging that PR tags the release, which triggers the GHCR image publish:
+
+```
+ghcr.io/shawnphoffman/giftwrapt:latest
+ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z
+```
+
+Pin a specific tag in production by setting `APP_IMAGE` in your `.env`. The compose files default to `:latest` for first-time setup but you should pin once you're past the "does it work" phase.
+
+## What's where
+
+| Concern | Where |
+|---|---|
+| Quickstart (Docker) | [getting-started.md](/getting-started/) |
+| Local development | [local-development.md](/local-development/) |
+| Docker self-host | [self-hosting.md](/self-hosting/) |
+| Storage backends and recipes | [storage.md](/storage/) |
+| URL scraping infra | [scraping.md](/scraping/) |
+| Local seeded admin | [local-dev-admin.md](/guides/local-dev-admin/) |

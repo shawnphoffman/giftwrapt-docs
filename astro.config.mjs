@@ -62,8 +62,11 @@ export default defineConfig({
 				{
 					label: 'Deploy',
 					items: [
+						{ label: 'Overview', slug: 'deploy/deployment' },
 						{ label: 'Self-hosting', slug: 'deploy/self-hosting' },
 						{ label: 'Hosted (Vercel + Supabase)', slug: 'deploy/hosted' },
+						{ label: 'Hosted (Railway)', slug: 'deploy/railway' },
+						{ label: 'Hosted (Render)', slug: 'deploy/render' },
 					],
 				},
 				{

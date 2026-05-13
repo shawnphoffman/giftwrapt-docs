@@ -138,12 +138,8 @@ Push to `main` (or merge a release PR) - Vercel auto-deploys. Migrations run as 
 
 ## Other hosted platforms
 
-**Railway** has a published multi-service template at [railway.com/deploy/giftwrapt](https://railway.com/deploy/giftwrapt). One click provisions the web service, Postgres, and five scheduled cron services, with `BETTER_AUTH_SECRET` and `CRON_SECRET` auto-generated. See [Railway in deployment.md](/deployment/#one-click-railway) for the full walkthrough.
+- [Hosted (Railway)](/railway/) - one-click multi-service template with internal cron services
+- [Hosted (Render)](/render/) - one-click `render.yaml` blueprint with managed Postgres
+- [Self-hosting with Docker](/self-hosting/) - full control, runs anywhere
 
-**Render** is driven by [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml) in the repo, which declares Postgres + the web service + five cron services with env wiring between them. See [Render in deployment.md](/deployment/#one-click-render).
-
-Both are good paths; I run Vercel + Supabase in production, but Railway and Render are documented and supported.
-
-## One-click deploys
-
-Vercel still requires the seven-step walkthrough above because the Supabase Marketplace integration doesn't cover the storage paste step yet. Railway and Render both deliver a true one-click deploy via their respective templates — see [deployment.md](/deployment/) for badges and walkthroughs.
+I run Vercel + Supabase in production, but Railway and Render are both documented and supported one-click paths.

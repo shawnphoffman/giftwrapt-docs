@@ -1,0 +1,108 @@
+---
+title: Hosted (Railway)
+description: Deploy GiftWrapt to Railway with a one-click multi-service template. Web service, Postgres, and five cron services with secrets auto-generated.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components'
+
+Railway has a published multi-service template that provisions the full GiftWrapt stack in one click. No manual database wiring, no env-var paste step.
+
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/giftwrapt)
+
+## What the template provisions
+
+- **giftwrapt** - the web service, built from the repo's `Dockerfile` and tracking `main` so future commits redeploy automatically.
+- **giftwrapt-postgres** - a Postgres 16 database with a persistent volume.
+- **Five cron services** (`cron-cleanup-verification`, `cron-intelligence-recommendations`, `cron-item-scrape-queue`, `cron-auto-archive`, `cron-birthday-emails`) - one per `/api/cron/*` endpoint, mirroring the schedules in [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml).
+- **Auto-generated secrets** - `BETTER_AUTH_SECRET` and `CRON_SECRET` are generated per deploy.
+- **Internal wiring** - `DATABASE_URL`, `BETTER_AUTH_URL`, and the cron services' callbacks resolve via Railway's private network.
+
+The template only prompts for the optional inputs.
+
+## Deploy
+
+<Steps>
+
+1. **Click the button** and sign in to Railway.
+
+2. **Pick a project name and region.** Pick a region close to your users; the database, app, and cron services all live in the same region.
+
+3. **(Optional) Fill in the prompted inputs.** Leave any blank to deploy without that feature; you can wire them up later.
+
+   | Input | Purpose |
+   |---|---|
+   | `RESEND_API_KEY` | Outbound email (birthday reminders, post-Christmas digests, comment notifications). Leave blank to disable. |
+   | `RESEND_FROM_EMAIL` | Verified Resend sender, e.g. `noreply@yourdomain.com`. |
+   | `STORAGE_ENDPOINT` | S3-compatible storage endpoint URL. Leave the whole `STORAGE_*` block blank to disable image uploads. |
+   | `STORAGE_REGION` | Storage region. |
+   | `STORAGE_BUCKET` | Bucket name for uploaded images. |
+   | `STORAGE_ACCESS_KEY_ID` | Storage access key ID. |
+   | `STORAGE_SECRET_ACCESS_KEY` | Storage secret access key. |
+   | `STORAGE_FORCE_PATH_STYLE` | Set to `true` for MinIO, Garage, RustFS, or other self-hosted S3 backends. Leave blank for AWS S3 / Cloudflare R2. |
+
+4. **Wait for the first deploy.** Migrations run on boot; the web service goes green when `/api/health` returns 200.
+
+5. **Sign up.** Open the assigned `*.up.railway.app` URL. The first user to register is auto-promoted to admin.
+
+</Steps>
+
+## Custom domain
+
+Add it under the **giftwrapt** service's **Settings → Networking → Custom Domain**. Railway-assigned URLs already work via `${{RAILWAY_PUBLIC_DOMAIN}}`; only change `BETTER_AUTH_URL` if you want auth bound to your custom domain instead of the `*.up.railway.app` host.
+
+If you serve from multiple hostnames, add the others to `TRUSTED_ORIGINS` instead of switching `BETTER_AUTH_URL`.
+
+## Cron services
+
+All five `/api/cron/*` endpoints fire on a daily UTC schedule out of the box. They run as separate Railway services using the `curlimages/curl` image with a `sh -c` start command that calls back into the web service over the private network.
+
+To customize a schedule: open the cron service in the Railway canvas, edit the **Cron Schedule** field under Settings, and save. To stop a job entirely (e.g. you don't need birthday emails because Resend isn't configured), remove the service from the project.
+
+## Adding optional features later
+
+**Email (Resend):** add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` on the **giftwrapt** service and redeploy.
+
+**Image uploads:** add the `STORAGE_*` vars on the **giftwrapt** service. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. are in [storage.md](/storage/).
+
+**AI suggestions:** see [Suggestions (AI)](/features/suggestions-ai/) for the provider env vars.
+
+## Resource caps
+
+The template provisions services with these caps:
+
+| Service | vCPU | Memory |
+|---|---|---|
+| giftwrapt | 2 | 1 GB |
+| giftwrapt-postgres | 1 | 1 GB |
+| cron-* (each of 5) | 0.5 | 256 MB |
+
+Railway bills on actual usage, not the cap. The caps are guardrails against runaway processes. Bump them in the service's **Settings → Resources** if you need to.
+
+## Pausing a project
+
+Railway doesn't have a true "pause" button, but you can stop compute without losing config:
+
+- **Test project, no data to preserve:** delete the project. The template makes redeploy a one-click rebuild.
+- **Keep config, stop billing:** per service, **Settings → Remove the latest deployment**. Do this on the web service and all 5 cron services. Postgres keeps running unless you also remove its deployment (which loses data).
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| Cron service crashes with `URL rejected: Bad hostname` | The start command isn't wrapped in `sh -c '...'`; `curlimages/curl` has no shell as entrypoint. |
+| Cron service crashes with `Could not connect to server` | The web service isn't listening on IPv6. The Dockerfile sets `HOST=::` by default; check the web service's env vars haven't overridden it. |
+| `${{giftwrapt.PORT}}` resolves to empty on cron services | `PORT` isn't set as an explicit env var on the web service. Add `PORT=3000` to the giftwrapt service's variables. |
+| Egress fees warning on `DATABASE_PUBLIC_URL` | The app doesn't read `DATABASE_PUBLIC_URL`; remove any reference to it on the giftwrapt service. The Postgres service can keep it for psql access. |
+| `Invalid origin` on sign-up | `BETTER_AUTH_URL` doesn't match the URL you're visiting. Check it on the giftwrapt service. |
+
+## Updating
+
+The template tracks `main`. Push to the repo and Railway auto-deploys. Migrations run on every boot via the entrypoint, so schema changes ship with the app.
+
+To pin a specific version instead of tracking `main`, switch the service to deploy from the GHCR image (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) in the giftwrapt service's **Settings → Source**.
+
+## Other options
+
+- [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path
+- [Hosted (Render)](/render/) - the other managed multi-service blueprint
+- [Self-hosting with Docker](/self-hosting/) - full control, runs anywhere
