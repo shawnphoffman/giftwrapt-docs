@@ -76,6 +76,10 @@ export default defineConfig({
 					items: [{ autogenerate: { directory: 'configuration' } }],
 				},
 				{
+					label: 'Reference',
+					items: [{ autogenerate: { directory: 'reference' } }],
+				},
+				{
 					label: 'Changelog',
 					items: [
 						...makeChangelogsSidebarLinks([
