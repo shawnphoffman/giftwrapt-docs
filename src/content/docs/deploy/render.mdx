@@ -9,11 +9,13 @@ import { Steps, Aside } from '@astrojs/starlight/components'
 
 Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/render.yaml) at the repo root, which declares the full GiftWrapt stack: a managed Postgres database, an `image`-runtime web service that pulls `ghcr.io/shawnphoffman/giftwrapt:latest`, five Cron Jobs (one per `/api/cron/*` endpoint), and the env-var wiring between them.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/shawnphoffman/giftwrapt)
+
 ## Deploy
 
 <Steps>
 
-1. **Click the deploy button on the [README](https://github.com/shawnphoffman/giftwrapt).** Render reads the blueprint and creates the database, web service, and all five cron jobs.
+1. **Click the deploy button above.** Render reads the blueprint and creates the database, web service, and all five cron jobs.
 
 2. **First boot.** `DATABASE_URL` is wired automatically. `BETTER_AUTH_SECRET` and `CRON_SECRET` are auto-generated. Migrations run on the first start via the entrypoint.
 
