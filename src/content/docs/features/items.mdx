@@ -54,6 +54,18 @@ Two different "remove" actions:
 
 You can re-open archived items from the organize view if you need to bulk-unarchive.
 
+### What happens if you delete an item a giftgiver already claimed
+
+The recipient can't see whether claims exist (that's the whole point of [spoiler protection](/features/claims/)), so they may delete an item the giftgiver has already shopped for. Hard-deleting in that case would silently throw away someone's purchase, so GiftWrapt does something different.
+
+When the recipient deletes an item that has active claims, the item moves to a **pending-deletion** state instead of disappearing for good:
+
+- To the **recipient**, the delete looks identical to deleting an unclaimed item. The row is gone from every surface they can see, including the organize view. They get no warning, no badge, no breadcrumb - that would tip off the spoiler.
+- To the **giftgiver** (and their partner, who shares gift credit), the item surfaces in an [orphan-claim alert](/features/claims/#orphaned-claims) on the list page and on [Purchased gifts](/features/purchased-gifts/). They can acknowledge to clear the alert and drop their claim. If email is configured they also receive an immediate email.
+- An [auto-cleanup cron](/configuration/cron/#orphan-claim-cleanup) hard-deletes any unanswered orphans on the list's event date (Christmas Day, the recipient's birthday, etc.) so the giftgiver's view doesn't carry stale clutter forever. Wishlists, which have no event date, fall back to a 14-day timer from the deletion.
+
+Co-giftgivers are intentionally silent in this flow. They share gift credit but didn't make the underlying purchase; the primary giftgiver (and their partner) are the responsible parties.
+
 ## Add-ons
 
 A **list add-on** is a gifter-volunteered suggestion: "I'm also bringing X, you might want to add it to the list." Add-ons live alongside the list but in their own table, and they only surface on the recipient's received-gifts view after the reveal - never on the normal list. The recipient (not the gifter) decides when they've been received.

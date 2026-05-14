@@ -63,6 +63,26 @@ The reveal is independent of email notifications. Disabling the post-birthday em
 
 There's no separate "received" or "delivered" state. A claim either exists or doesn't.
 
+## Orphaned claims
+
+Spoiler protection means the recipient can't see whether an item has been claimed - so they can delete an item you've already shopped for, with no warning that you're affected. GiftWrapt handles that case end-to-end so your purchase doesn't vanish silently.
+
+When the recipient deletes an item with an active claim, the item moves to **pending-deletion** instead of being hard-deleted (see [Items: what happens if you delete an item a giftgiver already claimed](/features/items/#what-happens-if-you-delete-an-item-a-giftgiver-already-claimed) for the recipient-side view). For you (and your partner, who shares gift credit), this surfaces as:
+
+- A **beefy alert** above the filters on that list's page, with the item title, photo, claim details, and an **Acknowledge** button.
+- A **lighter summary** on the [Purchased gifts](/features/purchased-gifts/) page, listing each list with orphans and a count, so you don't have to remember which list it was on.
+- An **immediate email** if email is configured on the deployment.
+
+Acknowledging deletes your claim row. If yours was the last claim on the item, the item is hard-deleted at the same time. Either partner can acknowledge - it's the same household either way.
+
+If you don't acknowledge, an [auto-cleanup cron](/configuration/cron/#orphan-claim-cleanup) resolves the orphan on the list's event date (Christmas Day, the recipient's birthday, the configured holiday) with a day-before reminder email. Wishlists - which have no event date - fall back to a 14-day timer from when the recipient deleted the item.
+
+<Aside type="note" title="Co-gifters stay silent">
+A claim with co-gifters in `additionalGifterIds` notifies only the primary giftgiver (and their partner). Co-gifters share credit, not the underlying purchase, so they don't get the email or the alert. The primary giftgiver coordinates with them out of band.
+</Aside>
+
+You can still navigate to a list the recipient archived if you have an unresolved orphan there - the per-list alert UI is the place to acknowledge from. The list won't show up in your normal browsing surfaces; only the link from `/purchases` gets you there.
+
 ## End-to-end flow
 
 A typical gift goes through these states:
