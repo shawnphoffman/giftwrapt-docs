@@ -38,6 +38,13 @@ Each category has its own admin toggle, all independent. Disabling a toggle stop
 
 - **`enableCommentEmails`** - sent when someone leaves a comment on an item, to the item's other participants.
 
+### Orphaned-claim alerts
+
+Two emails support the [orphaned-claim flow](/features/claims/#orphaned-claims). Both fire whenever email is configured - there's no admin toggle. Spoiler protection and claim integrity are non-negotiable, same rationale as the auto-archive happening regardless of email toggles:
+
+- **Initial alert** - sent immediately when the recipient deletes an item the giftgiver had already claimed. Goes to the primary giftgiver and their partner; co-gifters intentionally silent. One email per orphaned item per audience member.
+- **Day-before cleanup reminder** - sent the day before the [auto-cleanup cron](/configuration/cron/#orphan-claim-cleanup) hard-deletes an unanswered orphan. One-shot per claim, idempotent via `giftedItems.orphanReminderSentAt`.
+
 ### Day-of and post-event
 
 - **`enableBirthdayEmails`** - gates both the day-of birthday email *and* the post-birthday gifter summary (the recap of who got what).
