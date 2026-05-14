@@ -14,7 +14,7 @@ GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbou
 | Endpoint | Suggested schedule | What it does |
 |---|---|---|
 | `/api/cron/auto-archive` | `0 6 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. |
-| `/api/cron/birthday-emails` | `0 7 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, and relationship reminders. |
+| `/api/cron/birthday-emails` | `0 7 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, relationship reminders, and the [orphan-claim cleanup passes](#orphan-claim-cleanup). |
 | `/api/cron/cleanup-verification` | `0 3 * * *` | Deletes expired better-auth verification rows; sweeps cron-run retention rows. |
 | `/api/cron/intelligence-recommendations` | `0 4 * * *` | Runs the per-user analyzer pipeline; persists recommendations + run rows. |
 | `/api/cron/item-scrape-queue` | `0 5 * * *` | Drains pending `item_scrape_jobs` rows from bulk-import. |
@@ -94,6 +94,15 @@ The admin scheduling page shows every endpoint, its documented schedule, the nex
 - See how long each run took.
 
 The page doesn't *control* the scheduler - it just reads what the scheduler-of-record (Vercel, your sidecar, etc.) actually did. If a job hasn't fired and the admin page agrees, the issue is in the scheduler, not GiftWrapt.
+
+## Orphan-claim cleanup
+
+The `/api/cron/birthday-emails` tick also runs two passes for the [orphaned-claim flow](/features/claims/#orphaned-claims):
+
+- **Reminder pass** - day-before email to giftgivers (and partners) with un-acked orphans whose parent list's event date is exactly one day from today. For wishlists - which have no event date - the reminder fires 13 days after the recipient deleted the item. Idempotent via `giftedItems.orphanReminderSentAt`. **Email-gated** like the rest of `birthday-emails`.
+- **Cleanup pass** - hard-deletes every claim on the pending-deletion item plus the item row itself, on the parent list's event date (or 14 days after deletion for wishlists). **Runs regardless of email configuration** - this is a data lifecycle operation, not a notification.
+
+Both passes operate on pending-deletion items regardless of `lists.isActive`, so an archived parent list doesn't strand orphans in limbo.
 
 ## Retention
 
