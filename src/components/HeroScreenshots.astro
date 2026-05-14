@@ -157,12 +157,13 @@ const shots = [
 		padding: 0;
 		border: 0;
 		background: transparent;
-		width: min(95vw, 1400px);
+		width: auto;
 		max-width: min(95vw, 1400px);
 		max-height: 95vh;
 		margin: auto;
 		inset: 0;
 		color: var(--sl-color-white);
+		overflow: visible;
 	}
 
 	.lightbox::backdrop {
@@ -174,17 +175,19 @@ const shots = [
 		position: relative;
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: 0.75rem;
 		margin: 0;
 		padding: 0;
+		max-height: 95vh;
 	}
 
 	.lightbox-inner :global(img) {
 		display: block;
-		width: 100%;
+		max-width: 100%;
 		max-height: 82vh;
+		width: auto;
 		height: auto;
-		object-fit: contain;
 		border-radius: 0.5rem;
 		border: 1px solid var(--sl-color-hairline);
 		background: var(--sl-color-bg);
