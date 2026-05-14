@@ -4,21 +4,32 @@ import { Image } from 'astro:assets'
 import allLists from '../assets/hero_all-lists.png'
 import listDetail from '../assets/hero_list-detail.png'
 import myLists from '../assets/hero_my-lists.png'
+import myListDetail from '../assets/hero_my-list-detail.png'
+import purchases from '../assets/hero_purchases.png'
+import suggestions from '../assets/hero_suggestions.png'
 
 const shots = [
 	{ id: 'all-lists', label: 'All Lists', caption: 'Everyone you follow at a glance.', src: allLists },
 	{ id: 'my-lists', label: 'My Lists', caption: 'Organize your public, private, and household lists.', src: myLists },
 	{ id: 'list-detail', label: 'List Detail', caption: 'Claim, comment, and collaborate.', src: listDetail },
+	{ id: 'my-list-detail', label: 'My List Detail', caption: 'Claim, comment, and collaborate.', src: myListDetail },
+	{ id: 'purchases', label: 'My Purchases', caption: 'Track your purchases.', src: purchases },
+	{ id: 'suggestions', label: 'Suggestions', caption: 'Suggestions for your lists.', src: suggestions },
 ]
 ---
 
 <section class="screens not-content" aria-label="App screenshots">
 	<div class="grid">
 		{
-			shots.map((shot) => (
+			shots.map(shot => (
 				<button class="thumb" type="button" data-open={shot.id} aria-label={`Open ${shot.label} screenshot`}>
 					<span class="frame">
-						<Image src={shot.src} alt={shot.label} widths={[400, 700, 1000]} sizes="(min-width: 60rem) 28vw, (min-width: 40rem) 45vw, 90vw" />
+						<Image
+							src={shot.src}
+							alt={shot.label}
+							widths={[400, 700, 1000]}
+							sizes="(min-width: 60rem) 28vw, (min-width: 40rem) 45vw, 90vw"
+						/>
 					</span>
 					<span class="meta">
 						<span class="label">{shot.label}</span>
@@ -30,7 +41,7 @@ const shots = [
 	</div>
 
 	{
-		shots.map((shot) => (
+		shots.map(shot => (
 			<dialog class="lightbox" data-dialog={shot.id} aria-label={`${shot.label} screenshot`}>
 				<form method="dialog" class="lightbox-inner">
 					<button class="close" aria-label="Close" type="submit" formnovalidate>
@@ -51,7 +62,7 @@ const shots = [
 
 <script>
 	const openers = document.querySelectorAll<HTMLButtonElement>('[data-open]')
-	openers.forEach((btn) => {
+	openers.forEach(btn => {
 		btn.addEventListener('click', () => {
 			const id = btn.getAttribute('data-open')
 			const dlg = document.querySelector<HTMLDialogElement>(`[data-dialog="${id}"]`)
@@ -60,8 +71,8 @@ const shots = [
 	})
 
 	// Close when clicking outside the inner content.
-	document.querySelectorAll<HTMLDialogElement>('.lightbox').forEach((dlg) => {
-		dlg.addEventListener('click', (event) => {
+	document.querySelectorAll<HTMLDialogElement>('.lightbox').forEach(dlg => {
+		dlg.addEventListener('click', event => {
 			if (event.target === dlg) dlg.close()
 		})
 	})
