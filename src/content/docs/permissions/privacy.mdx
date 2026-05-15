@@ -45,7 +45,12 @@ When a giftgiver claims an item, the list owner's view stays clean - no badge, n
 
 ### Reveal is recipient-driven
 
-Claims become visible to the owner only when the owner archives the item (or the [auto-archive cron](/features/claims/#auto-reveal) does it for them after a configurable delay past their birthday / Christmas / configured holiday). Gifters can never force a reveal.
+Claims become visible to the recipient only when the item is archived. Two things flip the archive:
+
+- The recipient (or anyone with edit access to their list - a [guardian](/permissions/guardians/), a list editor) archives the item manually.
+- The [auto-archive cron](/features/claims/#auto-reveal) flips it on a schedule, a configurable delay past the recipient's birthday, Christmas, or the list's configured holiday.
+
+Gifters can never force a reveal, even on items they've already given.
 
 ### Gift-ideas lists are always private
 
