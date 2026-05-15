@@ -1,0 +1,74 @@
+---
+title: Glossary
+description: A quick reference for the people, roles, and concepts the rest of the docs assume.
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+GiftWrapt's docs use a handful of overlapping terms - "Recipient" and "Owner" mean the same thing most of the time, except when they don't. This page is the canonical reference. When terminology elsewhere surprises you, check back here.
+
+## People
+
+| Term | Definition | Commonly overlaps with |
+|---|---|---|
+| **Recipient** | The person a gift is *for*. The protected party in spoiler protection - they don't see claims until reveal. | The **Owner**, except on [dependent](/permissions/dependents/) lists where the Recipient is the Dependent and the Owner is the Guardian. |
+| **Owner** | The user who created the list. Manages items and triggers reveal. | The **Recipient**, except on dependent lists (see above). |
+| **Gifter** | A user who claims an item on someone else's list. | A **Co-Gifter** is a Gifter who shares credit on someone else's claim. |
+| **Co-Gifter** | An additional user listed on someone else's claim. Shares gift credit but doesn't own the underlying purchase. | The **Primary Gifter** is the user who created the claim. Only they get orphan-claim alerts. |
+| **Guardian** | A user with full view + edit access to a [Child's](#child-vs-dependent-vs-user) or [Dependent's](/permissions/dependents/) lists. The strongest relationship grant. | On a dependent list, the **Guardian** is also the **Owner**. They are *not* the Recipient. |
+| **Dependent** | A non-user gift recipient (pet, baby, account-less family member). Has no login; managed by their Guardians. | The **Recipient** and **Subject** of dependent-subject lists. Never an Owner. |
+| **Partner** | A user linked symmetrically to another user. Shares gift credit on every claim, both directions. | Not a permission - Partners need normal access (public list, Editor grant, etc.) to actually see things. |
+| **Editor** | A user with an explicit per-list grant to add / edit / delete items on one specific list. | A Gifter on every other list. The Editor grant is scoped to the one list. |
+| **Restricted Viewer** | A user marked as Restricted by an Owner. Sees public lists but with a filtered item view (other people's claims are hidden). | Still counts as a Gifter when they claim items. |
+| **Child** (role) | A user account with the Child role. Can't be a Partner, can't be a Guardian, can't create gift-ideas lists, can't be an Editor. | Always paired with one or more **Guardians**. |
+| **Admin** | A user with access to the admin panel. Tunes deployment-wide settings (list types, archive offsets, email toggles, etc.). | Has no per-item override - Admins can't force a reveal any more than any other user. |
+
+## Recipient vs. Owner: The Trap
+
+The most common terminology trip is assuming **Recipient** and **Owner** are interchangeable. They almost always are - but the exception is load-bearing:
+
+- On **adult lists** and **child-owned lists**, the Recipient *is* the Owner.
+- On **dependent-subject lists**, the Recipient is the **Dependent**, and the Owner is one of the Dependent's **Guardians**.
+
+When a doc says "the Recipient archives an item," read it as "whoever the gift is for, or someone acting on their behalf with edit access." When a doc says "the Owner," it means the user who created the list - which on a dependent list is the Guardian, not the Dependent.
+
+<Aside type="note" title="Why This Matters">
+Reveal, spoiler protection, and orphan-claim alerts are all phrased around the *Recipient* to make the Dependent case work without special-casing. If you only think in terms of "Owner," dependent flows look like edge cases - they aren't.
+</Aside>
+
+## Child vs. Dependent vs. User
+
+Three "people" concepts, distinguished by whether there's a login:
+
+| | Has an account? | Manages own lists? | Typical use |
+|---|:-:|:-:|---|
+| **User** | ✓ | ✓ | An adult family member or friend |
+| **Child** (role) | ✓ | with help | A kid old enough to have a login but young enough that a Guardian helps manage things |
+| **Dependent** | ✗ | ✗ | A pet, a baby, or anyone who shouldn't have an account |
+
+See [Dependents](/permissions/dependents/) for the full split.
+
+## Concepts
+
+| Term | Definition |
+|---|---|
+| **Claim** | A record that says "I'm getting this for them." Visible to other Gifters immediately; hidden from the Recipient until reveal. |
+| **Reveal** | Making a claim visible to the Recipient. The Recipient-side word for "the item got archived." |
+| **Archive** | Marking an item as archived. The item-side word for the same event. "Archive an item" and "reveal an item" describe the same action from different angles. |
+| **Auto-Archive** | The scheduled job that archives items per list type (N days after the Recipient's birthday, Christmas, or the list's configured holiday). |
+| **Force-Archive** | What happens when a list with active claims is deleted: the list is archived instead of removed, to preserve gift history. Not a separate user action. |
+| **Add-On** | An extra gift a Gifter volunteered that wasn't on the Recipient's list. Surfaces on Received gifts after reveal. |
+| **Subject** | The Recipient of a dependent-subject list. Distinct from the **Owner** (the Guardian who created it). |
+| **Pending Deletion** | State of an item the Recipient deleted while it had active claims. Gifters get an alert; the item resolves through the orphan-claim flow, not the reveal flow. |
+| **Orphaned Claim** | A claim whose underlying item was deleted by the Recipient. Gifters acknowledge to clear it, or the auto-cleanup job resolves it on the list's event date. |
+| **Gift Credit** | Who gets attributed for a given gift. Follows both Partners and Co-Gifters symmetrically. |
+| **Gift-Ideas List** | A private list of things to buy *for someone else*. Always private, never publicly listed, excluded from every "lists I can shop from" feed. |
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Permissions Overview" href="/permissions/" description="The access-level matrix and how relationships interact." />
+	<LinkCard title="Claims and Reveal" href="/features/claims/" description="The recipient-driven reveal flow in detail." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="Spoiler protections and per-user access levels." />
+	<LinkCard title="Dependents" href="/permissions/dependents/" description="Where 'Recipient' and 'Owner' diverge." />
+</CardGrid>

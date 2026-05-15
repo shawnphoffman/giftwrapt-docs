@@ -57,6 +57,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Getting started', slug: 'overview/getting-started' },
 						{ label: 'Screenshots', slug: 'overview/screenshots' },
+						{ label: 'Glossary', slug: 'overview/glossary' },
 					],
 				},
 				{
