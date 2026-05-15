@@ -91,17 +91,3 @@ Three ways to run the analyzer pipeline; pick whichever fits your stack. They al
 | **Bundled HTTP cron** | `/api/cron/intelligence-recommendations`, `CRON_SECRET`-gated | Default. Works with Vercel Cron, Render Cron, system crontab, the bundled docker compose sidecar. |
 | **External scheduler** | Same endpoint, hit by your own scheduler | When you want central scheduling outside the app. Same secret. |
 | **Standalone worker** | `pnpm intelligence:worker` | When you want a separate Docker service that owns the analyzer drain. Keep the HTTP cron running too if you like - the lock prevents double-spend. |
-
-## Notifications (V1 Scaffold)
-
-`intelligenceEmailEnabled`, `intelligenceEmailWeeklyDigestEnabled`, and `intelligenceEmailTestRecipient` exist in `app_settings`, are wired into the admin UI, and are read by `notifyForRun()` - but **no transport is shipped in v1**. The function logs intent only. Future versions will hook this up to the Resend templates; until then, toggling them is a no-op.
-
-## Admin > Intelligence
-
-The admin Intelligence page is split into tabs:
-
-- **Settings** - the knobs above.
-- **Analyzers** - per-analyzer enable / disable toggles and recent run stats.
-- **History** - recent runs, their skip reasons, durations, and links into the underlying run-steps.
-- **Scheduling** - mirrors the [cron scheduling](/configuration/cron/) page but filtered to the Intelligence endpoint.
-- **Notifications** - the v1 scaffold described above.

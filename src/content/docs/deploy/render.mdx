@@ -27,7 +27,7 @@ Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/mai
 
 ## Optional Features
 
-**Image uploads:** fill in the `STORAGE_*` vars on the web service. Render leaves them as `sync: false` so it prompts at deploy time; you can also add them later. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. live in [storage.md](/storage/).
+**Image uploads:** fill in the `STORAGE_*` vars on the web service. Render leaves them as `sync: false` so it prompts at deploy time; you can also add them later. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. live in [Storage](/configuration/storage/).
 
 **Email (Resend):** add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` on the web service.
 
@@ -69,6 +69,6 @@ Render pulls `:latest` on every deploy. Trigger a manual deploy from the dashboa
 
 ## Other Options
 
-- [Hosted (Railway)](/railway/) - one-click template with internal cron services
-- [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path
-- [Self-hosting with Docker](/self-hosting/) - full control, runs anywhere
+- [Hosted (Railway)](/deploy/railway/) - one-click template with internal cron services
+- [Hosted (Vercel + Supabase)](/deploy/hosted/) - the tried-and-true managed path
+- [Self-hosting with Docker](/deploy/self-hosting/) - full control, runs anywhere

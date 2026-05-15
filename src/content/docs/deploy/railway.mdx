@@ -64,7 +64,7 @@ To customize a schedule: open the cron service in the Railway canvas, edit the *
 
 **Email (Resend):** add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` on the **giftwrapt** service and redeploy.
 
-**Image uploads:** add the `STORAGE_*` vars on the **giftwrapt** service. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. are in [storage.md](/storage/).
+**Image uploads:** add the `STORAGE_*` vars on the **giftwrapt** service. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. are in [Storage](/configuration/storage/).
 
 **AI suggestions:** see [Suggestions (AI)](/features/suggestions-ai/) for the provider env vars.
 
@@ -105,6 +105,6 @@ To pin a specific version instead of tracking `main`, switch the service to depl
 
 ## Other Options
 
-- [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path
-- [Hosted (Render)](/render/) - the other managed multi-service blueprint
-- [Self-hosting with Docker](/self-hosting/) - full control, runs anywhere
+- [Hosted (Vercel + Supabase)](/deploy/hosted/) - the tried-and-true managed path
+- [Hosted (Render)](/deploy/render/) - the other managed multi-service blueprint
+- [Self-hosting with Docker](/deploy/self-hosting/) - full control, runs anywhere

@@ -9,10 +9,10 @@ GiftWrapt is a regular [TanStack Start](https://tanstack.com/start) app, so it r
 
 | Path | When to pick it |
 |---|---|
-| [Hosted (Vercel + Supabase)](/hosted/) | Tried-and-true managed path. The configuration I run in production. |
-| [Hosted (Railway)](/railway/) | One-click multi-service template. Web + Postgres + 5 cron services in a single deploy. |
-| [Hosted (Render)](/render/) | One-click `render.yaml` blueprint. Web + managed Postgres + 5 cron jobs. |
-| [Self-hosting with Docker](/self-hosting/) | Full control. One `docker compose up`, runs anywhere. |
+| [Hosted (Vercel + Supabase)](/deploy/hosted/) | Tried-and-true managed path. The configuration I run in production. |
+| [Hosted (Railway)](/deploy/railway/) | One-click multi-service template. Web + Postgres + 5 cron services in a single deploy. |
+| [Hosted (Render)](/deploy/render/) | One-click `render.yaml` blueprint. Web + managed Postgres + 5 cron jobs. |
+| [Self-hosting with Docker](/deploy/self-hosting/) | Full control. One `docker compose up`, runs anywhere. |
 | [Coolify](#coolify) | Self-hosted PaaS. Uses the same compose files as Docker self-hosting. |
 | [Custom Node deploy](#custom-node-deploy) | Fly, a VPS, bare metal, etc. |
 
@@ -27,7 +27,7 @@ Coolify is self-hosted, so there's no public deploy button - you trigger the dep
 5. Coolify reads the compose file and spins up app + Postgres + Garage in one go.
 6. Fill in the env vars Coolify prompts for (same set as `env.example`): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `POSTGRES_PASSWORD`, `STORAGE_*`, `GARAGE_*`. The bundled `INIT_GARAGE=true` handles bucket creation on first boot.
 
-This lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [self-hosting.md](/self-hosting/).
+This lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [Self-hosting](/deploy/self-hosting/).
 
 ## Cron and Background Jobs
 
@@ -37,10 +37,10 @@ Confirm what's actually firing in production via `/admin/scheduling`. Each row s
 
 Per-platform cron details:
 
-- **Vercel**: schedules ship in `vercel.json`. See [Hosted (Vercel + Supabase)](/hosted/).
-- **Railway**: schedules ship as separate cron services in the template. See [Hosted (Railway)](/railway/#cron-services).
-- **Render**: schedules ship as Cron Jobs in `render.yaml`. See [Hosted (Render)](/render/#cron-jobs).
-- **Self-hosted Docker Compose**: a busybox crond sidecar runs alongside the app. See [Self-hosting → Scheduled jobs](/self-hosting/#addon-scheduled-jobs-cron).
+- **Vercel**: schedules ship in `vercel.json`. See [Hosted (Vercel + Supabase)](/deploy/hosted/).
+- **Railway**: schedules ship as separate cron services in the template. See [Hosted (Railway)](/deploy/railway/#cron-services).
+- **Render**: schedules ship as Cron Jobs in `render.yaml`. See [Hosted (Render)](/deploy/render/#cron-jobs).
+- **Self-hosted Docker Compose**: a busybox crond sidecar runs alongside the app. See [Self-hosting → Scheduled jobs](/deploy/self-hosting/#addon-scheduled-jobs-cron).
 
 ### Customizing Schedules Across Deployments
 
@@ -90,14 +90,3 @@ ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z
 ```
 
 Pin a specific tag in production by setting `APP_IMAGE` in your `.env`. The compose files default to `:latest` for first-time setup but you should pin once you're past the "does it work" phase.
-
-## What's Where
-
-| Concern | Where |
-|---|---|
-| Quickstart (Docker) | [getting-started.md](/getting-started/) |
-| Local development | [local-development.md](/local-development/) |
-| Docker self-host | [self-hosting.md](/self-hosting/) |
-| Storage backends and recipes | [storage.md](/storage/) |
-| URL scraping infra | [scraping.md](/scraping/) |
-| Local seeded admin | [local-dev-admin.md](/guides/local-dev-admin/) |
