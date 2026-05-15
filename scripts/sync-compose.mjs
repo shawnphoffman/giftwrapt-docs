@@ -6,7 +6,7 @@
 // changes leaves the doc byte-identical.
 //
 // Markers in MDX look like:
-//   {/* compose:start file=docker/compose.selfhost-garage.yaml */}
+//   {/* compose:start file=docker/compose.selfhost-garage-minimal.yaml */}
 //   {/* compose:end */}
 // Anything between them is replaced with a fenced ```yaml block on each run.
 
@@ -21,7 +21,7 @@ const docsDir = resolve(repoRoot, 'src/content/docs')
 const GITHUB_RAW = 'https://raw.githubusercontent.com/shawnphoffman/giftwrapt/main'
 const LOCAL_CANDIDATES = [resolve(repoRoot, '../core'), resolve(repoRoot, '../giftwrapt')]
 
-const TARGETS = [resolve(docsDir, 'overview/getting-started.mdx')]
+const TARGETS = [resolve(docsDir, 'overview/getting-started.mdx'), resolve(docsDir, 'deploy/self-hosting.mdx')]
 
 const START = /\{\/\*\s*compose:start\s+file=([^\s*]+)\s*\*\/\}/g
 const END = '{/* compose:end */}'

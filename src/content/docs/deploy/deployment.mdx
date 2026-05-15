@@ -23,7 +23,7 @@ Coolify is self-hosted, so there's no public deploy button - you trigger the dep
 1. In your Coolify instance: **+ New → Public Repository**.
 2. Repository: `https://github.com/shawnphoffman/giftwrapt`.
 3. Build pack: **Docker Compose**.
-4. Compose file: `docker/compose.selfhost-garage.yaml` (or `compose.selfhost-rustfs.yaml`).
+4. Compose file: pick the shape that matches what you want running. The matrix is `docker/compose.selfhost-{garage,rustfs}-{minimal,cron,full,traefik}.yaml`. `-cron.yaml` is a good default (app + Postgres + storage + the cron sidecar); `-full.yaml` adds the profile-gated MCP service.
 5. Coolify reads the compose file and spins up app + Postgres + Garage in one go.
 6. Fill in the env vars Coolify prompts for (same set as `env.example`): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `POSTGRES_PASSWORD`, `STORAGE_*`, `GARAGE_*`. The bundled `INIT_GARAGE=true` handles bucket creation on first boot.
 

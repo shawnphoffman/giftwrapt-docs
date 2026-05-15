@@ -7,7 +7,16 @@ sidebar:
 
 import { Tabs, TabItem, Aside, LinkCard, CardGrid } from '@astrojs/starlight/components'
 
-Self-hosting GiftWrapt is meant to be boring: one published image, one compose file, one `.env`. The base stack is app + Postgres. Everything else - storage, cron, email, MCP - is an addon you opt into when you need it.
+Self-hosting GiftWrapt is meant to be boring: one published image, one compose file, one `.env`. The base stack is app + Postgres + S3-compatible storage. Cron, email, and MCP are addons you opt into by picking a richer compose shape.
+
+Each shape lives at `docker/compose.selfhost-{backend}-{shape}.yaml`. Storage backend is `garage` or `rustfs`. Shape is one of:
+
+| Shape | What it adds on top of app + Postgres + storage |
+|---|---|
+| `minimal` | Nothing. The smallest path. |
+| `cron` | + cron sidecar (always-on) |
+| `full` | + cron + MCP. MCP is profile-gated (`--profile mcp`). |
+| `traefik` | + Traefik reverse-proxy. App ports closed; ingress through the proxy. |
 
 This page walks the base deployment first, then each addon in its own section. Read them in order if you're starting from scratch.
 
@@ -41,7 +50,8 @@ At minimum, set these in `docker/.env`:
 | `POSTGRES_PASSWORD` | Any strong random string |
 | `BETTER_AUTH_SECRET` | `openssl rand -hex 32` |
 | `BETTER_AUTH_URL` | Public origin, e.g. `https://giftwrapt.example.com` |
-| `CRON_SECRET` | `openssl rand -base64 48 \| tr -d '/+=' \| head -c 48` |
+
+If you're picking a shape with the cron sidecar (`-cron` or `-full`), also set `CRON_SECRET` to `openssl rand -base64 48 | tr -d '/+=' | head -c 48`. The cron container fatals at startup without it.
 
 <Aside type="caution" title="Don't Rotate BETTER_AUTH_SECRET">
 It's also the master key for every encrypted value in `app_settings` (scraper API keys, AI keys, OIDC client secret). Rotating it invalidates those.
@@ -50,14 +60,14 @@ It's also the master key for every encrypted value in `app_settings` (scraper AP
 ### 2. Bring Up the Stack
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml up -d
+docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
 ```
 
 Open `BETTER_AUTH_URL` in a browser - the first user to sign up is auto-promoted to admin.
 
 ### 3. Done
 
-That's it. You're running. If you need image uploads, scheduled jobs, email, or the MCP sidecar, keep reading.
+That's it. You're running with image uploads via the bundled Garage sidecar. If you need scheduled jobs, email, or the MCP sidecar, keep reading and swap to a richer shape.
 
 ## Addon: Storage
 
@@ -84,7 +94,7 @@ STORAGE_FORCE_PATH_STYLE=true
 ```
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml up -d
+docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
 ```
 
 </TabItem>
@@ -104,7 +114,7 @@ STORAGE_FORCE_PATH_STYLE=true
 ```
 
 ```bash
-docker compose -f docker/compose.selfhost-rustfs.yaml up -d
+docker compose -f docker/compose.selfhost-rustfs-minimal.yaml up -d
 ```
 
 </TabItem>
@@ -127,12 +137,12 @@ GiftWrapt has five scheduled endpoints under `/api/cron/*`:
 - `/intelligence-recommendations` - AI suggestion runs
 - `/item-scrape-queue` - bulk-import drain
 
-The bundled compose files ship with a **cron sidecar** by default - a tiny alpine container running busybox `crond` that curls each endpoint on a daily UTC schedule. No setup beyond `CRON_SECRET`. The sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set it.
+The `-cron` and `-full` compose shapes bundle a **cron sidecar** - a tiny alpine container running busybox `crond` that curls each endpoint on a daily UTC schedule. No setup beyond `CRON_SECRET`. The sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set it. If you started with `-minimal.yaml`, swap to `-cron.yaml` (same env, same volumes) to opt in.
 
 To customize schedules: edit `docker/cron-entrypoint.sh` and recreate the sidecar.
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml up -d --force-recreate cron
+docker compose -f docker/compose.selfhost-garage-cron.yaml up -d --force-recreate cron
 ```
 
 Per-user advisory locks make higher cadences safe. See [Cron and scheduling](/configuration/cron/) for the full reference.
@@ -167,10 +177,10 @@ Every AI feature ships **off by default**. See [AI provider](/configuration/ai/)
 
 ## Addon: MCP
 
-The bundled compose ships an optional **Model Context Protocol** sidecar so you can talk to your wishlist from Claude Desktop / Claude Code. It's a thin shim over the mobile API.
+The `-full` compose shape defines a **Model Context Protocol** sidecar (profile-gated) so you can talk to your wishlist from Claude Desktop / Claude Code. It's a thin shim over the mobile API. Switch to `-full.yaml` and pass `--profile mcp` to bring it up:
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
+docker compose -f docker/compose.selfhost-garage-full.yaml --profile mcp up -d
 ```
 
 You'll need to mint an API key from `/settings/devices` first. See the [giftwrapt-mcp repo](https://github.com/shawnphoffman/giftwrapt-mcp) for client wiring.
@@ -203,7 +213,8 @@ If a proxy terminates TLS in front of the container:
 If the first-user auto-promotion didn't fire (you're recovering from a deleted admin), you can mint one from the container:
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml exec app \
+# Use whichever compose shape you brought the stack up with.
+docker compose -f docker/compose.selfhost-garage-minimal.yaml exec app \
   node .output/scripts/admin-create.mjs \
   --email=admin@example.com --password=SecurePass123 --name=Admin
 ```
@@ -217,8 +228,9 @@ Other bundled CLIs under `.output/scripts/`:
 ## Updating
 
 ```bash
-docker compose -f docker/compose.selfhost-garage.yaml pull
-docker compose -f docker/compose.selfhost-garage.yaml up -d
+# Substitute the shape you actually deployed.
+docker compose -f docker/compose.selfhost-garage-minimal.yaml pull
+docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
 ```
 
 Migrations run on the first container start of the new image. **Always back up Postgres and your storage volume before pulling a new major version.**
@@ -248,36 +260,27 @@ better-auth stores session tokens in the `session` table as plaintext (the token
 
 ## The Full Compose File
 
-For reference, here's the complete bundled compose with all addons wired up. The canonical version lives at [`docker/compose.selfhost-garage.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage.yaml).
+For reference, here's the `-full` shape with every addon wired up - app, Postgres, Garage storage, cron, and the profile-gated MCP sidecar. The canonical version lives at [`docker/compose.selfhost-garage-full.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage-full.yaml).
 
-{/* compose:start file=docker/compose.selfhost-garage.yaml */}
+{/* compose:start file=docker/compose.selfhost-garage-full.yaml */}
 ```yaml
-# Synced from docker/compose.selfhost-garage.yaml
+# Synced from docker/compose.selfhost-garage-full.yaml
 # =============================================================================
-# Self-Hosted Production Stack
+# Self-Hosted (Garage backend, full (cron + profile-gated MCP))
 # =============================================================================
-# Two services: app + database. Migrations run automatically on app startup.
+# Includes the cron sidecar always-on AND the MCP sidecar profile-gated. Pass `--profile mcp` to bring MCP up.
 #
 # Quick start:
 #   1. cp env.example docker/.env
 #   2. Edit docker/.env - at minimum set POSTGRES_PASSWORD, BETTER_AUTH_SECRET,
-#      and BETTER_AUTH_URL (the public URL you'll reach the app from, e.g.
-#      http://192.168.1.137:3888 or https://giftwrapt.example.com).
-#   3. docker compose -f docker/compose.selfhost-garage.yaml up -d
-#   4. Open BETTER_AUTH_URL in your browser and sign up.
+#      and BETTER_AUTH_URL (the public URL you'll reach the app from).
+#   3. Set GARAGE_RPC_SECRET and GARAGE_ADMIN_TOKEN (see .env.example).
+#      The app bootstraps the bucket and access key on first boot.
+#   4. docker compose -f docker/compose.selfhost-garage-full.yaml up -d
+#   5. Open BETTER_AUTH_URL in your browser and sign up.
 #
-# Admin CLI (if locked out):
-#   docker compose -f docker/compose.selfhost-garage.yaml exec app \
-#     node .output/scripts/admin-create.mjs \
-#     --email=admin@example.com --password=SecurePass123 --name=Admin
-#
-# Other bundled CLIs under .output/scripts/:
-#   admin-reset-password.mjs, seed.mjs, migrate.mjs
-#
-# Optional MCP sidecar (talk to your wishlist through Claude Desktop / Code):
-#   docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
-# The `mcp` service is a thin shim over /api/mobile/v1/*. See
-# https://github.com/shawnphoffman/giftwrapt-mcp for setup details.
+# Generated by `pnpm generate:compose` from scripts/compose-registry/.
+# Add or change features in scripts/compose-registry/features/<id>.ts.
 
 services:
   app:
@@ -298,12 +301,20 @@ services:
       # pointing STORAGE_* at an external S3-compatible bucket.
       INIT_GARAGE: ${INIT_GARAGE:-true}
     ports:
-      - '${APP_PORT:-3000}:3000'
+      - '${APP_PORT:-3001}:3001'
     depends_on:
       postgres:
         condition: service_healthy
+      # service_started, not service_healthy: the container's healthcheck
+      # (`garage status`) returns non-zero on a fresh node with no layout
+      # assigned, which is the exact state on cold boot before INIT_GARAGE
+      # has had a chance to run. INIT_GARAGE itself runs from this app's
+      # entrypoint and polls Garage's admin /health endpoint with a 60s
+      # deadline (see scripts/init-garage.ts), so daemon-readiness is
+      # already gated app-side; the docker dep just needs the process up.
       garage:
         condition: service_started
+    # Health check is built into the image via HEALTHCHECK instruction.
     restart: unless-stopped
 
   postgres:
@@ -321,31 +332,49 @@ services:
       retries: 10
     restart: unless-stopped
 
-  mcp:
-    image: ${MCP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt-mcp:latest}
-    profiles: ['mcp']
+  # Cron sidecar. Reads CRON_SECRET from the env file and curls the app's
+  # /api/cron/* endpoints on a daily schedule (mirrors vercel.json). To
+  # disable, run with `--profile no-cron` (the default profile is empty so
+  # it always runs, but compose ignores undefined services on stop). To
+  # change schedules, edit ./cron-entrypoint.sh and recreate the service.
+  # Higher cadences are safe: per-user advisory locks de-duplicate work.
+  cron:
+    image: alpine:3.20
+    env_file: .env
     environment:
-      GIFTWRAPT_BASE_URL: http://app:3000
-      GIFTWRAPT_API_KEY: ${GIFTWRAPT_MCP_API_KEY:-}
-      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
-      MCP_PORT: 8787
-      MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-info}
-    ports:
-      - '${MCP_PORT:-8787}:8787'
+      # Talks to the app over the compose network. Override CRON_APP_URL if
+      # the app service is named differently or you want crons to hit a
+      # public URL (slower, but exercises the same code path as Vercel).
+      CRON_APP_URL: ${CRON_APP_URL:-http://app:3001}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./cron-entrypoint.sh:/cron-entrypoint.sh:ro
+    command: ['sh', '/cron-entrypoint.sh']
     depends_on:
       app:
         condition: service_started
     restart: unless-stopped
 
-  cron:
-    image: alpine:3.20
-    env_file: .env
+  # Model Context Protocol sidecar (opt-in via `--profile mcp`). Lets you
+  # interact with your wishlist via Claude Desktop / Code / Web. Talks to
+  # the app over the compose network using a giftwrapt apiKey (mint one
+  # at /settings/devices). The image is published from the
+  # shawnphoffman/giftwrapt-mcp repo. The service stays defined in
+  # *-full.yaml so you can enable it on demand without editing the file.
+  mcp:
+    image: ${MCP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt-mcp:latest}
+    profiles: ['mcp']
     environment:
-      CRON_APP_URL: ${CRON_APP_URL:-http://app:3000}
-      TZ: ${TZ:-UTC}
-    volumes:
-      - ./cron-entrypoint.sh:/cron-entrypoint.sh:ro
-    command: ['sh', '/cron-entrypoint.sh']
+      GIFTWRAPT_BASE_URL: http://app:3001
+      # Single-tenant pin: leave unset for multi-user pass-through (each
+      # client sends its own Bearer header). See the giftwrapt-mcp README.
+      GIFTWRAPT_API_KEY: ${GIFTWRAPT_MCP_API_KEY:-}
+      # Shared-secret port gate; only meaningful when GIFTWRAPT_API_KEY is set.
+      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
+      MCP_PORT: 8787
+      MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-info}
+    ports:
+      - '${MCP_PORT:-8787}:8787'
     depends_on:
       app:
         condition: service_started
@@ -360,6 +389,11 @@ services:
       - garage_meta:/var/lib/garage/meta
       - garage_data:/var/lib/garage/data
       - ./garage.toml:/etc/garage.toml:ro
+    # Intentionally no host port: Garage is only reachable on the compose
+    # network. The app serves images via /api/files/* so clients never need
+    # direct bucket access. If you want direct S3 URLs (faster, offloads
+    # bandwidth), add a reverse-proxy rule for 3900 and set STORAGE_PUBLIC_URL
+    # in .env - see https://giftwrapt.dev/configuration/storage/.
     healthcheck:
       test: ['CMD', '/garage', 'status']
       interval: 5s
@@ -374,4 +408,4 @@ volumes:
 ```
 {/* compose:end */}
 
-The RustFS variant lives at [`docker/compose.selfhost-rustfs.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-rustfs.yaml).
+The RustFS equivalent lives at [`docker/compose.selfhost-rustfs-full.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-rustfs-full.yaml). The full matrix (`minimal`, `cron`, `full`, `traefik` × `garage`, `rustfs`) is in [the docker/ directory](https://github.com/shawnphoffman/giftwrapt/tree/main/docker).
