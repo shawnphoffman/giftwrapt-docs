@@ -20,30 +20,46 @@ docs/            All long-form documentation
 scripts/         CLI entry points (admin, seed, storage init)
 ```
 
+## Setup
+
+| Command                  | What it does                                                                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm setup:env`         | Copy `.env.local.example` to `.env.local` and fill in placeholder secrets with cryptographically-random values. Idempotent; real values left alone. Pass `--force` to rotate everything. |
+| `pnpm compose:up`        | Start the local Postgres + Garage stack via `docker compose --env-file .env.local --profile garage up -d`.                                                                                |
+| `pnpm compose:up:rustfs` | Same as above with the RustFS profile instead of Garage.                                                                                                                                  |
+| `pnpm compose:down`      | Stop the stack. Add ` -v` to nuke volumes (destructive).                                                                                                                                  |
+| `pnpm compose:logs`      | Tail the stack's logs.                                                                                                                                                                    |
+
 ## Scripts
 
-| Command                 | What it does                                              |
-| ----------------------- | --------------------------------------------------------- |
-| `pnpm dev`              | Run migrations and start the dev server on `:3000`.       |
-| `pnpm build`            | Production build (Nitro server + standalone CLI bundles). |
-| `pnpm test`             | Unit and Storybook tests via Vitest.                      |
-| `pnpm test:integration` | Integration tests (requires Postgres).                    |
-| `pnpm test:all`         | Everything.                                               |
-| `pnpm lint`             | ESLint over the whole tree.                               |
-| `pnpm format`           | Prettier check.                                           |
-| `pnpm check`            | Format and autofix lint. Run before committing.           |
-| `pnpm storybook`        | Storybook on `:6006`.                                     |
-| `pnpm dev-email`        | React Email preview server on `:3001`.                    |
+| Command                 | What it does                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `pnpm dev`              | Run migrations and start the dev server on `:3001` against `giftwrapt_dev`.                 |
+| `pnpm dev:screenshots`  | Create + migrate + seed `giftwrapt_dev_screenshots` and start vite on `:3003` (parallel to `dev`). |
+| `pnpm screenshots`      | Run Playwright against the screenshots dev server.                                          |
+| `pnpm build`            | Production build (Nitro server + standalone CLI bundles).                                   |
+| `pnpm test`             | Unit and Storybook tests via Vitest.                                                        |
+| `pnpm test:integration` | Integration tests (pglite, applies migrations cold).                                        |
+| `pnpm test:all`         | Everything.                                                                                 |
+| `pnpm lint`             | ESLint over the whole tree.                                                                 |
+| `pnpm format`           | Prettier check.                                                                             |
+| `pnpm check`            | Format and autofix lint. Run before committing.                                             |
+| `pnpm storybook`        | Storybook on `:6006`.                                                                       |
+| `pnpm dev-email`        | React Email preview server on `:3002`.                                                      |
 
 ## Database
 
-| Command            | What it does                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------------- |
-| `pnpm db:generate` | Generate a SQL migration from schema changes. **Commit the output.**                      |
-| `pnpm db:migrate`  | Apply pending migrations.                                                                 |
-| `pnpm db:push`     | Push the schema directly (dev only, skips migrations).                                    |
-| `pnpm db:studio`   | Drizzle Studio.                                                                           |
-| `pnpm db:seed`     | Seed local DB with test users and data. Requires `SEED_SAFE=1`. **Truncates everything.** |
+| Command               | What it does                                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm db:generate`    | Generate a SQL migration from schema changes. **Commit the output (SQL + journal + snapshot).**                                                                                                                                             |
+| `pnpm db:migrate`     | Apply pending migrations.                                                                                                                                                                                                                   |
+| `pnpm db:check`       | Validate `drizzle/meta/_journal.json` invariants (monotonic `when` by `idx`). Auto-runs in pre-commit when `drizzle/**` is staged, and in CI.                                                                                               |
+| `pnpm db:check-drift` | Runs `db:generate` and asserts the working tree stays clean. Catches "edited `src/db/schema/**` without generating a migration." Runs in CI.                                                                                                |
+| `pnpm db:reset`       | Drop + recreate the local DB, migrate, and reseed. Local-host allowlist refuses anything else.                                                                                                                                              |
+| `pnpm db:studio`      | Drizzle Studio.                                                                                                                                                                                                                             |
+| `pnpm db:seed`        | Seed local DB with test users and data. Requires `SEED_SAFE=1`. **Truncates everything.**                                                                                                                                                   |
+
+There is no `db:push`. Schema changes go through `db:generate` + `db:migrate` only - push and migrate can't share a database without desynchronizing the migration tracker (see [local-development.md § Migrations workflow](/local-development/#migrations-workflow)).
 
 The local seeded admin and other test users are documented in [local-dev-admin.md](/guides/local-dev-admin/).
 
