@@ -45,8 +45,6 @@ Some retailers actively block bots, gate content behind login, or change their m
 - An **anti-bot provider** (ScrapFly) for retailers with aggressive WAFs like Amazon.
 - An optional **AI extractor** that reads the raw HTML and extracts fields, when nothing else works.
 
-A first-party **giftwrapt-scraper** sidecar is also planned for the future - a small self-hostable companion service that bundles scraping enhancements specific to GiftWrapt. Not available yet, but the provider type is already wired up so it'll drop in as a chain entry when it ships.
-
 Operators configure these through the admin scraping settings. Pages where the cheap providers work never escalate to the paid ones, so a typical deployment spends very little.
 
 If none of that works, you'll see a clean failure and the form will prompt you to fill in fields manually.
