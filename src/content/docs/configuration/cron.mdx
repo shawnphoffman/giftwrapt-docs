@@ -1,5 +1,5 @@
 ---
-title: Cron and scheduling
+title: Cron and Scheduling
 description: How GiftWrapt's scheduled jobs run, what each one does, and how to wire them up for self-host vs. hosted.
 sidebar:
   order: 9
@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbound email, retention cleanup, and the background queues. They're all HTTP endpoints under `/api/cron/*`, gated by a bearer token, and meant to be poked by an external scheduler.
 
-## The endpoints
+## The Endpoints
 
 | Endpoint | Suggested schedule | What it does |
 |---|---|---|
@@ -21,11 +21,11 @@ GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbou
 
 All five are **daily** in the default schedule, deliberately staggered so they don't pile up at the same minute.
 
-<Aside type="note" title="Schedules are documented defaults, not hard caps">
+<Aside type="note" title="Schedules Are Documented Defaults, Not Hard Caps">
 The runners themselves are idempotent and safe to run more frequently. Self-hosters can crank cadence up if they want faster turnaround on the scrape queue or Intelligence; the suggested schedules just match the daily cadence shipped in `vercel.json`.
 </Aside>
 
-## The cron secret
+## The Cron Secret
 
 All `/api/cron/*` endpoints check an `Authorization: Bearer <secret>` header against the `CRON_SECRET` env var. If the env var is unset, the handlers **fail closed** with HTTP 503 - they don't accidentally run publicly.
 
@@ -38,7 +38,7 @@ Generate one with:
 openssl rand -base64 48 | tr -d '/+=' | head -c 48
 ```
 
-## Skip states and idempotency
+## Skip States and Idempotency
 
 Cron handlers return JSON describing what they did. Every run is also persisted as a row in `cron_runs` (start, finish, status, duration, structured `summary` jsonb, plus `error` / `skipReason`) so operators can answer "did the scheduler actually fire today?" without SSHing into a host or wiring an external observability stack.
 
@@ -53,7 +53,7 @@ Common skip states:
 | `lock-held` | Intelligence: another run is in flight for this user. |
 | `unread-recs-exist` | Intelligence: cron path only, the user has active recs from a prior batch. |
 
-## Deployment shapes
+## Deployment Shapes
 
 ### Vercel
 
@@ -67,13 +67,13 @@ Schedules live in `vercel.json` and run via Vercel Cron. The `CRON_SECRET` is se
 
 No `railway.toml` cron config. Either wire up Railway's cron through the dashboard (one cron service per endpoint), or run an external scheduler.
 
-### Self-host (Docker compose)
+### Self-Host (Docker Compose)
 
 The bundled compose files include a **cron sidecar** - a tiny container that runs system `crond` and curls the endpoints on the schedules above. It reads `CRON_SECRET` from the same `.env` as the app and fatals at boot if the secret is unset.
 
 You can disable the sidecar and run your own scheduler if you prefer; just hit the URLs with the bearer header.
 
-### External scheduler
+### External Scheduler
 
 Any scheduler that can fire an HTTP request with a bearer header works:
 
@@ -95,7 +95,7 @@ The admin scheduling page shows every endpoint, its documented schedule, the nex
 
 The page doesn't *control* the scheduler - it just reads what the scheduler-of-record (Vercel, your sidecar, etc.) actually did. If a job hasn't fired and the admin page agrees, the issue is in the scheduler, not GiftWrapt.
 
-## Orphan-claim cleanup
+## Orphan-Claim Cleanup
 
 The `/api/cron/birthday-emails` tick also runs two passes for the [orphaned-claim flow](/features/claims/#orphaned-claims):
 

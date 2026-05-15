@@ -1,5 +1,5 @@
 ---
-title: Environment variables
+title: Environment Variables
 description: All of the environment variables GiftWrapt reads, what each one does, and when you actually need to set it.
 sidebar:
   order: 2
@@ -11,7 +11,7 @@ GiftWrapt reads most of its configuration from `app_settings` in the database (m
 
 A working `env.example` is included in the repo. This page is the reference for what's in it.
 
-## Core (required)
+## Core (Required)
 
 ```bash
 DATABASE_URL=postgresql://postgres:password@localhost:5432/giftwrapt
@@ -24,13 +24,13 @@ BETTER_AUTH_URL=http://localhost:3000
 
 `BETTER_AUTH_SECRET` is also used as the master key for encrypting other secrets stored in `app_settings` (scraper API keys, AI keys, etc.).
 
-<Aside type="danger" title="Don't rotate BETTER_AUTH_SECRET casually">
+<Aside type="danger" title="Don't Rotate BETTER_AUTH_SECRET Casually">
 Rotating it invalidates every encrypted value in `app_settings` - scraper API keys, AI keys, OIDC client secret. You'd have to re-enter them all.
 </Aside>
 
 `BETTER_AUTH_URL` is the canonical origin for the app. It's used to build absolute URLs in emails and as the WebAuthn relying-party ID. Set it to the exact URL the browser loads. On Vercel production, it's auto-derived from `VERCEL_PROJECT_PRODUCTION_URL` if unset.
 
-## Multi-origin / LAN (optional)
+## Multi-Origin / LAN (Optional)
 
 If you need to reach the same instance from more than one hostname (a public domain plus a LAN IP, for example):
 
@@ -46,7 +46,7 @@ INSECURE_COOKIES=true
 
 The server refuses to boot with both `INSECURE_COOKIES=true` and an HTTPS `BETTER_AUTH_URL` - it's a footgun guard.
 
-## Cron secret
+## Cron Secret
 
 ```bash
 CRON_SECRET=<32+ random chars>
@@ -59,7 +59,7 @@ The internal cron endpoints (`/api/cron/auto-archive`, `/api/cron/birthday-email
 
 Generate one with `openssl rand -base64 48 | tr -d '/+=' | head -c 48`.
 
-## Email (optional)
+## Email (Optional)
 
 See [Emails](/configuration/emails/) for the full story. If left unset, every email send no-ops.
 
@@ -70,7 +70,7 @@ RESEND_FROM_NAME=
 RESEND_BCC_ADDRESS=
 ```
 
-## AI provider (optional)
+## AI Provider (Optional)
 
 GiftWrapt's AI features (the smart URL extractor, the AI title cleaner, and the recommendation analyzers) need an AI provider. Admins can configure all of this through the admin UI without ever setting env vars, but the env vars exist as an optional bootstrap path.
 
@@ -88,7 +88,7 @@ Three provider families are supported via the Vercel AI SDK:
 - **`anthropic`** - Anthropic's hosted API. `AI_BASE_URL` is ignored.
 - **`openai-compatible`** - any OpenAI-shape endpoint (OpenRouter, Groq, Together, Mistral, DeepSeek, Ollama, LM Studio, vLLM, etc.). `AI_BASE_URL` is required.
 
-## Storage (optional)
+## Storage (Optional)
 
 Any S3-compatible bucket works. The bundled compose files include Garage or RustFS as sidecars; for hosted deploys you'd typically use AWS S3, Cloudflare R2, or Supabase Storage.
 
@@ -140,7 +140,7 @@ INIT_RUSTFS=true
 # STORAGE_SECRET_ACCESS_KEY - no admin token, no extra credentials.
 ```
 
-## Seeding Scraper URLs (optional)
+## Seeding Scraper URLs (Optional)
 
 ```bash
 BROWSERLESS_URL=
@@ -163,7 +163,7 @@ LOG_PRETTY=           # true forces human-readable output even in prod
 
 `LOG_PRETTY` defaults to true in development (`NODE_ENV !== 'production'`) and false in production.
 
-## The kitchen sink
+## The Kitchen Sink
 
 Copy-pasteable reference of every variable GiftWrapt reads, grouped and commented.
 

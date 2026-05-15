@@ -1,5 +1,5 @@
 ---
-title: Local development
+title: Local Development
 ---
 
 Hacking on the app from a local checkout. For running GiftWrapt (self-hosted or on a managed platform) see [Get started](/getting-started/).
@@ -10,13 +10,13 @@ Hacking on the app from a local checkout. For running GiftWrapt (self-hosted or 
 - pnpm 10+ (Corepack will pick up the version pinned in `package.json`)
 - Docker (for local Postgres + S3-compatible storage)
 
-## 1. Install dependencies
+## 1. Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-## 2. Configure environment
+## 2. Configure Environment
 
 ```bash
 cp env.example .env.local
@@ -35,7 +35,7 @@ Optional:
 
 The full annotated reference lives in [env.example](https://github.com/shawnphoffman/giftwrapt/blob/main/env.example).
 
-## 3. Start dependencies
+## 3. Start Dependencies
 
 The bundled compose file boots Postgres plus exactly one S3-compatible storage backend. Pick one:
 
@@ -51,7 +51,7 @@ pnpm storage:init:rustfs
 
 Stick with one for the lifetime of the checkout - they share Postgres but bind different storage volumes.
 
-## 4. Run migrations and seed
+## 4. Run Migrations and Seed
 
 ```bash
 pnpm db:migrate
@@ -61,7 +61,7 @@ SEED_SAFE=1 pnpm db:seed   # optional, populates test users
 > [!WARNING]
 > `db:seed` truncates the database before inserting fixtures. It refuses to run unless `DATABASE_URL` points at a known-local host AND `SEED_SAFE=1` is set, but it absolutely will clobber your local data. See [local-dev-admin.md](/guides/local-dev-admin/) for the seeded credentials.
 
-## 5. Run the app
+## 5. Run the App
 
 ```bash
 pnpm dev
@@ -69,7 +69,7 @@ pnpm dev
 
 App: <http://localhost:3000>
 
-## Other dev servers
+## Other Dev Servers
 
 | Command          | Port | What                            |
 | ---------------- | ---- | ------------------------------- |
@@ -86,7 +86,7 @@ docker compose --profile garage down -v   # nuke Postgres + Garage volumes
 
 The destructive `pnpm db:reset` script is intentionally not run automatically. See [local-dev-admin.md](/guides/local-dev-admin/#regaining-access-without-reseeding) for the safe break-glass paths.
 
-## Next steps
+## Next Steps
 
 - [Contributing](/contributing/) - scripts, conventions, PR workflow
 - [Storage](/storage/) - swapping backends, env reference

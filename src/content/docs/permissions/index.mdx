@@ -13,7 +13,7 @@ GiftWrapt is built around real household relationships, not generic share links.
 1. **Relationships** - guardian, partner, list editor. These are the strong grants.
 2. **Per-user access levels** - none, restricted, view, edit. These let you tune what a specific user can see, on top of (or instead of) the default "public lists are visible" baseline.
 
-## Per-user access levels
+## Per-User Access Levels
 
 For each other user, you can dial in their access to your lists. There are four levels:
 
@@ -24,7 +24,7 @@ For each other user, you can dial in their access to your lists. There are four 
 | **View** *(default)* | Can see your public lists and items, claim items, and see other people's claims on items they can see. The standard "family member" experience. |
 | **Edit** | Everything View can do, plus add / edit / delete items on the lists you've granted them as a list editor. Granted per-list, not per-user. |
 
-### Capability matrix
+### Capability Matrix
 
 This is what each level can do, assuming a public list with the default settings:
 
@@ -41,11 +41,11 @@ This is what each level can do, assuming a public list with the default settings
 
 \* Restricted viewers see only items where they (or their partner) are a claimer, or items with no claims yet. Items claimed entirely by other people disappear from their view. Remaining-quantity is still computed from *all* underlying claims, so a restricted viewer can never accidentally over-claim.
 
-<Aside type="note" title="Access levels are per-direction">
+<Aside type="note" title="Access Levels Are Per-Direction">
 Setting Diana to **None** from your perspective has no effect on how Diana sees you - she'd have to set the same on her side for it to be mutual.
 </Aside>
 
-### When levels can't be used
+### When Levels Can't Be Used
 
 A few combinations are blocked at write time:
 
@@ -75,7 +75,7 @@ The four access levels above describe the default "everyone else" axis. The thre
 	/>
 </CardGrid>
 
-### List editors
+### List Editors
 
 The general-purpose collaboration mechanism. A **list editor** is an explicit per-list grant: this user can add, edit, and delete items on this specific list. List editors don't get any access to other lists owned by the same person. Used for:
 
@@ -95,7 +95,7 @@ Every user has one of three roles:
 | **Admin** | Everything a user can do, plus access to the admin panel. The first user to sign up on a fresh deployment becomes admin automatically. |
 | **Child** | A managed account. Can't be set as a partner, can't be a guardian, can't create gift-ideas lists, can't be added as a list editor. Has their own wishlists, managed by their guardian(s). |
 
-## How access decisions get made
+## How Access Decisions Get Made
 
 Two predicates gate everything: **can-view** and **can-edit**. Both consider, in order:
 

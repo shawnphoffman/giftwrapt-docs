@@ -4,7 +4,7 @@ title: Contributing
 
 Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Local development](/local-development/).
 
-## Project layout
+## Project Layout
 
 ```
 src/
@@ -59,7 +59,7 @@ Component stories live next to their components (`*.stories.tsx`). Storybook run
 - Server functions and loaders live next to their routes. Pure data helpers go in `src/lib/` or `src/db/queries/`.
 - Prefer Drizzle's relational query API over hand-rolled SQL where it fits.
 
-### shadcn components
+### shadcn Components
 
 Components in `src/components/ui/` are owned by this repo, not pulled from a package. See [shadcn-upgrades.md](/guides/shadcn-upgrades/) for how to pull upstream improvements without losing local customizations.
 
@@ -83,7 +83,7 @@ Pre-commit hooks run `lint-staged` (Prettier + ESLint on staged files). Commitli
 
 `release-please` watches `main` and opens a PR with the next version bump and `CHANGELOG.md` entry derived from commit messages. Merging that PR tags a release and triggers the GHCR image publish (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z` plus `:latest`).
 
-## Security model: CSRF and server functions
+## Security Model: CSRF and Server Functions
 
 State-changing TanStack server functions and route handlers should always use `method: 'POST'`. The CSRF posture for those calls relies entirely on the auth cookie's `SameSite=Lax` attribute (better-auth default, set in `src/lib/auth.ts`):
 
@@ -99,7 +99,7 @@ Concretely, when adding a new server function or route:
 
 See sec-review L6.
 
-## Pull requests
+## Pull Requests
 
 1. Branch from `main`.
 2. Run `pnpm check` and `pnpm test` before opening the PR.
@@ -107,7 +107,7 @@ See sec-review L6.
 4. If you touched UI, add or update a Storybook story.
 5. Note any new env vars in `env.example` and the relevant doc.
 
-## Where to find things
+## Where to Find Things
 
 - App overview and quick start: [README](https://github.com/shawnphoffman/giftwrapt/blob/main/README.md)
 - Local dev: [local-development.md](/local-development/)

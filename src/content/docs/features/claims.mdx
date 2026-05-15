@@ -1,5 +1,5 @@
 ---
-title: Claims and reveal
+title: Claims and Reveal
 description: How giftgivers coordinate without spoiling the surprise.
 sidebar:
   order: 3
@@ -9,7 +9,7 @@ import { Aside, Steps, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
 Two giftgivers shouldn't buy the same dishwasher. GiftWrapt solves this with **claims** that are invisible to the list owner until they choose to reveal them.
 
-## Claiming an item
+## Claiming an Item
 
 When a giftgiver opens a list they can mark any item as **"I've got this"**. Other giftgivers see the claim immediately and know to pick something else. The list owner sees a normal list - no claim indicators, no spoilers.
 
@@ -22,15 +22,15 @@ A claim can include:
 
 Claims are reversible. If plans change, the giftgiver can release the claim and the item goes back into the unclaimed pool. (Unclaiming is a hard delete; there's no history.)
 
-## You can't claim items on your own list
+## You Can't Claim Items on Your Own List
 
 The server rejects self-claims. Guardians claiming items on their child's or dependent's list are fine - they're a gifter to the recipient, even though they own the list row.
 
-<Aside type="note" title="No pending or reserved state">
+<Aside type="note" title="No Pending or Reserved State">
 A claim either exists or it doesn't. There's no "I'm thinking about it" middle state - the row's existence is the state. `notes` and `totalCost` capture intent, not state.
 </Aside>
 
-## Gift credit and partners
+## Gift Credit and Partners
 
 GiftWrapt tracks "who gifted what" for received-gifts summaries. Credit follows **both partners** and **co-gifters**:
 
@@ -45,7 +45,7 @@ After the gift has been given, the list owner can trigger the **reveal flow** to
 
 Reveal is **recipient-driven**. Gifters can never trigger a reveal themselves, even on items they've already given. The recipient (or anyone with edit access to their list - a guardian, a list editor) archives an item, or the auto-archive cron does it on birthdays / Christmas / configured holidays. At that point, and only at that point, the claim data becomes visible to the recipient.
 
-### Auto-reveal
+### Auto-Reveal
 
 GiftWrapt auto-reveals claims on a schedule per list type. Operators control the offset via admin settings:
 
@@ -55,7 +55,7 @@ GiftWrapt auto-reveals claims on a schedule per list type. Operators control the
 
 The reveal is independent of email notifications. Disabling the post-birthday email doesn't disable the reveal, and vice versa.
 
-### What the reveal surfaces
+### What the Reveal Surfaces
 
 - **Gifter names and co-gifters** for each claimed item.
 - **List add-ons** - extra gifts the giftgivers volunteered. The owner can decide whether to add them to a future list.
@@ -63,7 +63,7 @@ The reveal is independent of email notifications. Disabling the post-birthday em
 
 There's no separate "received" or "delivered" state. A claim either exists or doesn't.
 
-## Orphaned claims
+## Orphaned Claims
 
 Spoiler protection means the recipient can't see whether an item has been claimed - so they can delete an item you've already shopped for, with no warning that you're affected. GiftWrapt handles that case end-to-end so your purchase doesn't vanish silently.
 
@@ -77,13 +77,13 @@ Acknowledging deletes your claim row. If yours was the last claim on the item, t
 
 If you don't acknowledge, an [auto-cleanup cron](/configuration/cron/#orphan-claim-cleanup) resolves the orphan on the list's event date (Christmas Day, the recipient's birthday, the configured holiday) with a day-before reminder email. Wishlists - which have no event date - fall back to a 14-day timer from when the recipient deleted the item.
 
-<Aside type="note" title="Co-gifters stay silent">
+<Aside type="note" title="Co-Gifters Stay Silent">
 A claim with co-gifters in `additionalGifterIds` notifies only the primary giftgiver (and their partner). Co-gifters share credit, not the underlying purchase, so they don't get the email or the alert. The primary giftgiver coordinates with them out of band.
 </Aside>
 
 You can still navigate to a list the recipient archived if you have an unresolved orphan there - the per-list alert UI is the place to acknowledge from. The list won't show up in your normal browsing surfaces; only the link from `/purchases` gets you there.
 
-## End-to-end flow
+## End-to-End Flow
 
 A typical gift goes through these states:
 
@@ -101,8 +101,8 @@ A typical gift goes through these states:
 ## Related
 
 <CardGrid>
-	<LinkCard title="Received gifts" href="/features/received-gifts/" description="The recipient's post-reveal view." />
-	<LinkCard title="Purchased gifts" href="/features/purchased-gifts/" description="Your gifter ledger - what you've claimed across everyone's lists." />
+	<LinkCard title="Received Gifts" href="/features/received-gifts/" description="The recipient's post-reveal view." />
+	<LinkCard title="Purchased Gifts" href="/features/purchased-gifts/" description="Your gifter ledger - what you've claimed across everyone's lists." />
 	<LinkCard title="Partners" href="/permissions/partners/" description="How partner credit works on claims." />
 	<LinkCard title="Privacy" href="/permissions/privacy/" description="The spoiler-protection rule that hides claims from the recipient." />
 </CardGrid>

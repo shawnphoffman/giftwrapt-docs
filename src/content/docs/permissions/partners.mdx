@@ -9,11 +9,11 @@ import { Aside } from '@astrojs/starlight/components'
 
 A **partner** relationship links two adults who want GiftWrapt to treat them as a unit. It's the link between the two people in a household who coordinate gifts together.
 
-<Aside type="note" title="Partnership is not a permission">
+<Aside type="note" title="Partnership Is Not a Permission">
 Setting a partner does **not** give them implicit access to your private lists. Access flows through the normal layers: public/private + access levels + list editors. Partnership only changes the conveniences and credit-tracking below.
 </Aside>
 
-## What partners get
+## What Partners Get
 
 | Capability | Allowed? |
 |---|:-:|
@@ -24,7 +24,7 @@ Setting a partner does **not** give them implicit access to your private lists. 
 | Anniversary date mirrored to both profiles | ✓ |
 | Be marked Restricted or None by you | ✗ (rejected) |
 
-## Shared gift credit
+## Shared Gift Credit
 
 When asking "did X gift this?", GiftWrapt looks at the claim's gifter **and** their partner. So:
 
@@ -34,13 +34,13 @@ When asking "did X gift this?", GiftWrapt looks at the claim's gifter **and** th
 
 Credit is computed at read time from the **current** partnership. Unlink your partner and they immediately stop appearing in your gift summaries; relink and they come back. There's no historical snapshot of who-was-partnered-when.
 
-## Auto-add as editor on public lists
+## Auto-Add as Editor on Public Lists
 
 When you create a public list, the create-list dialog includes a **"Add my partner as an editor"** toggle, defaulted to on. If you leave it ticked, GiftWrapt drops a list-editor row for your partner right after the list is created.
 
 Untick it if you don't want that for this particular list. Private lists never auto-add anyone - if you want your partner to manage a private wishlist, add them as an editor manually.
 
-## Changing your partner
+## Changing Your Partner
 
 When you change partners in profile settings, GiftWrapt offers to fix existing list-editor grants for you. The prompt shows two pre-checked lists:
 
@@ -49,7 +49,7 @@ When you change partners in profile settings, GiftWrapt offers to fix existing l
 
 You can uncheck anything before applying. Nothing is removed silently, but the default selection covers all the affected lists, so the common case is one click.
 
-## Anniversary tracking
+## Anniversary Tracking
 
 Partners can record an optional anniversary date on their profile. When set:
 
@@ -66,6 +66,6 @@ The anniversary drives the [anniversary reminder email](/configuration/emails/#r
 - **Children can't be partners.** A user with the `child` role can't be assigned as anyone's partner.
 - **Partners can't be Restricted or None.** The system rejects the change. The Restrict toggle is disabled in the settings UI for partner rows.
 
-## How partnership is stored
+## How Partnership Is Stored
 
 Internally, partnership is a single nullable column (`users.partnerId`), but GiftWrapt treats it **symmetrically** at read time. If A is set as B's partner, the gift-credit code resolves both directions even if the inverse row isn't there. You shouldn't see this; it's just so the schema stays simple while the behavior stays correct.

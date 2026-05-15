@@ -1,5 +1,5 @@
 ---
-title: AI provider
+title: AI Provider
 description: Configure an LLM provider for GiftWrapt's optional AI features. One provider config powers everything.
 sidebar:
   order: 7
@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 GiftWrapt has several optional features that call an LLM. **All of them share a single provider configuration.** Set it up once at **Admin > AI** (or via env vars) and every AI feature picks it up.
 
-## What AI is used for
+## What AI Is Used For
 
 | Feature | What it does | Where to enable |
 |---|---|---|
@@ -19,11 +19,11 @@ GiftWrapt has several optional features that call an LLM. **All of them share a 
 
 If you don't configure an AI provider, the toggles for these features disable themselves in the admin UI. The rest of GiftWrapt works fine.
 
-<Aside type="caution" title="AI is opt-in and admin-gated">
+<Aside type="caution" title="AI Is Opt-In and Admin-Gated">
 Every AI feature ships **off by default**. Enabling them costs money against whichever provider you've configured. Watch token usage during the first week.
 </Aside>
 
-## Supported providers
+## Supported Providers
 
 Three provider families via the Vercel AI SDK:
 
@@ -35,11 +35,11 @@ Three provider families via the Vercel AI SDK:
 
 The `openai-compatible` route is the catch-all: if your provider speaks the OpenAI HTTP shape, point GiftWrapt at it.
 
-## Configuring it
+## Configuring It
 
 You have two equivalent options.
 
-### Option 1: Admin UI (recommended)
+### Option 1: Admin UI (Recommended)
 
 Go to **Admin > AI**:
 
@@ -51,7 +51,7 @@ Go to **Admin > AI**:
 
 Changes apply on the next read (no restart needed). A "Send test prompt" button verifies the config end-to-end.
 
-### Option 2: Env vars
+### Option 2: Env Vars
 
 If you'd rather pin AI config in your deploy config, set these on boot:
 
@@ -65,7 +65,7 @@ AI_MAX_OUTPUT_TOKENS=
 
 When set, env vars take precedence over the admin form's stored values. The admin UI shows a "managed via env" banner in that case.
 
-## Picking a model
+## Picking a Model
 
 GiftWrapt doesn't care which model you use; it cares about cost and latency.
 
@@ -77,13 +77,13 @@ GiftWrapt doesn't care which model you use; it cares about cost and latency.
 
 Costs ballpark for a single-family deployment running everything on: pennies a month with a cheap small model, dollars a month with a frontier model.
 
-## Per-feature model override
+## Per-Feature Model Override
 
 [Intelligence](/configuration/intelligence-ai/) supports a `intelligenceModelOverride` setting that swaps just the model ID for analyzer calls. The provider, API key, and base URL still come from the global AI config; the override only swaps the model within that provider.
 
 Use this when you want frontier-tier scraping AI but cheap-tier Intelligence, or vice versa.
 
-## Security notes
+## Security Notes
 
 - API keys saved via the admin UI are encrypted at rest with AES-256-GCM. The master key is derived via scrypt from `BETTER_AUTH_SECRET`. Rotating `BETTER_AUTH_SECRET` invalidates every stored AI key.
 - API keys set via env vars are passed through as-is and not stored in the database.

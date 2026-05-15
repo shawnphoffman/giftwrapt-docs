@@ -9,7 +9,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
 A list is a collection of items the owner wants. GiftWrapt supports a few different shapes of list, and each one has slightly different rules about who can see it and what happens when items get claimed.
 
-## List types
+## List Types
 
 There are five gift-giving list types in active use:
 
@@ -23,7 +23,7 @@ Admins can disable Birthday, Christmas, and generic-holiday list types per deplo
 
 The "My Lists" page has a **What do the list types mean?** trigger that opens a modal explaining each enabled type at a glance: an overview, what emails it triggers, the auto-archive cadence, and what happens when you delete a claimed item. Disabled types on this deployment are filtered out so users only see what they can actually create.
 
-## Public vs private
+## Public vs Private
 
 Wishlists, birthday lists, Christmas lists, and holiday lists can each be marked **public** or **private**.
 
@@ -31,7 +31,7 @@ Wishlists, birthday lists, Christmas lists, and holiday lists can each be marked
 - **Private** lists are only visible to people the owner has explicitly granted access to (via list editors or guardian relationships).
 - **Gift-ideas** lists are always private. There is no toggle to make one public, and they never surface in any "lists I can shop from" feed.
 
-<Aside type="note" title='"Public" still means signed-in'>
+<Aside type="note" title='"Public" Still Means Signed-In'>
 Even public lists are only visible to authenticated users. GiftWrapt has no anonymous access - share links redirect to sign-in first. This is not a public website.
 </Aside>
 
@@ -46,14 +46,14 @@ When the owner creates a new **public** list, GiftWrapt auto-ticks "add my partn
 
 If you change your partner later, GiftWrapt offers to fix existing list-editor grants for you: pre-checked lists to add the new partner to, pre-checked lists to remove the old partner from. Nothing is removed silently.
 
-## Archive vs delete
+## Archive vs Delete
 
 When the owner deletes a list:
 
 - If there are **no claims** on any item, the list is hard-deleted.
 - If there are **any claims**, the list is force-archived instead. This preserves gift history for the people who already claimed. Archived lists disappear from the owner's normal UI but remain queryable in received-gifts history.
 
-## Lists for dependents
+## Lists for Dependents
 
 Lists can be created on behalf of a **dependent** - a non-user gift recipient like a baby or a pet. The guardian owns the list; the dependent is the subject. Recipient-identity UI (avatars, "whose list is this?" labels) renders the dependent rather than the guardian.
 
@@ -63,7 +63,7 @@ A guardian opening their dependent's list sees the *gifter* view, not the recipi
 
 <CardGrid>
 	<LinkCard title="Items" href="/features/items/" description="What lives on each row of a list." />
-	<LinkCard title="Claims and reveal" href="/features/claims/" description="How giftgivers coordinate without spoiling the surprise." />
+	<LinkCard title="Claims and Reveal" href="/features/claims/" description="How giftgivers coordinate without spoiling the surprise." />
 	<LinkCard title="Permissions" href="/permissions/" description="Who can see and edit which lists." />
 	<LinkCard title="Privacy" href="/permissions/privacy/" description="Access-level options between users." />
 </CardGrid>

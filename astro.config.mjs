@@ -55,7 +55,7 @@ export default defineConfig({
 				{
 					label: 'Overview',
 					items: [
-						{ label: 'Getting started', slug: 'overview/getting-started' },
+						{ label: 'Getting Started', slug: 'overview/getting-started' },
 						{ label: 'Screenshots', slug: 'overview/screenshots' },
 						{ label: 'Glossary', slug: 'overview/glossary' },
 					],
@@ -87,12 +87,12 @@ export default defineConfig({
 							{
 								type: 'latest',
 								base: 'changelog',
-								label: 'Latest version',
+								label: 'Latest Version',
 							},
 							{
 								type: 'all',
 								base: 'changelog',
-								label: 'All versions',
+								label: 'All Versions',
 							},
 						]),
 					],

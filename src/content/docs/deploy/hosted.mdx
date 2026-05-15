@@ -11,7 +11,7 @@ The tried-and-true managed path for GiftWrapt is **Vercel** for the app, **Supab
 
 This is the configuration I run in production. It's the recommended choice if you don't want to manage a host.
 
-## What you'll need
+## What You'll Need
 
 - A [Vercel](https://vercel.com) account (free Hobby tier works for a single household).
 - A [Supabase](https://supabase.com) account (free tier covers a small deployment).
@@ -70,7 +70,7 @@ This is the configuration I run in production. It's the recommended choice if yo
 
    `BETTER_AUTH_URL` doesn't need to be set on production deploys - it's auto-derived from `VERCEL_PROJECT_PRODUCTION_URL`. Set it explicitly only if you're binding to a custom domain.
 
-   <Aside type="note" title="Cron secret on Vercel">
+   <Aside type="note" title="Cron Secret on Vercel">
    Vercel auto-attaches a bearer token to its Cron invocations matching `CRON_SECRET`. The default `vercel.json` in the repo schedules all five endpoints at daily cadences; the secret is auto-generated. You don't need to set `CRON_SECRET` yourself unless you want to pin a specific value.
    </Aside>
 
@@ -86,7 +86,7 @@ This is the configuration I run in production. It's the recommended choice if yo
 
 That's it. App is up, image uploads work, cron runs daily.
 
-## What's running
+## What's Running
 
 | Service | Where | Notes |
 |---|---|---|
@@ -96,7 +96,7 @@ That's it. App is up, image uploads work, cron runs daily.
 | Cron | Vercel Cron | Daily schedules from `vercel.json`. See [Cron and scheduling](/configuration/cron/). |
 | Email | Optional | See [Emails](/configuration/emails/). Add `RESEND_API_KEY` to your Vercel env vars to enable. |
 
-## Custom domain
+## Custom Domain
 
 In Vercel **Settings > Domains**, add your domain and point it per Vercel's instructions. Once the domain is live:
 
@@ -105,7 +105,7 @@ In Vercel **Settings > Domains**, add your domain and point it per Vercel's inst
 
 If you serve from multiple hostnames (custom domain + the Vercel-assigned URL), add the others to `TRUSTED_ORIGINS` instead of switching `BETTER_AUTH_URL`.
 
-## Direct image URLs (faster, optional)
+## Direct Image URLs (Faster, Optional)
 
 By default the app proxies image fetches through `/api/files/<key>`. That works fine but spends a Vercel function invocation per image. To hand clients direct Supabase URLs and skip the proxy:
 
@@ -115,7 +115,7 @@ By default the app proxies image fetches through `/api/files/<key>`. That works 
 
 Existing uploads pick up the new URL on next render.
 
-## The vercel.json that ships with the repo
+## The vercel.json That Ships With the Repo
 
 For reference, the [`vercel.json`](https://github.com/shawnphoffman/giftwrapt/blob/main/vercel.json) in the repo declares:
 
@@ -138,7 +138,7 @@ Push to `main` (or merge a release PR) - Vercel auto-deploys. Migrations run as 
 | Migrations fail on build | `DATABASE_URL` is the un-pooled "direct" URL instead of the pooled one. Switch to the **Connection pooling** URI from Supabase. |
 | Cron not firing | Vercel's free tier supports daily-only schedules - that's the default. If you've edited `vercel.json` to use a sub-daily cron, you need Vercel Pro. |
 
-## Other hosted platforms
+## Other Hosted Platforms
 
 - [Hosted (Railway)](/railway/) - one-click multi-service template with internal cron services
 - [Hosted (Render)](/render/) - one-click `render.yaml` blueprint with managed Postgres

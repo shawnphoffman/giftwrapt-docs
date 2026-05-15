@@ -11,7 +11,7 @@ A **dependent** is a gift recipient who doesn't have a GiftWrapt account: a pet,
 
 Dependents have a name, an optional photo, an optional birthday, and one or more **guardian users** who manage their lists. They never sign in.
 
-## Dependents vs. children vs. users
+## Dependents vs. Children vs. Users
 
 GiftWrapt has three different "people" concepts; here's when each one applies:
 
@@ -23,7 +23,7 @@ GiftWrapt has three different "people" concepts; here's when each one applies:
 
 If the person is going to sign in - now or later - make them a user (or a child user). Use a dependent only when there will never be a login.
 
-## What a dependent has
+## What a Dependent Has
 
 | Field | Notes |
 |---|---|
@@ -38,17 +38,17 @@ What a dependent does **not** have:
 - Roles, partnerships, or access levels
 - A way to sign in or be impersonated
 
-## Guardianship of dependents
+## Guardianship of Dependents
 
 A dependent's guardians have the same full view + edit access on the dependent's lists that guardians of a child user have. See [Guardians](/permissions/guardians/) for the full grant.
 
 A dependent can have any number of guardians (a pet in a multi-adult household is the obvious case). Removing one guardian doesn't affect the others.
 
-<Aside type="note" title="Children can't be guardians of dependents">
+<Aside type="note" title="Children Can't Be Guardians of Dependents">
 Mirrors the rule for guardian-of-a-user: a `child`-role user can't be a guardian of a dependent.
 </Aside>
 
-## How a list "belongs to" a dependent
+## How a List "Belongs to" a Dependent
 
 A list can have a dependent as its **subject**. The list itself is still owned by the user who created it (`ownerId`, which is the guardian), but the recipient of the gifts is the dependent.
 
@@ -60,7 +60,7 @@ Permission checks key off the **subject**, not the owner:
 
 The guardian doesn't accidentally see the recipient view of their dependent's list. If they open it, they get the **gifter view** - they're a gifter to the dependent, not its recipient.
 
-## How the dependent shows up in the UI
+## How the Dependent Shows Up in the UI
 
 Everywhere GiftWrapt would normally render "whose list is this?", a dependent-subject list renders the dependent's avatar and name instead of the guardian's. Specifically:
 
@@ -71,12 +71,12 @@ Everywhere GiftWrapt would normally render "whose list is this?", a dependent-su
 
 The guardian's identity isn't hidden anywhere it's relevant - it's just that "the person this gift is *for*" is the dependent, not the guardian who created the list.
 
-## Claiming on a dependent's list
+## Claiming on a Dependent's List
 
 The list's guardian can claim items on their own dependent's list. Same rule as guardians claiming on a child's list: the guardian is the gifter, the dependent is the recipient, and gift credit follows the [normal partner-aware predicate](/features/claims/#gift-credit-and-partners).
 
 The "you can't claim on your own list" block only fires when the list has no dependent subject and the gifter is the owner.
 
-## Setting up dependents
+## Setting Up Dependents
 
 Dependents are created from the dependents settings page by any non-child user. The creator is automatically added as a guardian; other guardians can be added afterward.

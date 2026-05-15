@@ -12,11 +12,11 @@ import { Aside } from '@astrojs/starlight/components'
 
 The user-facing version of this feature is documented at [Suggestions](/features/suggestions-ai/). This page is the operator's reference.
 
-<Aside type="caution" title="Off by default">
+<Aside type="caution" title="Off by Default">
 Intelligence ships with `intelligenceEnabled=false`. While off, the cron tick returns `skipped:disabled` immediately, the user-facing page shows a "feature offline" state, and manual refresh is blocked. Admin must explicitly turn it on, and the enable toggle disables itself when no AI provider is configured.
 </Aside>
 
-## Quick start
+## Quick Start
 
 1. Configure an [AI provider](/configuration/ai/).
 2. Go to **Admin > Intelligence**.
@@ -52,7 +52,7 @@ Each analyzer can be individually enabled/disabled via `intelligencePerAnalyzerE
 | `intelligenceDryRun` | `false` | When true, runs go through the full pipeline (model calls, step logging) but persist no `recommendations` rows. Run + run-step rows still write, so admins can debug without affecting users. |
 | `intelligenceModelOverride` | `null` | Optional model ID override. Provider/key/baseUrl still come from the global AI config; only the model name swaps. |
 
-## Skip states
+## Skip States
 
 Every run path (cron, manual, CLI) records a row in `recommendation_runs` with a `skip_reason` if it didn't actually generate recs. Common values:
 
@@ -67,13 +67,13 @@ Every run path (cron, manual, CLI) records a row in `recommendation_runs` with a
 
 The Postgres advisory lock is keyed by user, so concurrent triggers for the same user collide rather than double-spending tokens.
 
-## Dismissal stickiness
+## Dismissal Stickiness
 
 Each rec has a stable **fingerprint** (analyzer + kind + sorted target IDs). When a new batch produces a rec with the same fingerprint as a prior `dismissed` (or `applied`) rec, the runner carries the status forward instead of creating it as `active`.
 
 So if you dismiss a "duplicate item pair" rec, that exact pair stays dismissed across regenerations until one of the items is deleted or renamed enough that the fingerprint changes.
 
-## Spoiler protection
+## Spoiler Protection
 
 Intelligence honors GiftWrapt's [spoiler-protection rule](/permissions/privacy/#spoiler-protection):
 
@@ -82,7 +82,7 @@ Intelligence honors GiftWrapt's [spoiler-protection rule](/permissions/privacy/#
 - `items.isArchived = true` items are excluded from candidate sets (those are revealed gifts, not list hygiene).
 - `giftideas` and `todos` lists are filtered out at the SQL level - gift ideas are spoiler surfaces for someone else, todos have no gift fields to analyze.
 
-## Deployment shapes
+## Deployment Shapes
 
 Three ways to run the analyzer pipeline; pick whichever fits your stack. They all share the same runner and can run alongside each other safely thanks to the per-user advisory lock.
 
@@ -92,7 +92,7 @@ Three ways to run the analyzer pipeline; pick whichever fits your stack. They al
 | **External scheduler** | Same endpoint, hit by your own scheduler | When you want central scheduling outside the app. Same secret. |
 | **Standalone worker** | `pnpm intelligence:worker` | When you want a separate Docker service that owns the analyzer drain. Keep the HTTP cron running too if you like - the lock prevents double-spend. |
 
-## Notifications (v1 scaffold)
+## Notifications (V1 Scaffold)
 
 `intelligenceEmailEnabled`, `intelligenceEmailWeeklyDigestEnabled`, and `intelligenceEmailTestRecipient` exist in `app_settings`, are wired into the admin UI, and are read by `notifyForRun()` - but **no transport is shipped in v1**. The function logs intent only. Future versions will hook this up to the Resend templates; until then, toggling them is a no-op.
 

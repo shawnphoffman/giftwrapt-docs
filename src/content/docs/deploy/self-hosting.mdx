@@ -1,5 +1,5 @@
 ---
-title: Self-hosting
+title: Self-Hosting
 description: Run GiftWrapt on your own hardware with one docker compose up. Base stack first, addons one section at a time.
 sidebar:
   order: 2
@@ -17,15 +17,15 @@ This page walks the base deployment first, then each addon in its own section. R
 - A host reachable over HTTP(S) at the URL you'll use as `BETTER_AUTH_URL`
 - The published image: `ghcr.io/shawnphoffman/giftwrapt:latest` (or pin a tag like `:vX.Y.Z`)
 
-<Aside type="tip" title="Pin a tag in production">
+<Aside type="tip" title="Pin a Tag in Production">
 `:latest` follows the main branch. Once you're past "does it work," set `APP_IMAGE=ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z` in `.env` so you control when you upgrade.
 </Aside>
 
-## Base deployment
+## Base Deployment
 
 The base stack is the app container plus a Postgres database. Migrations run automatically on container startup, so there's nothing to do by hand.
 
-### 1. Clone and configure
+### 1. Clone and Configure
 
 ```bash
 git clone https://github.com/shawnphoffman/giftwrapt.git
@@ -43,11 +43,11 @@ At minimum, set these in `docker/.env`:
 | `BETTER_AUTH_URL` | Public origin, e.g. `https://giftwrapt.example.com` |
 | `CRON_SECRET` | `openssl rand -base64 48 \| tr -d '/+=' \| head -c 48` |
 
-<Aside type="caution" title="Don't rotate BETTER_AUTH_SECRET">
+<Aside type="caution" title="Don't Rotate BETTER_AUTH_SECRET">
 It's also the master key for every encrypted value in `app_settings` (scraper API keys, AI keys, OIDC client secret). Rotating it invalidates those.
 </Aside>
 
-### 2. Bring up the stack
+### 2. Bring Up the Stack
 
 ```bash
 docker compose -f docker/compose.selfhost-garage.yaml up -d
@@ -117,7 +117,7 @@ Already have AWS S3, Cloudflare R2, or Supabase Storage? Use either compose file
 
 If you're not sure: **start with Garage**. It's the path the bundled compose was designed around. If you outgrow it or want geo-distribution, swap to RustFS or an external bucket without app changes.
 
-## Addon: Scheduled jobs (cron)
+## Addon: Scheduled Jobs (Cron)
 
 GiftWrapt has five scheduled endpoints under `/api/cron/*`:
 
@@ -152,7 +152,7 @@ Restart the app. The admin **Settings** page surfaces the email-family toggles o
 
 See [Emails](/configuration/emails/) for which features each toggle controls.
 
-## Addon: AI features
+## Addon: AI Features
 
 GiftWrapt's optional [URL scraping AI extractor](/features/scraping/), title cleaner, and [Suggestions](/features/suggestions-ai/) all share one LLM provider config. Configure it from **Admin > AI** in the UI (recommended), or pin it via env vars:
 
@@ -175,7 +175,7 @@ docker compose -f docker/compose.selfhost-garage.yaml --profile mcp up -d
 
 You'll need to mint an API key from `/settings/devices` first. See the [giftwrapt-mcp repo](https://github.com/shawnphoffman/giftwrapt-mcp) for client wiring.
 
-## Multi-origin and LAN access
+## Multi-Origin and LAN Access
 
 By default the app trusts exactly one origin (`BETTER_AUTH_URL`). Requests from any other origin are rejected with "Invalid origin." Two env vars cover the common cases:
 
@@ -191,7 +191,7 @@ INSECURE_COOKIES=true
 
 The server refuses to boot with both `INSECURE_COOKIES=true` and an HTTPS `BETTER_AUTH_URL`.
 
-## Reverse proxy (Traefik, Caddy, nginx)
+## Reverse Proxy (Traefik, Caddy, nginx)
 
 If a proxy terminates TLS in front of the container:
 
@@ -232,7 +232,7 @@ Two stateful volumes:
 
 A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough.
 
-<Aside type="danger" title="Encrypt your database backups">
+<Aside type="danger" title="Encrypt Your Database Backups">
 better-auth stores session tokens in the `session` table as plaintext (the token IS the cookie). Anyone who can read a `pg_dump` can hijack every active session until those sessions expire. Same for `verification` (password-reset tokens). Use full-disk encryption on the volume that holds your dumps, or pipe the dump through `gpg`/`age`.
 </Aside>
 
@@ -246,7 +246,7 @@ better-auth stores session tokens in the `session` table as plaintext (the token
 | Migrations fail | Usually Postgres connectivity. The entrypoint waits for `pg_isready` but not forever. |
 | Cron sidecar restart loops | `CRON_SECRET` is unset. |
 
-## The full compose file
+## The Full Compose File
 
 For reference, here's the complete bundled compose with all addons wired up. The canonical version lives at [`docker/compose.selfhost-garage.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage.yaml).
 

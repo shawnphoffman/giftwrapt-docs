@@ -9,11 +9,11 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
 GiftWrapt optionally sends a handful of transactional emails: password resets, new-comment notifications, day-of birthday reminders, post-birthday gift summaries, post-Christmas summaries, and configurable pre-event reminders. All outbound mail goes through [Resend](https://resend.com).
 
-<Aside type="note" title="Email is optional">
+<Aside type="note" title="Email Is Optional">
 If you don't configure it, the app still runs - every email send becomes a no-op, and the admin toggles for email features are hidden from the settings UI. Password resets still appear to succeed from the user's perspective so account-existence isn't leaked.
 </Aside>
 
-## Setting it up
+## Setting It Up
 
 Three environment variables, all optional but all needed together to actually send mail:
 
@@ -26,7 +26,7 @@ RESEND_BCC_ADDRESS=ops@yourdomain    # optional, BCC's every send for audit
 
 Once these are set and the server restarts, the admin **Settings** page surfaces the email-related toggles, and the **Admin → Tools** page exposes a "Send test email" button you can use to verify delivery end-to-end.
 
-## What gets sent
+## What Gets Sent
 
 Each category has its own admin toggle, all independent. Disabling a toggle stops the email; it never stops the underlying side-effect (the [reveal flow](/features/claims/#reveal) still runs, claims still get archived, etc.).
 
@@ -34,24 +34,24 @@ Each category has its own admin toggle, all independent. Disabling a toggle stop
 
 - **Password reset** - sent when a user clicks "forgot password." Always on when email is configured; not gated by a separate toggle.
 
-### Comment notifications
+### Comment Notifications
 
 - **`enableCommentEmails`** - sent when someone leaves a comment on an item, to the item's other participants.
 
-### Orphaned-claim alerts
+### Orphaned-Claim Alerts
 
 Two emails support the [orphaned-claim flow](/features/claims/#orphaned-claims). Both fire whenever email is configured - there's no admin toggle. Spoiler protection and claim integrity are non-negotiable, same rationale as the auto-archive happening regardless of email toggles:
 
 - **Initial alert** - sent immediately when the recipient deletes an item the giftgiver had already claimed. Goes to the primary giftgiver and their partner; co-gifters intentionally silent. One email per orphaned item per audience member.
 - **Day-before cleanup reminder** - sent the day before the [auto-cleanup cron](/configuration/cron/#orphan-claim-cleanup) hard-deletes an unanswered orphan. One-shot per claim, idempotent via `giftedItems.orphanReminderSentAt`.
 
-### Day-of and post-event
+### Day-Of and Post-Event
 
 - **`enableBirthdayEmails`** - gates both the day-of birthday email *and* the post-birthday gifter summary (the recap of who got what).
 - **`enableChristmasEmails`** - post-Christmas owner summary, fired by the auto-archive cron after Dec 25.
 - **`enableGenericHolidayEmails`** - same as above, but for admin-configured custom holidays.
 
-### Pre-event reminders
+### Pre-Event Reminders
 
 These broadcast to every user, including users without a list - the explicit intent is to nudge people to make one. Each has a master toggle and a lead-days knob:
 
@@ -61,7 +61,7 @@ These broadcast to every user, including users without a list - the explicit int
 
 Reminder emails are also gated by the corresponding list-type master toggle, so disabling the Christmas list type silences its reminder too.
 
-### Relationship reminders
+### Relationship Reminders
 
 Four independent families with their own master toggles and lead-days settings:
 
@@ -72,7 +72,7 @@ Four independent families with their own master toggles and lead-days settings:
 
 Mother's Day and Father's Day use the country configured under `relationshipRemindersCountry` (default US). The other two are global.
 
-## Sender setup
+## Sender Setup
 
 For deliverability, the from-address domain needs verified SPF, DKIM, and DMARC records on the Resend side. Resend's docs walk through it; once your domain is verified, just paste the from-address into `RESEND_FROM_EMAIL` and you're done.
 
@@ -81,7 +81,7 @@ If you only want to test, Resend lets you use their sandbox domain - but mail ca
 ## Related
 
 <CardGrid>
-	<LinkCard title="Environment variables" href="/configuration/environment-variables/#email-optional" description="Resend env var reference." />
-	<LinkCard title="Cron and scheduling" href="/configuration/cron/" description="The cron tick that drives reminder and post-event emails." />
+	<LinkCard title="Environment Variables" href="/configuration/environment-variables/#email-optional" description="Resend env var reference." />
+	<LinkCard title="Cron and Scheduling" href="/configuration/cron/" description="The cron tick that drives reminder and post-event emails." />
 	<LinkCard title="Authentication" href="/configuration/auth/" description="Email is also what makes password reset actually work." />
 </CardGrid>

@@ -1,5 +1,5 @@
 ---
-title: Privacy and telemetry
+title: Privacy and Telemetry
 description: GiftWrapt does not phone home. No analytics, no error tracking, no usage telemetry, no SaaS dependency by default. This page explains what that means in practice and what the few opt-in network calls are.
 sidebar:
   order: 1
@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 GiftWrapt is built for families running it for themselves. The default posture is **nothing leaves your server unless you turned it on**. No analytics, no usage telemetry, no error reporting, no anonymous pings.
 
-## What this means concretely
+## What This Means Concretely
 
 - **No third-party error tracker is integrated.** Not Sentry, not LogRocket, not Bugsnag, not Datadog, not Highlight. Errors land in your server logs (`stdout`, accessible via `docker logs` / Vercel logs / your runtime's log viewer) and stay there.
 - **No analytics SDK.** No Google Analytics, no Plausible, no Posthog, no Vercel Web Analytics, not even a hit counter.
@@ -17,7 +17,7 @@ GiftWrapt is built for families running it for themselves. The default posture i
 
 This is a deliberate design choice, not an oversight. Reporting errors to an external service is a useful operator convenience that we trade away because the cost - exfiltrating fragments of user data through stack traces, payload dumps, breadcrumbs, and source maps - isn't justified for a family-scale wish-list app. Self-hosters running this for their household shouldn't have to audit a telemetry config to be confident their data stays local.
 
-## What about runtime errors?
+## What About Runtime Errors?
 
 When something blows up in production:
 
@@ -27,11 +27,11 @@ When something blows up in production:
 
 If you hit a bug worth reporting, the manual path is the only path: grab the relevant log lines, screenshot the UI if applicable, and open an issue at [github.com/shawnphoffman/giftwrapt](https://github.com/shawnphoffman/giftwrapt/issues). That's a feature, not a bug.
 
-<Aside type="note" title="If you self-host and want error tracking">
+<Aside type="note" title="If You Self-Host and Want Error Tracking">
 You can add your own if you really want it - Sentry, GlitchTip, or whatever - by patching the relevant init points yourself. The app deliberately ships without integration points wired up so that doing so is an opt-in fork, not a config-flag flip that ships errors somewhere by accident.
 </Aside>
 
-## What does go out over the network
+## What Does Go Out Over the Network
 
 There are a small number of outbound network calls. **All of them are explicitly opt-in by the operator** (configured via env or admin UI) and serve a feature the operator chose to enable. None are telemetry.
 
@@ -47,17 +47,17 @@ Notably **not** in the list: WebAuthn / passkey registration. Passkeys are negot
 
 Source of truth for outbound calls is the CSP `connect-src` directive in [vite.config.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/core/vite.config.ts). If a new dependency tries to phone home, that's where it surfaces. As of mid-2026 the production CSP under self-host / Docker / Vercel-production is `'self'`-only with `frame-src 'none'` - no third-party origin is allowlisted at all. Vercel preview builds open up `https://vercel.live` and the matching pusher WSS so the preview-comments overlay still works, and only those.
 
-## What about cookies and local storage?
+## What About Cookies and Local Storage?
 
 - Session cookie (`better-auth.session_token`) is `httpOnly`, `Secure` over HTTPS, `SameSite=Lax`. Set by your own server.
 - `localStorage` holds UI preferences only (theme, list-view density, etc.). Never tokens. Never analytics IDs.
 - No third-party cookies. The app never embeds an external `<iframe>` or `<script>` that could set one.
 
-## Source maps
+## Source Maps
 
 Production builds **do not ship source maps** to the client. Stack traces in your server logs reference minified line numbers; rebuild with maps locally if you need to deobfuscate.
 
-## What if a contributor proposes adding telemetry?
+## What if a Contributor Proposes Adding Telemetry?
 
 The position is "no, by default." A contributor PR that wires in error tracking, analytics, or any other phone-home gets:
 

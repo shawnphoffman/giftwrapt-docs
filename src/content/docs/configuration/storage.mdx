@@ -9,11 +9,11 @@ import { Aside } from '@astrojs/starlight/components'
 
 GiftWrapt stores user avatars and item photos in an S3-compatible bucket. The app doesn't care which backend you use - any service that speaks the S3 API works. The bundled compose files include **Garage** and **RustFS** as sidecar options; for hosted deploys, **AWS S3**, **Cloudflare R2**, and **Supabase Storage** all work fine.
 
-<Aside type="note" title="Storage is optional">
+<Aside type="note" title="Storage Is Optional">
 If you leave storage unconfigured, GiftWrapt still boots. Upload endpoints return 503 and an in-app banner explains the limitation. The rest of the app works.
 </Aside>
 
-## How uploads flow
+## How Uploads Flow
 
 1. The browser uploads to a server function.
 2. Sharp transcodes the image to webp (256x256 cover for avatars, 1200px long edge for item photos) before writing to storage.
@@ -21,7 +21,7 @@ If you leave storage unconfigured, GiftWrapt still boots. Upload endpoints retur
 4. Public URLs are either **direct** (when `STORAGE_PUBLIC_URL` is set) or **proxied** through `/api/files/<key>` (the default).
 5. Each upload uses a fresh nanoid suffix in the key, so URLs are immutable and safe to cache aggressively.
 
-## Required env vars
+## Required Env Vars
 
 Five vars do the work. See [Environment variables](/configuration/environment-variables/#storage-optional) for the full reference.
 
@@ -40,9 +40,9 @@ Plus two important toggles:
 | `STORAGE_FORCE_PATH_STYLE` | `true` for Garage, RustFS, MinIO. `false` (default) for AWS S3, Cloudflare R2. |
 | `STORAGE_PUBLIC_URL` | Set to a CDN base URL to hand clients direct URLs and skip the per-image proxy. **Recommended on Vercel** to avoid function invocations. |
 
-## Backend recipes
+## Backend Recipes
 
-### Garage (self-host)
+### Garage (Self-Host)
 
 The default for the bundled compose stack. Garage is a small Rust S3 server that runs alongside the app and Postgres in the same compose file.
 
@@ -67,7 +67,7 @@ Garage requires specific key formats:
 
 When `INIT_GARAGE=true`, the app's entrypoint runs Garage's admin HTTP API on first boot to assign cluster layout, create the bucket, import the key, and grant permissions. Idempotent.
 
-### RustFS (self-host)
+### RustFS (Self-Host)
 
 Alternative to Garage. Pick one. RustFS is simpler in that it reads its root user directly from the standard `STORAGE_*` vars, no admin token needed.
 
@@ -129,7 +129,7 @@ The admin panel has a **Storage** page that exposes a few read-only diagnostics:
 
 There's no admin UI for switching backends - storage is environment configuration only. To change provider, update the env vars and restart.
 
-## Mirroring external images
+## Mirroring External Images
 
 `mirrorExternalImagesOnSave` is an admin toggle (off by default). When on, every image URL the scraper hands back gets re-fetched and copied into your bucket on item save. This decouples your lists from the source URL's lifetime - useful if you've been burned by Amazon swapping product images out from under you.
 

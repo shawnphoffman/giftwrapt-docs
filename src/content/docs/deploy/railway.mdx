@@ -11,7 +11,7 @@ Railway has a published multi-service template that provisions the full GiftWrap
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/giftwrapt)
 
-## What the template provisions
+## What the Template Provisions
 
 - **giftwrapt** - the web service, built from the repo's `Dockerfile` and tracking `main` so future commits redeploy automatically.
 - **giftwrapt-postgres** - a Postgres 16 database with a persistent volume.
@@ -48,19 +48,19 @@ The template only prompts for the optional inputs.
 
 </Steps>
 
-## Custom domain
+## Custom Domain
 
 Add it under the **giftwrapt** service's **Settings → Networking → Custom Domain**. Railway-assigned URLs already work via `${{RAILWAY_PUBLIC_DOMAIN}}`; only change `BETTER_AUTH_URL` if you want auth bound to your custom domain instead of the `*.up.railway.app` host.
 
 If you serve from multiple hostnames, add the others to `TRUSTED_ORIGINS` instead of switching `BETTER_AUTH_URL`.
 
-## Cron services
+## Cron Services
 
 All five `/api/cron/*` endpoints fire on a daily UTC schedule out of the box. They run as separate Railway services using the `curlimages/curl` image with a `sh -c` start command that calls back into the web service over the private network.
 
 To customize a schedule: open the cron service in the Railway canvas, edit the **Cron Schedule** field under Settings, and save. To stop a job entirely (e.g. you don't need birthday emails because Resend isn't configured), remove the service from the project.
 
-## Adding optional features later
+## Adding Optional Features Later
 
 **Email (Resend):** add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` on the **giftwrapt** service and redeploy.
 
@@ -68,7 +68,7 @@ To customize a schedule: open the cron service in the Railway canvas, edit the *
 
 **AI suggestions:** see [Suggestions (AI)](/features/suggestions-ai/) for the provider env vars.
 
-## Resource caps
+## Resource Caps
 
 The template provisions services with these caps:
 
@@ -80,7 +80,7 @@ The template provisions services with these caps:
 
 Railway bills on actual usage, not the cap. The caps are guardrails against runaway processes. Bump them in the service's **Settings → Resources** if you need to.
 
-## Pausing a project
+## Pausing a Project
 
 Railway doesn't have a true "pause" button, but you can stop compute without losing config:
 
@@ -103,7 +103,7 @@ The template tracks `main`. Push to the repo and Railway auto-deploys. Migration
 
 To pin a specific version instead of tracking `main`, switch the service to deploy from the GHCR image (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) in the giftwrapt service's **Settings → Source**.
 
-## Other options
+## Other Options
 
 - [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path
 - [Hosted (Render)](/render/) - the other managed multi-service blueprint

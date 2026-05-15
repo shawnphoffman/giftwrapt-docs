@@ -1,5 +1,5 @@
 ---
-title: Admin settings
+title: Admin Settings
 description: The admin panel and what each section controls. Most of GiftWrapt's configuration lives in app_settings, not env vars.
 sidebar:
   order: 1
@@ -14,11 +14,11 @@ GiftWrapt has two configuration surfaces:
 
 This page is the map: what each admin section controls and where to read more.
 
-<Aside type="note" title="First admin">
+<Aside type="note" title="First Admin">
 The first user to sign up on a fresh deployment is automatically promoted to admin. If you lose every admin account, the next signup re-bootstraps - useful for recovery.
 </Aside>
 
-## Where to find it
+## Where to Find It
 
 The admin panel lives at `/admin`. Once you're signed in as an admin, the top-right user menu shows the link. Each section is a sub-route:
 
@@ -36,7 +36,7 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 | Scheduling | `/admin/scheduling` | Cron-run history and next-fire times per endpoint. |
 | Data | `/admin/data` | DB-level diagnostics and one-off admin actions. |
 
-## What lives in app_settings vs. env
+## What Lives in app_settings vs. Env
 
 A rough heuristic:
 
@@ -54,7 +54,7 @@ Env vars are baked in at boot; changes need a restart. `app_settings` changes ap
 
 A few **secret fields** in `app_settings` (scraper API keys, AI keys, OIDC client secret) are AES-256-GCM-encrypted using a key derived from `BETTER_AUTH_SECRET`. Don't rotate `BETTER_AUTH_SECRET` without re-entering those.
 
-## Top-level toggles worth knowing
+## Top-Level Toggles Worth Knowing
 
 A few app-wide toggles that shape what users see:
 
@@ -72,7 +72,7 @@ A few app-wide toggles that shape what users see:
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
 
-## Reveal timing
+## Reveal Timing
 
 These control when claims auto-archive (which is also when the recipient sees them):
 
@@ -84,7 +84,7 @@ These control when claims auto-archive (which is also when the recipient sees th
 
 The auto-archive runs **regardless** of whether the corresponding email toggle is on. Disabling the post-birthday email doesn't disable the reveal.
 
-## Cross-references
+## Cross-References
 
 Each admin section has its own configuration page in these docs:
 
@@ -92,9 +92,9 @@ Each admin section has its own configuration page in these docs:
 	<LinkCard title="Authentication" href="/configuration/auth/" description="Email + password, OIDC, passkeys, 2FA, API keys." />
 	<LinkCard title="Emails" href="/configuration/emails/" description="Every email family, when they fire, what they require." />
 	<LinkCard title="Scraping" href="/configuration/scraping/" description="Provider chain, tiers, quality threshold, queue." />
-	<LinkCard title="AI provider" href="/configuration/ai/" description="LLM provider configuration." />
+	<LinkCard title="AI Provider" href="/configuration/ai/" description="LLM provider configuration." />
 	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="The recommendations feature, on top of AI." />
 	<LinkCard title="Storage" href="/configuration/storage/" description="S3 backends, mirror toggle." />
-	<LinkCard title="Cron and scheduling" href="/configuration/cron/" description="The five scheduled endpoints." />
-	<LinkCard title="Environment variables" href="/configuration/environment-variables/" description="Every env var, grouped and commented." />
+	<LinkCard title="Cron and Scheduling" href="/configuration/cron/" description="The five scheduled endpoints." />
+	<LinkCard title="Environment Variables" href="/configuration/environment-variables/" description="Every env var, grouped and commented." />
 </CardGrid>

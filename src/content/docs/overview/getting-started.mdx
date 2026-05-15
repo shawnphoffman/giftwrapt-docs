@@ -1,5 +1,5 @@
 ---
-title: Get started
+title: Get Started
 description: The fastest path from "I'd like to try GiftWrapt" to "my family is using it."
 ---
 
@@ -9,7 +9,7 @@ GiftWrapt runs as a single Docker container plus a Postgres database. Anything S
 
 <CardGrid>
 	<LinkCard
-		title="Self-host with Docker"
+		title="Self-Host With Docker"
 		href="/deploy/self-hosting/"
 		description="One docker compose up. Bundled Postgres, optional bundled storage. Runs anywhere."
 	/>
@@ -20,7 +20,7 @@ GiftWrapt runs as a single Docker container plus a Postgres database. Anything S
 	/>
 </CardGrid>
 
-## The five-minute version
+## The Five-Minute Version
 
 Want to kick the tires before reading any more? This boots a complete stack locally with bundled Postgres + storage:
 
@@ -34,11 +34,11 @@ docker compose -f docker/compose.selfhost-garage.yaml up -d
 
 Open `BETTER_AUTH_URL` in a browser. The first user to sign up is auto-promoted to admin.
 
-<Aside type="note" title="What you'll need before this works">
+<Aside type="note" title="What You'll Need Before This Works">
 At a minimum: `POSTGRES_PASSWORD` (any strong random string), `BETTER_AUTH_SECRET` (`openssl rand -hex 32`), `BETTER_AUTH_URL` (the public URL you'll reach the app from), `CRON_SECRET` (`openssl rand -base64 48 | tr -d '/+=' | head -c 48`), and for Garage specifically `GARAGE_RPC_SECRET` and `GARAGE_ADMIN_TOKEN` (each `openssl rand -hex 32`).
 </Aside>
 
-## Bare-minimum compose
+## Bare-Minimum Compose
 
 If you'd rather inline the compose file in your own deploy config, here's the smallest possible shape: app + Postgres only. Storage and cron are addons; see [Self-hosting](/deploy/self-hosting/) for the full version.
 
@@ -81,8 +81,8 @@ This runs but **without image uploads** (no storage configured) and **without sc
 ## Next
 
 <CardGrid>
-	<LinkCard title="Self-hosting" href="/deploy/self-hosting/" description="The full compose, plus addons for storage, cron, email, and MCP." />
+	<LinkCard title="Self-Hosting" href="/deploy/self-hosting/" description="The full compose, plus addons for storage, cron, email, and MCP." />
 	<LinkCard title="Hosted (Vercel + Supabase)" href="/deploy/hosted/" description="The tried-and-true managed path." />
-	<LinkCard title="Environment variables" href="/configuration/environment-variables/" description="Every var, grouped and commented." />
+	<LinkCard title="Environment Variables" href="/configuration/environment-variables/" description="Every var, grouped and commented." />
 	<LinkCard title="Screenshots" href="/overview/screenshots/" description="See what you're getting." />
 </CardGrid>

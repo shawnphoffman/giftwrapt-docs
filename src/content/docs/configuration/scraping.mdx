@@ -11,7 +11,7 @@ The user-facing version of this feature is documented at [URL scraping](/feature
 
 The scraping admin lives at **Admin > Scraping**. Everything except the env-var first-boot seeds is database-backed and takes effect without a restart.
 
-## The pipeline at a glance
+## The Pipeline at a Glance
 
 ```
   add-item dialog                    /admin/scraping
@@ -64,7 +64,7 @@ Default tier on new entries:
 
 Adjust the tier from the Tier dropdown on each card in `/admin/scraping`.
 
-## Provider types
+## Provider Types
 
 All configured at **Admin > Scraping**. Secret fields are encrypted at rest in `app_settings` (AES-256-GCM, master key derived from `BETTER_AUTH_SECRET`).
 
@@ -80,7 +80,7 @@ All configured at **Admin > Scraping**. Secret fields are encrypted at rest in `
 
 You can add multiple entries of the same type (e.g. two Browserless instances) and drag to reorder within a tier.
 
-## Merging within a tier
+## Merging Within a Tier
 
 When a tier has multiple entries that all succeed, the orchestrator does **fill-the-gaps merging** before scoring:
 
@@ -91,7 +91,7 @@ When a tier has multiple entries that all succeed, the orchestrator does **fill-
 
 The merged result is persisted with `scraperId: 'merged:a,b,c'` so the admin can trace which providers contributed. `/admin/scrapes` renders that as `Provider A + Provider B (merged)`.
 
-## Quality threshold
+## Quality Threshold
 
 `scrapeQualityThreshold` (default `3`) is the score a tier's merged result has to hit to short-circuit the chain. Lower the threshold to escalate to expensive providers less often; raise it to be pickier.
 
@@ -110,7 +110,7 @@ The score is computed from how many fields came back and how confident the extra
 
 The AI features here depend on a configured [AI provider](/configuration/ai/). The toggles disable themselves in the admin UI if no AI provider exists.
 
-## Item scrape queue
+## Item Scrape Queue
 
 Items can be **imported in bulk** from an external source (CSV, JSON, etc.). The scraper doesn't run inline for those - imported rows get queued in `item_scrape_jobs` and drained by the `/api/cron/item-scrape-queue` cron tick. Three knobs control the drain:
 
@@ -123,7 +123,7 @@ Items can be **imported in bulk** from an external source (CSV, JSON, etc.). The
 
 Failed jobs are kept for diagnostics. The parent item retains whatever fields were already set at create time.
 
-## SSRF protection
+## SSRF Protection
 
 Authenticated users supply the URL, so the scraper has to refuse to fetch addresses inside your own infrastructure. The always-on fetch-provider and the AI provider both go through `safeFetch`, which:
 
@@ -135,15 +135,15 @@ Authenticated users supply the URL, so the scraper has to refuse to fetch addres
 
 Hosted providers (Browserbase, ScrapFly, Browserless, etc.) make outbound calls from outside your infra, so they don't need this hostname check on the user-supplied URL - their upstreams apply their own rules.
 
-## Encryption at rest
+## Encryption at Rest
 
 Secret fields on configured providers (`token`, `apiKey`, `customHeaders` containing auth) are AES-256-GCM-encrypted in `app_settings` JSONB. The master key is derived via scrypt from `BETTER_AUTH_SECRET`. New writes encrypt; reads accept either an envelope or legacy plaintext.
 
-<Aside type="caution" title="Don't rotate BETTER_AUTH_SECRET">
+<Aside type="caution" title="Don't Rotate BETTER_AUTH_SECRET">
 Rotating `BETTER_AUTH_SECRET` invalidates every encrypted value in `app_settings`, including these provider secrets. You'd have to re-enter them all.
 </Aside>
 
-## Deployment matrix
+## Deployment Matrix
 
 | Scenario | Working chain | Notes |
 |---|---|---|
@@ -155,7 +155,7 @@ Rotating `BETTER_AUTH_SECRET` invalidates every encrypted value in `app_settings
 | Self-host containers | Full chain incl. browserless + flaresolverr | Run them as sidecars. |
 | AI on top of any of the above | adds `ai-provider` as a parallel racer | Off by default. Costs money. |
 
-## Adding a new provider type
+## Adding a New Provider Type
 
 1. Add a discriminated variant to `scrapeProviderEntrySchema` in `src/lib/settings.ts`. Mark secret fields with `appSecretField()`.
 2. If a new secret field type, include it in `encryptScrapeProviderSecrets`.

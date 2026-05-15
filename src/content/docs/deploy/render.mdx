@@ -25,7 +25,7 @@ Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/mai
 
 </Steps>
 
-## Optional features
+## Optional Features
 
 **Image uploads:** fill in the `STORAGE_*` vars on the web service. Render leaves them as `sync: false` so it prompts at deploy time; you can also add them later. Recipes for Cloudflare R2, AWS S3, Supabase Storage, MinIO, etc. live in [storage.md](/storage/).
 
@@ -33,7 +33,7 @@ Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/mai
 
 **AI suggestions:** see [Suggestions (AI)](/features/suggestions-ai/) for provider env vars.
 
-## Cron jobs
+## Cron Jobs
 
 `render.yaml` ships all five cron services configured with daily UTC schedules:
 
@@ -53,11 +53,11 @@ To customize: edit the `schedule:` field on any cron service block in `render.ya
 Render Cron Jobs require a paid plan (Hobby+); the free tier does not include cron. If you're on the free tier, the web service still runs but no cron will fire and `/admin/scheduling` will report "never" everywhere.
 </Aside>
 
-## Pinning a version
+## Pinning a Version
 
 By default `render.yaml` pulls `ghcr.io/shawnphoffman/giftwrapt:latest`. Once you're past the "does it work" phase, pin a specific tag (`ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z`) so future image pushes don't auto-deploy. Edit the `image.url` field in `render.yaml` and redeploy.
 
-## Custom domain
+## Custom Domain
 
 Add the domain under the web service's **Settings → Custom Domains** and point DNS per Render's instructions. Once it's live, set `BETTER_AUTH_URL` to the canonical HTTPS URL and redeploy.
 
@@ -67,7 +67,7 @@ If you serve from multiple hostnames, add the others to `TRUSTED_ORIGINS` instea
 
 Render pulls `:latest` on every deploy. Trigger a manual deploy from the dashboard to pick up a new image, or pin a specific tag and bump it explicitly when you want to upgrade.
 
-## Other options
+## Other Options
 
 - [Hosted (Railway)](/railway/) - one-click template with internal cron services
 - [Hosted (Vercel + Supabase)](/hosted/) - the tried-and-true managed path

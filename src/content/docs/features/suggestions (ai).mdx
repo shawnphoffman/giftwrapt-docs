@@ -12,11 +12,11 @@ GiftWrapt has an optional layer of AI-assisted hints called **Suggestions** (int
 
 This feature is opt-in and off by default. Your admin has to enable it.
 
-<Aside type="note" title="Your data, your lists">
+<Aside type="note" title="Your Data, Your Lists">
 Suggestions only ever look at *your own* items - the things on lists you own. It never analyzes other people's lists, never sees claim data, and never references gifters or gifts. If you can't see it, the AI can't either.
 </Aside>
 
-## What it can suggest
+## What It Can Suggest
 
 | Kind | What it spots |
 |---|---|
@@ -27,7 +27,7 @@ Suggestions only ever look at *your own* items - the things on lists you own. It
 
 Each suggestion shows up as a card with a short rationale. Most are advisory - click through and decide what to do. A few are **apply-able** in one click (see below).
 
-## What you can do with a suggestion
+## What You Can Do With a Suggestion
 
 Every suggestion has three actions:
 
@@ -37,7 +37,7 @@ Every suggestion has three actions:
 
 Dismissed suggestions stay dismissed across regenerations until the underlying items shift. So once you tell GiftWrapt "no, these aren't duplicates," that exact pair stays quiet.
 
-## When suggestions refresh
+## When Suggestions Refresh
 
 By default the analyzer runs once a day per user, but it skips you if:
 
@@ -46,7 +46,7 @@ By default the analyzer runs once a day per user, but it skips you if:
 
 You can also manually refresh from the Suggestions page, subject to a per-user cooldown (default 60 minutes between manual triggers).
 
-## What the AI sees
+## What the AI Sees
 
 Just your items. Specifically:
 
@@ -63,16 +63,16 @@ What the AI doesn't see:
 
 See [Privacy](/permissions/privacy/#spoiler-protection) for the full spoiler-protection rule.
 
-## Where to find it
+## Where to Find It
 
 The user menu has a **Suggestions** link (when the feature is enabled), or go directly to `/me/suggestions`. If the feature is off, the page shows a "feature offline" notice rather than a 404.
 
-## For operators
+## For Operators
 
 If you're configuring this for a deployment, the admin side lives across two pages:
 
 <CardGrid>
-	<LinkCard title="AI provider" href="/configuration/ai/" description="The LLM that powers Suggestions." />
+	<LinkCard title="AI Provider" href="/configuration/ai/" description="The LLM that powers Suggestions." />
 	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="Feature-specific knobs: schedule, retention, per-analyzer toggles." />
 	<LinkCard title="Privacy" href="/permissions/privacy/" description="What the AI can and can't see." />
 </CardGrid>

@@ -29,7 +29,7 @@ Coolify is self-hosted, so there's no public deploy button - you trigger the dep
 
 This lands the entire stack (app + DB + storage) without any post-deploy paste step. Full self-host walkthrough: [self-hosting.md](/self-hosting/).
 
-## Cron and background jobs
+## Cron and Background Jobs
 
 The app exposes five `/api/cron/*` endpoints (auto-archive, birthday emails, intelligence recommendations, item-scrape queue, verification cleanup). They are protected by `CRON_SECRET` and **only fire if a scheduler is wired up** - the app does not self-schedule. Always set `CRON_SECRET` to a long random string before relying on cron.
 
@@ -42,7 +42,7 @@ Per-platform cron details:
 - **Render**: schedules ship as Cron Jobs in `render.yaml`. See [Hosted (Render)](/render/#cron-jobs).
 - **Self-hosted Docker Compose**: a busybox crond sidecar runs alongside the app. See [Self-hosting → Scheduled jobs](/self-hosting/#addon-scheduled-jobs-cron).
 
-### Customizing schedules across deployments
+### Customizing Schedules Across Deployments
 
 Cron expressions live in several places that should stay in sync:
 
@@ -58,7 +58,7 @@ When you change a schedule, update every file your deployment uses _plus_ the re
 
 The full deployment-platform matrix, the lock-key namespace convention for adding a new cron-tick runner, and the complete sample-schedule table live in [.notes/cron-and-jobs.md](https://github.com/shawnphoffman/giftwrapt/blob/main/.notes/cron-and-jobs.md).
 
-## Custom Node deploy
+## Custom Node Deploy
 
 ```bash
 pnpm install --frozen-lockfile
@@ -80,7 +80,7 @@ All env vars from [env.example](https://github.com/shawnphoffman/giftwrapt/blob/
 
 The Dockerfile in the repo root is the canonical reference for what a minimal production runtime looks like. Note that it sets `HOST=::` so the server binds IPv6 by default - required for PaaS platforms with IPv6-only private networking (Railway, Fly). Override with `HOST=0.0.0.0` if you need IPv4-only.
 
-## Releases and the GHCR image
+## Releases and the GHCR Image
 
 `release-please` watches `main` and opens a release PR with the next semver bump and a generated `CHANGELOG.md` entry. Merging that PR tags the release, which triggers the GHCR image publish:
 
@@ -91,7 +91,7 @@ ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z
 
 Pin a specific tag in production by setting `APP_IMAGE` in your `.env`. The compose files default to `:latest` for first-time setup but you should pin once you're past the "does it work" phase.
 
-## What's where
+## What's Where
 
 | Concern | Where |
 |---|---|

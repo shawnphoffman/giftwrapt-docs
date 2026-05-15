@@ -9,9 +9,9 @@ import { Aside, Tabs, TabItem, CardGrid, LinkCard } from '@astrojs/starlight/com
 
 GiftWrapt uses [better-auth](https://better-auth.com) for sessions. Out of the box you get email + password sign-in, with optional OIDC, WebAuthn passkeys, and TOTP-based two-factor.
 
-## Email + password
+## Email + Password
 
-<Aside type="note" title="First admin is automatic">
+<Aside type="note" title="First Admin Is Automatic">
 The first user to sign up on a fresh deployment is auto-promoted to admin. If you lose every admin account, the next signup re-bootstraps - useful for recovery.
 </Aside>
 
@@ -21,7 +21,7 @@ Password resets are tokenized URLs sent over email. If outbound email isn't conf
 
 Password reset tokens are good for 60 minutes.
 
-## OIDC (single sign-on)
+## OIDC (Single Sign-On)
 
 Admins can wire up any OpenID Connect provider (Authentik, Authelia, Keycloak, Google Workspace, etc.) from the admin settings UI. The form takes:
 
@@ -40,28 +40,28 @@ Passkeys are an **add-on**, not a primary sign-in method. Users sign in with ema
 
 The relying-party identifier defaults to the hostname of `BETTER_AUTH_URL`. If you're testing over an IP address or an ngrok tunnel, set `BETTER_AUTH_URL` to the exact origin the browser loads so WebAuthn's same-origin check passes.
 
-## Two-factor auth (TOTP)
+## Two-Factor Auth (TOTP)
 
 Users can enable TOTP-based 2FA from their account settings. Enrollment requires entering a valid code *before* 2FA is flipped on - so a misconfigured authenticator app can't lock the user out. Backup codes are generated at enrollment time and shown once; users should store them somewhere safe.
 
-## API keys (mobile app)
+## API Keys (Mobile App)
 
 The companion iOS app authenticates via per-device API keys minted from the user's account settings. Each install gets its own key, stored in the device Keychain. Revoking one device's key doesn't sign the user out of the web.
 
 API keys are kept fully separate from the web session cookie. The web's CSRF defense relies on the `sameSite=lax` cookie, and API keys never travel as cookies.
 
-## Cookies and origins
+## Cookies and Origins
 
 Session cookies are `httpOnly`, `sameSite=lax`, and `Secure` (when the deployment is HTTPS). Two environment variables affect cookie behavior:
 
 - **`TRUSTED_ORIGINS`** - comma-separated extra origins to trust beyond `BETTER_AUTH_URL`. Set this if you reach the same instance from more than one hostname (e.g. a public domain plus a LAN IP).
 - **`INSECURE_COOKIES=true`** - drops the `Secure` flag, so cookies work on plain-HTTP origins. The server refuses to boot with both `INSECURE_COOKIES=true` *and* an HTTPS `BETTER_AUTH_URL`.
 
-<Aside type="danger" title="Don't set INSECURE_COOKIES on HTTPS deploys">
+<Aside type="danger" title="Don't Set INSECURE_COOKIES on HTTPS Deploys">
 It weakens cookie security globally to make a plain-HTTP origin work. The boot guard prevents the obvious case, but leaving this on after you've moved to HTTPS quietly weakens every session.
 </Aside>
 
-## Rate limiting
+## Rate Limiting
 
 better-auth's built-in rate limiter is enabled with database-backed counters (so the limits hold across instances on Vercel / Render / Railway). Sign-in, sign-up, password change, and session reads all have stricter caps applied automatically.
 
@@ -70,7 +70,7 @@ API keys have their own per-key limit of 300 requests per minute. That's tuned f
 ## Related
 
 <CardGrid>
-	<LinkCard title="Environment variables" href="/configuration/environment-variables/" description="BETTER_AUTH_*, INSECURE_COOKIES, TRUSTED_ORIGINS, and the rest." />
+	<LinkCard title="Environment Variables" href="/configuration/environment-variables/" description="BETTER_AUTH_*, INSECURE_COOKIES, TRUSTED_ORIGINS, and the rest." />
 	<LinkCard title="Emails" href="/configuration/emails/" description="Configure Resend so password resets actually send." />
 	<LinkCard title="Permissions" href="/permissions/" description="What each authenticated user can see and do." />
 </CardGrid>
