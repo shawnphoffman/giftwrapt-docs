@@ -1,0 +1,167 @@
+---
+title: Troubleshooting
+description: Recovery steps for the failure modes a self-hoster is most likely to hit cold. Each section starts with the exact log line so it's grep-able from a crashing container.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+Recovery steps for the failure modes a self-hoster is most likely to hit cold. Each section is anchored from a log line in the running app — if the app printed a `giftwrapt.dev/reference/troubleshooting/#...` URL, the section it points at is here.
+
+For *planned* secret rotation (not "something broke, help"), see [Rotating Secrets](/reference/secrets/).
+
+## Migration fails: `type "X" already exists`
+
+**Symptom.** The container restart-loops on a stack trace like:
+
+```
+_DrizzleQueryError: Failed query: CREATE TYPE "public"."cron_run_status" AS ENUM(...)
+caused by: error: type "cron_run_status" already exists
+```
+
+The migrate preflight should also log a structured `recoverySql` field with the exact SQL described below.
+
+**Cause.** The migration history was squashed to a single baseline on 2026-05-15. Your DB has the pre-squash migration tracker rows recording the old (now-deleted) migrations. drizzle's high-water-mark logic sees the new `0000_initial` as unapplied and tries to replay it, which fails because the schema is already in place.
+
+**Recovery.** Rewrite the tracker so the new baseline is marked applied. The actual schema isn't touched. The migrate preflight prints the exact SQL with the right hash and timestamp for the version you're running, in the `recoverySql` field of the fatal log line. It looks like this:
+
+```sql
+BEGIN;
+DELETE FROM drizzle.__drizzle_migrations;
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+VALUES ('<baseline-hash>', <baseline-when>);
+COMMIT;
+```
+
+If you don't have the preflight log, you can compute the values yourself: the hash is `shasum -a 256 drizzle/0000_initial.sql`, and `when` is the `idx=0` entry in `drizzle/meta/_journal.json`.
+
+Then restart the container. The next boot will see the baseline as applied and only run migrations newer than it.
+
+<Aside type="caution" title="Caveat">
+This recovery assumes your DB schema was actually caught up to pre-squash `main` before you upgraded. If the deployment was on an older build, parts of the baseline schema may genuinely be missing and the next boot will fail somewhere else (a `CREATE TABLE` on a column that doesn't exist yet, or similar). In that case the cleanest fix is to restore a snapshot from before the upgrade.
+</Aside>
+
+## Migration fails: `relation already exists` with empty tracker
+
+**Symptom.** The container restart-loops on a `CREATE TABLE` that fails with `42P07: relation "users" already exists` (or similar), and the migrate preflight refuses to run with a message like:
+
+```
+database has application tables but the drizzle migration tracker is empty or missing
+```
+
+**Cause.** Somebody ran `drizzle-kit push` against this volume at some point. Push creates the schema but doesn't write to `drizzle.__drizzle_migrations`, so the next `drizzle-kit migrate` thinks nothing has been applied and tries to recreate every table from scratch.
+
+**Recovery.** There's no in-place fix — push and migrate can't coexist. Drop and recreate the database, then restart so migrations run from scratch:
+
+```bash
+docker compose stop giftwrapt
+docker compose exec giftwrapt-db psql -U postgres -c "DROP DATABASE giftwrapt;"
+docker compose exec giftwrapt-db psql -U postgres -c "CREATE DATABASE giftwrapt;"
+docker compose start giftwrapt
+```
+
+If you have user data you can't lose, snapshot the volume first and figure out a manual data migration; the volume itself is unusable as a migrate target.
+
+## App 500s with Zod errors after `BETTER_AUTH_SECRET` changed
+
+**Symptom.** Pages 500 in production with stack traces like:
+
+```
+ZodError: Invalid input: expected string, received undefined
+  path: [scrapeProviders, 0, token]
+ZodError: Invalid input: expected object, received null
+  path: [oidcClient]
+Error: Unsupported state or unable to authenticate data
+  at Decipheriv.final
+```
+
+Often accompanied by `[better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy`.
+
+**Cause.** Encrypted-at-rest fields (scrape provider tokens, OIDC client secret, Resend API key) are encrypted with a key derived from `BETTER_AUTH_SECRET` via scrypt. If `BETTER_AUTH_SECRET` is removed, regenerated, or differs from the value that wrote those rows, AES-GCM auth-tag verification fails and the loader drops the field — which then trips Zod because the schema expects a string. The full background on this coupling is in [The BETTER_AUTH_SECRET Gotcha](/reference/secrets/#the-better_auth_secret-gotcha).
+
+**Best recovery: restore the original secret.** Check anywhere it might have been recorded (password manager, `.env` backup, prior compose config). Put it back as `BETTER_AUTH_SECRET` on the giftwrapt service and restart. Encrypted values will decrypt again immediately.
+
+**If the secret is lost.** Ciphertext can't be recovered. Clear the bad envelopes so the app boots, set a fresh strong secret, then re-enter the credentials via the admin UI (the UI re-encrypts with the current key):
+
+```sql
+-- Run against the giftwrapt database.
+-- DELETE (not UPDATE SET NULL) — the schema rejects a NULL value for
+-- oidcClient, but an absent row falls back to the default object.
+DELETE FROM app_settings WHERE key IN ('oidcClient', 'resendApiKey');
+UPDATE app_settings SET value = '[]'::jsonb WHERE key = 'scrapeProviders';
+```
+
+Then generate a fresh secret and pin it in the compose env:
+
+```bash
+openssl rand -base64 48
+```
+
+```yaml
+environment:
+  BETTER_AUTH_SECRET: <paste here, save in a password manager>
+```
+
+Restart the service. Sign back in (old sessions are invalidated by the secret change). Go to `/admin/settings` and re-paste your scraper tokens, Resend API key, and OIDC client secret if you use them.
+
+<Aside type="danger">
+Don't rotate this secret casually. Every rotation invalidates every session cookie AND every encrypted secret in the DB. If you ever need to rotate it intentionally, follow [Option A in Rotating Secrets](/reference/secrets/#option-a-clean-rotation-recommended) so you re-encrypt before swapping.
+</Aside>
+
+## Storage init fails with S3 403
+
+**Symptom.** At boot:
+
+```
+{"scope":"storage.boot","err":{"$metadata":{"httpStatusCode":403},...},
+ "endpoint":"http://giftwrapt-storage:3900","bucket":"giftwrapt",
+ "msg":"storage.init.failed"}
+```
+
+The UI shows the "storage disabled" banner; image uploads (avatars, item images) don't work.
+
+**Cause.** The S3 credentials on the giftwrapt service (`STORAGE_ACCESS_KEY_ID` / `STORAGE_SECRET_ACCESS_KEY`) don't match the keys configured inside the storage sidecar (Garage or MinIO). Common after rebuilding the storage container or rotating its keys without propagating them.
+
+**Recovery.** Either align the giftwrapt env with the storage container's existing keys, or generate fresh keys on the storage side and update both.
+
+For Garage:
+
+```bash
+docker compose exec giftwrapt-storage /garage key list
+# pick the key you want to use, or:
+docker compose exec giftwrapt-storage /garage key create giftwrapt-app
+# then read the access/secret out of the create output and put them in the
+# giftwrapt service env as STORAGE_ACCESS_KEY_ID and STORAGE_SECRET_ACCESS_KEY
+```
+
+For MinIO: check the `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` (or service-account credentials) configured on the storage container and put the same values in the giftwrapt env.
+
+After updating env, `docker compose up -d --force-recreate giftwrapt`. The next boot's `storage.boot` log line should disappear or report `storage.ready`.
+
+This issue is independent of `BETTER_AUTH_SECRET` and migration recovery — fix in any order.
+
+## Boot warning: `BETTER_AUTH_SECRET appears low-entropy`
+
+**Symptom.** Warnings at boot:
+
+```
+[better-auth] Warning: your BETTER_AUTH_SECRET should be at least 32 characters long
+[better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy
+```
+
+**Cause.** The secret in `BETTER_AUTH_SECRET` is too short or too predictable. Common when a Railway template / docker-compose default generated a placeholder, or when an operator set it to something memorable.
+
+**Fix.** Generate a real one:
+
+```bash
+openssl rand -base64 48
+```
+
+Put it in the compose env, save it in a password manager, restart.
+
+<Aside type="caution">
+Every existing session cookie is invalidated; users have to sign back in. Every encrypted secret in `app_settings` becomes unreadable; see [the previous section](#app-500s-with-zod-errors-after-better_auth_secret-changed) for what to do about that.
+
+If you're going to rotate this secret, do it **before** you've configured anything via `/admin/settings`. After that point, every rotation is destructive to your stored secrets unless you follow the [clean rotation](/reference/secrets/#option-a-clean-rotation-recommended) procedure.
+</Aside>
