@@ -1,0 +1,42 @@
+---
+title: Mobile App
+description: The GiftWrapt companion iOS app - current status, what it does today, and how to try it on a self-hosted deployment.
+sidebar:
+  order: 8
+  badge:
+    text: Preview
+    variant: note
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+GiftWrapt has a native iOS companion app that talks to the same server the web app does. It is in preview - source-available, runnable today against any self-hosted deployment, but not yet generally distributed.
+
+## Status
+
+There is no TestFlight beta or App Store listing yet. The app lives in the [`ios/`](https://github.com/shawnphoffman/giftwrapt/tree/main/ios) repo and is built from source in Xcode. A public distribution is on the roadmap but not dated.
+
+If you're self-hosting and comfortable with Xcode, you can sideload it against your own server today. The setup steps live in the [iOS repo README](https://github.com/shawnphoffman/giftwrapt/blob/main/ios/README.md).
+
+## What It Does Today
+
+- **Sign in per device.** Each install authenticates via a per-device API key minted from the user's account settings (see [API Keys (Mobile App)](/configuration/auth/#api-keys-mobile-app)). Revoking one device doesn't sign the user out elsewhere.
+- **Browse lists.** Your own lists, lists shared with you, and any children's lists you have access to. Item detail, claims, and unclaims work the way they do on the web.
+- **Save from anywhere.** A share extension lets you send a URL into the app from any other app (Safari, a retailer app, Messages) and queues it as an item with a scraped preview.
+- **Compose items on the go.** Type an item directly, or use the **quick-add by barcode** flow to scan a product's UPC, EAN, or GTIN. When a [barcode provider](/configuration/settings/) is configured server-side, the scan prefills the title, brand, photo, and a candidate URL for review before save.
+
+## Enabling It on a Self-Hosted Deployment
+
+1. In **Admin Settings**, turn on `enableMobileApp`. This exposes the mobile API surface and the per-user API-key UI. See [Admin Settings](/configuration/settings/) for context.
+2. Have each user mint a device API key from their account settings page and paste it into the iOS app's login screen alongside the server URL.
+3. Optional: to enable the quick-add by barcode flow, configure a lookup provider at `/admin/barcode`. Without a provider, the app hides the scanner button.
+
+## Coming Soon
+
+A publicly distributed build is planned but not yet scheduled. Until then, the app is a self-hoster's preview.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="API Keys (Mobile App)" href="/configuration/auth/#api-keys-mobile-app" description="How per-device authentication works." />
+</CardGrid>

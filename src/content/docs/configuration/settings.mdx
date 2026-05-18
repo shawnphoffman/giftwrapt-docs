@@ -29,6 +29,7 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 | Settings | `/admin/settings` | App-level toggles: list types, archive timing, comments, mobile, OIDC, passkeys. |
 | Email | `/admin/email` | Email-family toggles (comments, birthday, Christmas, holiday, reminders, relationship reminders) and a test-send button. |
 | Auth | `/admin/auth` | OIDC client config; passkey toggle. |
+| Barcode | `/admin/barcode` | Mobile barcode-lookup provider, API key, cache TTL, and scraper fallback. Surfaced when `enableMobileApp` is on. |
 | Scraping | `/admin/scraping` | URL scraping providers, tiers, quality threshold, cache, AI toggles. |
 | AI | `/admin/ai` | LLM provider (OpenAI / Anthropic / OpenAI-compatible), model, base URL, API key. |
 | Intelligence | `/admin/intelligence` | Recommendations feature: enable, schedule, analyzers, retention, notifications. |
@@ -67,7 +68,7 @@ A few app-wide toggles that shape what users see:
 | `enableGenericHolidayLists` | true | Same, for admin-curated custom holidays. |
 | `enableTodoLists` | true | Todo lists, a separate row shape from gift items. |
 | `enableComments` | true | Item comments. |
-| `enableMobileApp` | false | Exposes the mobile API and shows passkey + API key UI. |
+| `enableMobileApp` | false | Exposes the mobile API and shows the per-device API key UI. See [Mobile App](/features/mobile/). |
 | `enablePasskeys` | false | WebAuthn passkey enrollment. |
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
