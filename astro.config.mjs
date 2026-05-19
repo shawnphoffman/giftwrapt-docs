@@ -63,25 +63,31 @@ export default defineConfig({
 				{
 					label: 'Deploy',
 					items: [{ autogenerate: { directory: 'deploy' } }],
+					collapsed: true,
 				},
 				{
 					label: 'Features',
 					items: [{ autogenerate: { directory: 'features' } }],
+					collapsed: true,
 				},
 				{
 					label: 'Permissions',
 					items: [{ autogenerate: { directory: 'permissions' } }],
+					collapsed: true,
 				},
 				{
 					label: 'Configuration',
 					items: [{ autogenerate: { directory: 'configuration' } }],
+					collapsed: true,
 				},
 				{
 					label: 'Reference',
 					items: [{ autogenerate: { directory: 'reference' } }],
+					collapsed: true,
 				},
 				{
 					label: 'Changelog',
+					collapsed: true,
 					items: [
 						...makeChangelogsSidebarLinks([
 							{
