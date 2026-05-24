@@ -1,0 +1,85 @@
+---
+title: Observability
+description: Opt-in Sentry-compatible error reporting and Prometheus metrics for self-hosted deployments. Default off; you bring your own backend.
+sidebar:
+  order: 10
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt ships with **no third-party observability by default**. Operators who want error reporting or a metrics endpoint can opt in to either family independently, pointed at whichever backend they operate.
+
+<Aside type="note" title="Bring Your Own Backend">
+Nothing here phones home to a maintainer-controlled domain. The Sentry DSN points wherever you set it (sentry.io project, a self-hosted [Glitchtip](https://glitchtip.com/), a proxy you run); the metrics endpoint is scraped by whoever you point at it. The hosted instance at giftwrapt.dev either has these off or routes to a maintainer-operated backend, disclosed in its own privacy notice if applicable.
+</Aside>
+
+## Stance
+
+Two families, two gates each:
+
+- **Env owns the host / secret.** `SENTRY_DSN` for error reporting, `METRICS_TOKEN` for the metrics endpoint. Set per deploy, not editable from the admin UI.
+- **Admin owns the runtime kill-switch.** `enableSentry` and `enableMetrics` toggles in **Admin > Observability**, default off, hot-reloadable per request.
+
+Both gates must be true to emit. If you flip the env without flipping the toggle (or vice versa), nothing leaves the server.
+
+Client-side analytics (Plausible, Umami, PostHog, Vercel Analytics) is **deliberately not integrated**. This page covers only operator-side error reports and metrics. See [Privacy and Telemetry](/reference/privacy/) for the broader stance.
+
+## Sentry-compatible Error Reporting
+
+_Detailed setup, scrub list, and verification steps land alongside the implementation._
+
+### Required env
+
+- `SENTRY_DSN` - the project DSN from your Sentry / Glitchtip backend.
+
+### Optional env
+
+- `SENTRY_ENVIRONMENT` - defaults to `NODE_ENV`.
+- `SENTRY_RELEASE` - typically the build SHA. Set in CI for source-map alignment.
+- `SENTRY_TRACES_SAMPLE_RATE` - 0 to 1, defaults to 0 (errors only, no tracing spans).
+
+### Enabling
+
+1. Set `SENTRY_DSN` (and any optional env vars above) in your deployment env.
+2. Restart the app so CSP picks up the DSN origin for `connect-src`.
+3. In **Admin > Observability**, flip **Enable Sentry Error Reporting** on.
+
+### Disabling
+
+Flip the admin toggle off. Server-side capture stops on the next request. Browser SDKs already loaded in open tabs keep running until those tabs reload or the deploy restarts.
+
+## Prometheus Metrics
+
+_Endpoint shape, scrape configuration, and the exported metrics catalog land alongside the implementation._
+
+### Required env
+
+- `METRICS_TOKEN` - bearer token, minimum 16 chars. Generate one with:
+
+  ```bash
+  openssl rand -hex 32
+  ```
+
+### Enabling
+
+1. Set `METRICS_TOKEN` in your deployment env.
+2. In **Admin > Observability**, flip **Enable Prometheus Metrics Endpoint** on.
+3. Configure your Prometheus scraper to hit `/api/metrics` with `Authorization: Bearer $METRICS_TOKEN`.
+
+### Endpoint behavior
+
+- Returns **404** (not 401) when disabled or the token is wrong, to avoid endpoint-existence disclosure to internet scanners.
+- Returns Prometheus exposition format (`text/plain; version=0.0.4`) on success.
+
+## What Gets Sent
+
+_Concrete matrix lands alongside the implementation. Short version:_
+
+- **Sentry**: stack traces, request URL (query-stripped), matched route. Item / list / claim field names and values may appear in error contexts as debugging signal. Cookies, auth headers, passwords, tokens are stripped. The opt-in operator routes events to their own backend; seeing their own data is the point.
+- **Metrics**: only enum-bounded labels (list type, cron job name, status class). No user / list / item IDs in any label.
+
+See [Privacy and Telemetry](/reference/privacy/) for how this relates to the broader privacy posture.
+
+## Why No Client-Side Analytics
+
+A deliberate skip. Funnel and retention analytics on a family-scale wish-list app aren't worth the CSP / privacy / cookie-banner cost. Re-evaluate if a future feature concretely needs it.
