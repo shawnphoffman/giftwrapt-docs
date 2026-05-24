@@ -64,7 +64,7 @@ Recipients of gift lists never see Sentry events; the SDK runs server-side and i
 
 ## Prometheus Metrics
 
-_Endpoint shape, scrape configuration, and the exported metrics catalog land alongside the implementation._
+Counters and histograms accumulate in memory on every deployment regardless of toggle state; the admin toggle and bearer token gate **exposure**, not accumulation. When you turn the endpoint on, the counters reflect activity from the moment the process started, not the moment you flipped the toggle.
 
 ### Required env
 
@@ -84,6 +84,28 @@ _Endpoint shape, scrape configuration, and the exported metrics catalog land alo
 
 - Returns **404** (not 401) when disabled or the token is wrong, to avoid endpoint-existence disclosure to internet scanners.
 - Returns Prometheus exposition format (`text/plain; version=0.0.4`) on success.
+- All labels are enum-bounded. Routes with dynamic segments (`/lists/$listId`, etc.) are normalized to `/lists/<id>` so cardinality stays bounded.
+
+### Exported Metrics
+
+Synced from the core registry at build time. Edit `core/src/lib/observability/metrics.ts` and re-run `pnpm metrics:catalog` in `core/` to refresh.
+
+{/* metrics:start file=observability/metrics-catalog.json */}
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `claims_created_total` | counter | _(none)_ | Gift claims created (gifter assigned to an item). |
+| `claims_deleted_total` | counter | _(none)_ | Gift claims deleted (unclaim). |
+| `cron_run_duration_ms` | histogram | `job`, `outcome` | Cron run duration in milliseconds, by job and resolved outcome. |
+| `cron_run_outcomes_total` | counter | `job`, `outcome` | Cron run outcomes, by job. Outcomes match cron_runs.status (success, error, skipped). |
+| `http_request_duration_ms` | histogram | `method`, `route`, `status_class` | HTTP request duration in milliseconds, by matched route template, method, and status class. |
+| `intelligence_runs_completed_total` | counter | `outcome` | Intelligence (recommendations) cron runs completed, by outcome. |
+| `items_archived_total` | counter | _(none)_ | Items archived (revealed to recipient). |
+| `items_created_total` | counter | _(none)_ | Items created on a list. |
+| `items_pending_deletion_total` | counter | _(none)_ | Items flipped to pending-deletion via recipient delete on a claimed item. |
+| `lists_created_total` | counter | `type` | Lists created, by type. |
+| `orphan_claims_cleaned_up_total` | counter | _(none)_ | Orphan claims hard-deleted by the daily cleanup pass. |
+| `reveals_triggered_total` | counter | `trigger` | Reveals (item archive) triggered, by trigger source. |
+{/* metrics:end */}
 
 ## Why No Client-Side Analytics
 
