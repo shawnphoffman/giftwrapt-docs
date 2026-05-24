@@ -26,7 +26,7 @@ Client-side analytics (Plausible, Umami, PostHog, Vercel Analytics) is **deliber
 
 ## Sentry-compatible Error Reporting
 
-_Detailed setup, scrub list, and verification steps land alongside the implementation._
+Server-side errors (caught at the Nitro `error` hook and the TanStack server-fn `loggingMiddleware`) and browser-side errors (caught at the React `ErrorBoundary` plus Sentry's React SDK) are forwarded to the backend you point `SENTRY_DSN` at. Works with sentry.io, self-hosted [Glitchtip](https://glitchtip.com/), or any compatible HTTP ingest.
 
 ### Required env
 
@@ -47,6 +47,20 @@ _Detailed setup, scrub list, and verification steps land alongside the implement
 ### Disabling
 
 Flip the admin toggle off. Server-side capture stops on the next request. Browser SDKs already loaded in open tabs keep running until those tabs reload or the deploy restarts.
+
+### What gets sent
+
+- Stack traces, error messages, the matched request route, the request URL with query string stripped.
+- Item / list / claim / user-id fields that happen to be in scope at the throw site - deliberate debugging signal so the operator can act on real bugs.
+- Sentry's `sendDefaultPii: false` is set, so the SDK does not auto-attach IPs or default user info.
+
+What is stripped (in `src/lib/observability/scrubber.ts`):
+
+- Query strings on the request URL.
+- Cookie + Authorization headers (and any header key matching `password` / `token` / `apiKey` / `secret`).
+- Recursive strip of those same keys inside event extras, contexts, and breadcrumb data.
+
+Recipients of gift lists never see Sentry events; the SDK runs server-side and in the operator's own browser sessions, not in a recipient's UI surface. Spoiler protection in the app is enforced at the rendering layer regardless of what does or doesn't end up in the operator's error tracker.
 
 ## Prometheus Metrics
 
@@ -70,15 +84,6 @@ _Endpoint shape, scrape configuration, and the exported metrics catalog land alo
 
 - Returns **404** (not 401) when disabled or the token is wrong, to avoid endpoint-existence disclosure to internet scanners.
 - Returns Prometheus exposition format (`text/plain; version=0.0.4`) on success.
-
-## What Gets Sent
-
-_Concrete matrix lands alongside the implementation. Short version:_
-
-- **Sentry**: stack traces, request URL (query-stripped), matched route. Item / list / claim field names and values may appear in error contexts as debugging signal. Cookies, auth headers, passwords, tokens are stripped. The opt-in operator routes events to their own backend; seeing their own data is the point.
-- **Metrics**: only enum-bounded labels (list type, cron job name, status class). No user / list / item IDs in any label.
-
-See [Privacy and Telemetry](/reference/privacy/) for how this relates to the broader privacy posture.
 
 ## Why No Client-Side Analytics
 

@@ -11,11 +11,13 @@ GiftWrapt is built for families running it for themselves. The default posture i
 
 ## What This Means Concretely
 
-- **No third-party error tracker is integrated.** Not Sentry, not LogRocket, not Bugsnag, not Datadog, not Highlight. Errors land in your server logs (`stdout`, accessible via `docker logs` / Vercel logs / your runtime's log viewer) and stay there.
-- **No analytics SDK.** No Google Analytics, no Plausible, no Posthog, no Vercel Web Analytics, not even a hit counter.
-- **No "anonymous metrics" backchannel.** The app does not check in with us to report version numbers, deploy counts, or anything else.
+- **No third-party error tracker is integrated by default.** Out of the box, no DSN is set and the admin toggle is off; errors land in your server logs (`stdout`, accessible via `docker logs` / Vercel logs / your runtime's log viewer) and stay there. An operator who wants error reporting can opt in to a Sentry-compatible backend they operate themselves; see [Observability](/configuration/observability/) for the full opt-in flow. Events from an opted-in deployment go to **the backend the operator configured** (their Glitchtip, their Sentry org, their proxy), never to a maintainer-controlled domain.
+- **No analytics SDK.** No Google Analytics, no Plausible, no Posthog, no Vercel Web Analytics, not even a hit counter. This isn't on the opt-in list either; client-side analytics stays out.
+- **No "anonymous metrics" backchannel.** The app does not check in with us to report version numbers, deploy counts, or anything else. Operators can optionally expose a Prometheus metrics endpoint on their own deployment (see [Observability](/configuration/observability/)), scraped by their own Prometheus.
 
-This is a deliberate design choice, not an oversight. Reporting errors to an external service is a useful operator convenience that we trade away because the cost - exfiltrating fragments of user data through stack traces, payload dumps, breadcrumbs, and source maps - isn't justified for a family-scale wish-list app. Self-hosters running this for their household shouldn't have to audit a telemetry config to be confident their data stays local.
+The framing is "default off, operator-routed when on." Self-hosters running this for their household get the same posture they always had unless they go out of their way to opt in. The hosted instance at giftwrapt.dev either has these off or routes to a maintainer-operated backend, disclosed in its own privacy notice if applicable.
+
+Reporting errors to an external service is a useful operator convenience that we deliberately do not enable by default, because the cost - exfiltrating fragments of user data through stack traces, payload dumps, breadcrumbs, and source maps - isn't justified for a family-scale wish-list app unless the operator has actively decided they want it. The opt-in path makes that decision explicit instead of accidental.
 
 ## What About Runtime Errors?
 
@@ -28,7 +30,7 @@ When something blows up in production:
 If you hit a bug worth reporting, the manual path is the only path: grab the relevant log lines, screenshot the UI if applicable, and open an issue at [github.com/shawnphoffman/giftwrapt](https://github.com/shawnphoffman/giftwrapt/issues). That's a feature, not a bug.
 
 <Aside type="note" title="If You Self-Host and Want Error Tracking">
-You can add your own if you really want it - Sentry, GlitchTip, or whatever - by patching the relevant init points yourself. The app deliberately ships without integration points wired up so that doing so is an opt-in fork, not a config-flag flip that ships errors somewhere by accident.
+The app ships with first-class opt-in support for Sentry-compatible error reporting. Set `SENTRY_DSN` to your own backend (sentry.io, Glitchtip self-hosted, whatever you operate) and flip the **Enable Sentry Error Reporting** toggle in **Admin > Observability**. Both gates must be true to emit; flipping either off stops new events. See [Observability](/configuration/observability/) for the full setup, what gets scrubbed, and how to verify nothing flows beyond the backend you pointed at.
 </Aside>
 
 ## What Does Go Out Over the Network
@@ -42,6 +44,7 @@ There are a small number of outbound network calls. **All of them are explicitly
 | Your scraper provider (browserless / FlareSolverr / etc.) | Only when scraping a URL | The URL being fetched | Admin UI: scraper settings; env `BROWSERLESS_URL` / `FLARESOLVERR_URL` |
 | Your object storage (R2 / AWS / your Garage cluster) | Always, for image uploads | The image bytes themselves | env `STORAGE_*` |
 | Vercel `live.vercel.com` script | Only on Vercel preview builds (`VERCEL_ENV=preview`) | The page URL (for preview-comment overlay) | Use a different host, or build with `VERCEL_ENV` unset |
+| Sentry-compatible backend (the one *you* set) | Only when `SENTRY_DSN` is set AND **Enable Sentry Error Reporting** is on in admin | Server + browser error events; see [Observability](/configuration/observability/) for the scrub list | env `SENTRY_DSN`; admin toggle `enableSentry` |
 
 Notably **not** in the list: WebAuthn / passkey registration. Passkeys are negotiated between the browser and your operating system's authenticator (Touch ID, Windows Hello, a YubiKey); the only network traffic is between the user's browser and your own GiftWrapt server. No external "passkey provider" is involved.
 
@@ -59,9 +62,9 @@ Production builds **do not ship source maps** to the client. Stack traces in you
 
 ## What if a Contributor Proposes Adding Telemetry?
 
-The position is "no, by default." A contributor PR that wires in error tracking, analytics, or any other phone-home gets:
+The position is "default off, operator-routed." A contributor PR that wires in error tracking, analytics, or any other phone-home gets:
 
-- Rejected outright if it's enabled by default.
-- Considered for inclusion only if (a) it's strictly opt-in via env, (b) it ships with a PII-scrubbing config that's enabled by default, (c) the docs are updated to describe what's collected and where it goes.
+- Rejected outright if it's enabled by default, or if it routes to a maintainer-controlled domain.
+- Considered for inclusion only if (a) it's strictly opt-in via env AND an admin toggle, (b) it ships with credential scrubbing enabled by default, (c) the docs are updated to describe what's emitted and where it goes, (d) the operator can point it at infrastructure they themselves operate.
 
-Even then, the bar is high. The simple absence of telemetry is a feature this project commits to.
+The opt-in Sentry + Prometheus integration described above meets that bar. Client-side analytics (Plausible, Umami, PostHog, Vercel Analytics) does not, and stays out.

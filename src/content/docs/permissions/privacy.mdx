@@ -60,6 +60,10 @@ A gift-ideas list is a list of things to buy *for someone else*. It's always pri
 
 When the optional AI recommendation features are enabled, the analyzers see only the user's own items and metadata. Claim information - who claimed what, when - is excluded from every prompt sent to a model, and the prompts explicitly instruct the model never to mention gifters or claims.
 
+### Operators May Have Opted In to Error Reports
+
+If the operator of your deployment has turned on Sentry-compatible error reporting (default off; see [Observability](/configuration/observability/)), runtime errors are sent to the backend the operator configured (their Glitchtip, their Sentry org). Those events may include item names, list names, and other context useful for debugging - sent **only to the backend the operator runs**, never to a maintainer-controlled domain. Spoiler protection in the app UI is unaffected; the recipient still doesn't see claim data, regardless of what does or doesn't end up in the operator's error tracker.
+
 ## Related
 
 <CardGrid>
