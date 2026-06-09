@@ -13,7 +13,7 @@ GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbou
 
 | Endpoint | Suggested schedule | What it does |
 |---|---|---|
-| `/api/cron/auto-archive` | `0 6 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. |
+| `/api/cron/auto-archive` | `0 6 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. Skips lists with an active per-list extension and reveals any whose extension has elapsed. |
 | `/api/cron/birthday-emails` | `0 7 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, relationship reminders, and the [orphan-claim cleanup passes](#orphan-claim-cleanup). |
 | `/api/cron/cleanup-verification` | `0 3 * * *` | Deletes expired better-auth verification rows; sweeps cron-run retention rows. |
 | `/api/cron/intelligence-recommendations` | `0 4 * * *` | Runs the per-user analyzer pipeline; persists recommendations + run rows. |

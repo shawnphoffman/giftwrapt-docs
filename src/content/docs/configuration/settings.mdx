@@ -82,8 +82,19 @@ These control when claims auto-archive (which is also when the recipient sees th
 | `archiveDaysAfterBirthday` | 14 | N days after the recipient's birthday. Applies to birthday and wishlist lists owned by that user. |
 | `archiveDaysAfterChristmas` | 14 | N days after Dec 25. Applies to all Christmas lists. |
 | `archiveDaysAfterHoliday` | 14 | N days after the configured holiday's occurrence. Per-list via `customHolidayId`. |
+| `maxArchiveDeferDays` | 90 | Caps how far past a list's event date an editor/guardian/partner may *extend* the reveal (see Extensions below). |
 
 The auto-archive runs **regardless** of whether the corresponding email toggle is on. Disabling the post-birthday email doesn't disable the reveal.
+
+### Force-reveal & extensions (per list)
+
+On top of the deployment-wide timing above, anyone with edit access to a list can adjust that list's reveal from its **edit view**:
+
+- **Reveal now** force-archives every claim on the list immediately (and sends the matching reveal email). Only offered once the event has passed but before the reveal date, and never while an extension is active.
+- **Extend** pushes the reveal later, useful when an event sits close to another occasion (e.g. a graduation just before a birthday) so a gift isn't revealed too early. Extensions are push-later only and capped at the event date plus `maxArchiveDeferDays`.
+- **Cancel extension** returns the list to the derived default reveal date.
+
+The reveal date (and any active extension) is shown to gifters as a read-only banner, and to editors with the controls above. These are web-only features.
 
 ## Cross-References
 
