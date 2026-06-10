@@ -67,3 +67,9 @@ The self-claim block (you can't claim on your own list) only applies when the li
 ## Setting Up Guardian Relationships
 
 Guardian relationships are managed from the admin panel. There's no end-user "request to be my guardian" flow today; an admin sets up the link, and the child's parents take it from there.
+
+In the admin **Edit User** dialog, the guardian picker and the permission editors stay in sync. When you check someone as a guardian of the child, that person's access toggles lock immediately (a guardian always has full access, so there's nothing to set). Uncheck them as a guardian and the toggles re-enable. You don't have to save in between - the lock follows the picker live.
+
+<Aside type="note" title="Admins vs. the child">
+The child can't change permissions toward their own guardian, but an admin can manage everyone's access from this dialog. The one thing nobody can do - admin included - is mark a guardian or partner as **Restricted**; that pairing always resolves to full View.
+</Aside>
