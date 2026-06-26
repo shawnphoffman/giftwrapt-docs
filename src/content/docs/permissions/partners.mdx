@@ -34,6 +34,12 @@ When asking "did X gift this?", GiftWrapt looks at the claim's gifter **and** th
 
 Credit is computed at read time from the **current** partnership. Unlink your partner and they immediately stop appearing in your gift summaries; relink and they come back. There's no historical snapshot of who-was-partnered-when.
 
+## Shown as One Unit
+
+For gift display and cost-splitting, you and your partner are treated as a **single unit** - rendered together (avatars and names side by side, "Alice & Bob") and counted as one share when a gift's cost is split among co-gifters.
+
+A unit **never pairs you with the gift's recipient**, though. A gift *for* your partner shows you on your own - pairing you with them would give the surprise away. GiftWrapt works out who the recipient is for each view and leaves them out of the unit.
+
 ## Auto-Add as Editor on Public Lists
 
 When you create a public list, the create-list dialog includes a **"Add my partner as an editor"** toggle, defaulted to on. If you leave it ticked, GiftWrapt drops a list-editor row for your partner right after the list is created.

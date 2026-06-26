@@ -18,7 +18,7 @@ A claim can include:
 - **Quantity** - how many you're taking (for `quantity > 1` items).
 - **Total cost** - what you actually paid, optional.
 - **Notes** - private to other giftgivers.
-- **Co-gifters** - additional users who share credit for the gift.
+- **Co-gifters** - additional users who share credit, and optionally the cost, of the gift.
 
 Claims are reversible. If plans change, the giftgiver can release the claim and the item goes back into the unclaimed pool. (Unclaiming is a hard delete; there's no history.)
 
@@ -38,6 +38,20 @@ GiftWrapt tracks "who gifted what" for received-gifts summaries. Credit follows 
 - Anyone listed as a co-gifter on a claim also gets credit.
 
 This means "what I gifted last year" naturally reflects how households actually shop. Unlink a partner and they immediately stop appearing in your summaries; relink and they come back. There's no historical snapshot.
+
+## Splitting the Cost
+
+Co-gifters share more than credit - they can split what the gift actually costs. When a claim has co-gifters and a recorded total cost, GiftWrapt divides it into **even shares** by default, one share per gifter.
+
+You and your partner count as a **single unit** - one share between you, shown together as a pair - because a household pays once. A gift you and three friends go in on splits four ways: you-and-partner, plus the three friends.
+
+You can override the even split with a **custom split** in the claim's split editor. Custom amounts have to add up to no more than the total; GiftWrapt flags a split that doesn't fit.
+
+<Aside type="note" title="Splits Reset When the Basis Changes">
+Change the total cost or add / remove a co-gifter and a custom split is cleared back to an even share. A split you set for "$80 across four people" shouldn't silently survive becoming "$80 across two" - so it doesn't.
+</Aside>
+
+Either you **or your partner** can edit a claim's cost and split - it's the same household. Only the original claimer can release the claim. And you can't add the **recipient or their partner** as a co-gifter; GiftWrapt blocks it on the server, so the surprise can't help pay for itself.
 
 ## Reveal
 
