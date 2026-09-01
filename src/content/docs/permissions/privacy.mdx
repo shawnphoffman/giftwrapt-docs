@@ -20,7 +20,7 @@ There is no anonymous access. Every visitor must be signed in to see anything. S
 For each other user, you can set their access level to your lists. Three values:
 
 - **View** (default) - they can see your public lists and claim items as a normal gifter.
-- **Restricted** - between full view and none. They can still see your public lists at the list level and can claim items, but the *items* they can see are filtered: any item where the only claims are from other people is hidden from them. They never see who else claimed an item or anyone else's share of a split, and they never see list add-ons at all.
+- **Restricted** - between full view and none. They can still see your public lists at the list level and can claim items, but the *items* they can see are filtered: any item where the only claims are from other people is hidden from them. They never see who else claimed an item or anyone else's share of a split, and the only list add-ons they see are the ones they volunteered themselves.
 - **None** - they can't see your lists at all, even public ones, and you don't show up in their feed of other users either. Useful for distant in-laws or extended family who don't gift each other.
 
 <Aside type="note" title="Per-Direction, Not Mutual">
@@ -45,10 +45,11 @@ When a giftgiver claims an item, the list owner's view stays clean - no badge, n
 
 ### Reveal Is Recipient-Driven
 
-Claims become visible to the recipient only when the item is archived. Two things flip the archive:
+Claims become visible to the recipient only when the item is archived, and that happens for a whole list at a time rather than item by item. Three things flip it:
 
-- The recipient (or anyone with edit access to their list - a [guardian](/permissions/guardians/), a list editor) archives the item manually.
-- The [auto-archive cron](/features/claims/#auto-reveal) flips it on a schedule, a configurable delay past the recipient's birthday, Christmas, or the list's configured holiday.
+- The [auto-archive cron](/features/claims/#auto-reveal), on a schedule: a configurable delay past the recipient's birthday, Christmas, or the list's configured holiday. This is the usual path.
+- **Reveal now** on the list's archive badge, available to the recipient or anyone with edit access to their list (a [guardian](/permissions/guardians/), a list editor) once the event has passed and no reveal extension is pending.
+- **Archive all purchases** in list settings, for the owner, on the lists that don't auto-archive at all.
 
 Gifters can never force a reveal, even on items they've already given.
 
@@ -69,5 +70,5 @@ If the operator of your deployment has turned on Sentry-compatible error reporti
 <CardGrid>
 	<LinkCard title="Permissions Overview" href="/permissions/" description="The full access-level capability matrix." />
 	<LinkCard title="Claims and Reveal" href="/features/claims/" description="The recipient-driven reveal flow." />
-	<LinkCard title="Suggestions (AI)" href="/features/suggestions-ai/" description="What AI analyzers can and can't see." />
+	<LinkCard title="Suggestions (AI)" href="/features/suggestions/" description="What AI analyzers can and can't see." />
 </CardGrid>

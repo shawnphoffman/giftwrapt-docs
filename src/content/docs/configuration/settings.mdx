@@ -24,18 +24,28 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 
 | Section | Path | What it controls |
 |---|---|---|
-| Dashboard | `/admin` | At-a-glance counts and recent activity. |
-| Users | `/admin/users` | User list, roles, partner/guardian relationships, user-detail pages, impersonation. |
-| Settings | `/admin/settings` | App-level toggles: list types, archive timing, comments, mobile, OIDC, passkeys. |
+| General | `/admin` | App Settings (title, default list type, list-type toggles, mobile, passkeys), Comments, Birthday / Christmas / Holiday Lists (including archive timing and custom holidays), Relationship Reminders, Todo Lists, Observability. |
 | Email | `/admin/email` | Email-family toggles (comments, birthday, Christmas, holiday, reminders, relationship reminders) and a test-send button. |
 | Auth | `/admin/auth` | OIDC client config; passkey toggle. |
-| Barcode | `/admin/barcode` | Mobile barcode-lookup provider, API key, cache TTL, and scraper fallback. Surfaced when `enableMobileApp` is on. |
+| Users | `/admin/users` | User list, roles, partner/guardian relationships, user-detail pages, impersonation. |
+| Storage | `/admin/storage` | Bucket connectivity, recent uploads, test-upload. Hidden when storage isn't configured. |
 | Scraping | `/admin/scraping` | URL scraping providers, tiers, quality threshold, cache, AI toggles. |
 | AI | `/admin/ai` | LLM provider (OpenAI / Anthropic / OpenAI-compatible), model, base URL, API key. |
-| Intelligence | `/admin/intelligence` | Recommendations feature: enable, schedule, analyzers, retention, notifications. |
-| Storage | `/admin/storage` | Bucket connectivity, recent uploads, test-upload. |
+| Import / Export | `/admin/data` | Data import, export, and purge. |
 | Scheduling | `/admin/scheduling` | Cron-run history and next-fire times per endpoint. |
-| Data | `/admin/data` | DB-level diagnostics and one-off admin actions. |
+| Barcode | `/admin/barcode` | Mobile barcode-lookup provider, API key, cache TTL, and scraper fallback. Surfaced when `enableMobileApp` is on. |
+| Debug | `/admin/debug` | Build info, session, and the resolved `app_settings` payload. |
+
+[Intelligence](/configuration/intelligence/) has its own section, reached at `/admin/intelligence` and split across six tabs:
+
+| Tab | Path | What it controls |
+|---|---|---|
+| Stats | `/admin/intelligence` | Run health, coverage, token spend, active-rec counts. |
+| Settings | `/admin/intelligence/settings` | Enable, dry-run, model override, candidate cap, retention. |
+| Analyzers | `/admin/intelligence/analyzers` | Per-analyzer enable/disable and per-analyzer model overrides. |
+| Scheduling | `/admin/intelligence/scheduling` | Refresh interval, manual cooldown, concurrency, users per invocation. |
+| Notifications | `/admin/intelligence/notifications` | Operator-digest email gates and the test recipient. |
+| History | `/admin/intelligence/history` | Per-run history with steps, skip reasons, and errors. |
 
 ## What Lives in app_settings vs. Env
 
@@ -66,9 +76,9 @@ A few app-wide toggles that shape what users see:
 | `enableChristmasLists` | true | Christmas list type available. Disables related reminders and emails when off. |
 | `enableBirthdayLists` | true | Same, for birthday lists. |
 | `enableGenericHolidayLists` | true | Same, for admin-curated custom holidays. |
-| `enableTodoLists` | true | Todo lists, a separate row shape from gift items. |
+| `enableTodoLists` | false | Todo lists, a separate row shape from gift items. |
 | `enableComments` | true | Item comments. |
-| `enableMobileApp` | false | Exposes the mobile API and shows the per-device API key UI. See [Mobile App](/features/mobile/). |
+| `enableMobileApp` | false | Exposes the mobile API and shows the per-device API key UI. See [iOS App](/features/ios-app/). |
 | `enablePasskeys` | false | WebAuthn passkey enrollment. |
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
@@ -105,7 +115,7 @@ Each admin section has its own configuration page in these docs:
 	<LinkCard title="Emails" href="/configuration/emails/" description="Every email family, when they fire, what they require." />
 	<LinkCard title="Scraping" href="/configuration/scraping/" description="Provider chain, tiers, quality threshold, queue." />
 	<LinkCard title="AI Provider" href="/configuration/ai/" description="LLM provider configuration." />
-	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="The recommendations feature, on top of AI." />
+	<LinkCard title="Intelligence" href="/configuration/intelligence/" description="The recommendations feature, on top of AI." />
 	<LinkCard title="Storage" href="/configuration/storage/" description="S3 backends, mirror toggle." />
 	<LinkCard title="Cron and Scheduling" href="/configuration/cron/" description="The five scheduled endpoints." />
 	<LinkCard title="Environment Variables" href="/configuration/environment-variables/" description="Every env var, grouped and commented." />

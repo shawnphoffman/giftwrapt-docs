@@ -13,13 +13,26 @@ A list is a collection of items the owner wants. GiftWrapt supports a few differ
 
 There are five gift-giving list types in active use:
 
-- **Wishlist** - the default. A general-purpose, evergreen list. Public or private.
+- **Wishlist** - the default. A general-purpose list with no occasion attached. Public or private. It isn't a permanent stash, though: a wishlist follows the same reveal schedule as a birthday list, so its claims auto-reveal a configurable number of days after the owner's birthday.
 - **Birthday** - tied to the owner's birthday. Claims auto-reveal a configurable number of days after their birthday.
 - **Christmas** - the annual Christmas list. Claims auto-reveal after Dec 25.
 - **Holiday** - pinned to a specific occasion (Easter, Mother's Day, Mexico's Día de la Madre, an admin-defined one-off date, etc.) that an admin has added to the deployment's curated set. Claims auto-reveal a configurable number of days after the holiday's date. Public or private.
 - **Gift ideas** - a private list of ideas *for someone else*. Anyone (except children) can create one, and it can optionally be pinned to a specific person. Never public.
 
-Admins can disable Birthday, Christmas, and generic-holiday list types per deployment via the admin settings, so a small household running just wishlists doesn't need to see the rest.
+## Todo Lists
+
+Alongside the gift-giving types there's a sixth, non-gift type: the **todo list**. It's off by default; an admin turns it on per deployment.
+
+A todo list is deliberately not a gift list wearing a different hat. Its rows live in their own table and carry only what a task needs:
+
+- **Title, notes, and priority.** No price, quantity, URL, image, or product scraping.
+- **Claim means done.** Ticking a row records who ticked it and when. There's no spoiler protection here, because there's no surprise to protect: any viewer sees the claimer immediately, and any viewer can tick or un-tick a row, including the owner. Creating, editing, and deleting rows still needs edit access.
+- **Type-locked.** A todo list can't be converted into a gift list, a gift list can't be converted into a todo list, and rows can't be moved across that boundary in either direction.
+- **Out of scope for the gift machinery.** Todo lists don't appear in [Suggestions](/features/suggestions/) or the recent feed, and they have no claims, add-ons, or reveal flow.
+
+## Turning List Types Off
+
+Admins can disable the Birthday, Christmas, and generic-holiday types per deployment via the admin settings, so a small household running just wishlists doesn't need to see the rest. The todo list is the same switch pointed the other way: it starts off, and an admin turns it on. Wishlists and gift-ideas lists are always available.
 
 The "My Lists" page has a **What do the list types mean?** trigger that opens a modal explaining each enabled type at a glance: an overview, what emails it triggers, the auto-archive cadence, and what happens when you delete a claimed item. Disabled types on this deployment are filtered out so users only see what they can actually create.
 

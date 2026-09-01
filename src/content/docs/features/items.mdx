@@ -52,7 +52,7 @@ Two different "remove" actions:
 - **Delete an unclaimed item** - hard-deleted. Gone. The edit view stays tidy.
 - **Archive a claimed item** - flips the item to `archived`, which is also what triggers the [reveal flow](/features/claims/#reveal) for the recipient. Archive is the recipient's "this gift is given, show me who got it for me" action; it isn't a generic soft-delete.
 
-You can re-open archived items from the organize view if you need to bulk-unarchive.
+Archiving happens for a whole list at a time, not item by item: the auto-archive cron, the **Reveal now** control on the list's archive badge, or **Archive all purchases** in list settings. The organize view shows an **Archived** badge on items that have already revealed, but there's no un-archive control on the web.
 
 ### What Happens if You Delete an Item a Giftgiver Already Claimed
 
@@ -68,7 +68,12 @@ Co-giftgivers are intentionally silent in this flow. They share gift credit but 
 
 ## Add-Ons
 
-A **list add-on** is a gifter-volunteered suggestion: "I'm also bringing X, you might want to add it to the list." Add-ons live alongside the list but in their own table, and they only surface on the recipient's received-gifts view after the reveal - never on the normal list. The recipient (not the gifter) decides when they've been received.
+A **list add-on** is a gifter-volunteered suggestion: "I'm also bringing X, you might want to add it to the list." Add-ons live alongside the list but in their own table, and they're spoiler-protected in one direction only:
+
+- **Giftgivers** see the list's add-ons right on the normal list view, alongside the items. That's the point - it's how one gifter tells the others what they're already bringing.
+- **The recipient** sees nothing until the reveal, at which point the add-ons surface on their [received-gifts](/features/received-gifts/) page.
+
+The recipient (not the gifter) decides when they've been received.
 
 A user can't create an add-on on their own list. Add-ons are a gifter-side concept by design.
 

@@ -164,7 +164,7 @@ See [Emails](/configuration/emails/) for which features each toggle controls.
 
 ## Addon: AI Features
 
-GiftWrapt's optional [URL scraping AI extractor](/features/scraping/), title cleaner, and [Suggestions](/features/suggestions-ai/) all share one LLM provider config. Configure it from **Admin > AI** in the UI (recommended), or pin it via env vars:
+GiftWrapt's optional [URL scraping AI extractor](/features/scraping/), title cleaner, and [Suggestions](/features/suggestions/) all share one LLM provider config. Configure it from **Admin > AI** in the UI (recommended), or pin it via env vars:
 
 ```bash
 AI_PROVIDER_TYPE=openai           # openai | anthropic | openai-compatible
@@ -223,6 +223,9 @@ Other bundled CLIs under `.output/scripts/`:
 
 - `admin-reset-password.mjs` - reset a user's password and revoke their sessions
 - `migrate.mjs` - run pending migrations manually
+- `init-garage.mjs` / `init-rustfs.mjs` - bootstrap the storage bucket and keys (the entrypoint runs these for you when `INIT_GARAGE` / `INIT_RUSTFS` is set)
+- `intelligence-run-once.mjs` - generate suggestions once, for testing
+- `intelligence-worker.mjs` - long-running suggestions worker, for running it as its own service
 - `seed.mjs` - destructive, do not run in production
 
 ## Updating
@@ -234,6 +237,8 @@ docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
 ```
 
 Migrations run on the first container start of the new image. **Always back up Postgres and your storage volume before pulling a new major version.**
+
+Some releases ask for a one-time action beyond pull-and-restart, such as rotating a secret. Check [Upgrading](/reference/upgrading/) before you pull.
 
 ## Backups
 

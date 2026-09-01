@@ -13,7 +13,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 **Intelligence** is the recommendations feature that surfaces stale items, possible duplicates, grouping suggestions, and other gentle nudges to keep lists clean. It runs an LLM under the hood, so it depends on a configured [AI provider](/configuration/ai/).
 
-The user-facing version of this feature is documented at [Suggestions](/features/suggestions-ai/). This page is the operator's reference.
+The user-facing version of this feature is documented at [Suggestions](/features/suggestions/). This page is the operator's reference.
 
 <Aside type="caution" title="Off by Default">
 Intelligence ships with `intelligenceEnabled=false`. While off, the cron tick returns `skipped:disabled` immediately, the user-facing page shows a "feature offline" state, and manual refresh is blocked. Admin must explicitly turn it on, and the enable toggle disables itself when no AI provider is configured.
@@ -25,27 +25,44 @@ Intelligence ships with `intelligenceEnabled=false`. While off, the cron tick re
 2. Go to **Admin > Intelligence**.
 3. Toggle **Enabled** on.
 4. (Optional) Pick an `intelligenceModelOverride` if you want a different model than the global AI config uses elsewhere.
-5. Let the daily cron tick (`0 4 * * *`) populate recs, or run `pnpm intelligence:run-once` to generate immediately for testing.
+5. Let the daily cron tick (`0 4 * * *`) populate recs, or generate immediately for testing:
+
+   ```bash
+   # Against a running container (no pnpm or node_modules in the image;
+   # the CLIs ship bundled at .output/scripts/).
+   docker compose exec app node .output/scripts/intelligence-run-once.mjs
+
+   # From a source checkout
+   pnpm intelligence:run-once
+   ```
 
 ## Analyzers
 
-Four analyzers ship in v1:
+Ten analyzers are registered. They run in the order below, which is also the order their recs surface within a severity bucket:
 
-| Analyzer | What it does | Calls the LLM? |
-|---|---|:-:|
-| **Primary list** | Picks the user's primary "active" wishlist and surfaces it on the dashboard. Pure heuristic. | No |
-| **Stale items** | Flags items that haven't been touched in a long time. | Yes |
-| **Duplicates** | Detects probable duplicate items within a list (or across the user's lists). | Yes |
-| **Grouping** | Suggests `or` / `order` [item groups](/features/items/#item-groups) from clusters of similar items. The only analyzer that mutates state via an apply action. | Yes |
+| Analyzer | ID | What it does | Calls the LLM? |
+|---|---|---|:-:|
+| **Primary list** | `primary-list` | Surfaces a list picker when the user has no active list marked primary. | No |
+| **List hygiene** | `list-hygiene` | Calendar-aware nudges for each upcoming event: convert a mismatched public list, make a matching private list public, or scaffold a missing one. Also flags long-stale public lists. | Only for the opt-in rename (see `intelligenceListHygieneRenameWithAi`) |
+| **People I shop for** | `relation-labels` | Nudges the user to declare mothers / fathers ahead of Mother's Day and Father's Day. | No |
+| **Stale items** | `stale-items` | Flags items untouched for six months or more. Emits a "pick one" group suggestion when the model judges the flagged items to be alternatives. | Yes |
+| **Duplicates** | `duplicates` | Detects probable duplicate items within a list or across the user's lists. | Yes |
+| **Grouping** | `grouping` | Suggests `or` / `order` [item groups](/features/items/#item-groups) from clusters of similar items. | Yes |
+| **Missing prices** | `missing-price` | Items the user added a URL to but never priced. Bundled one rec per list. | No |
+| **Unselected images** | `missing-image` | Items where the scraper found candidate images but none was ever picked. | No |
+| **Stale or unscraped URLs** | `stale-scrape` | Items with a URL that was never scraped, or not re-scraped in 120 days. Separate bundles per kind. | No |
+| **Clothing size & color** | `clothing-prefs` | Clothing items whose title and notes never pin down size or color. Reads facets the enrichment pre-step already paid for. | No |
 
 Each analyzer can be individually enabled/disabled via `intelligencePerAnalyzerEnabled`. Adding a new analyzer ships enabled by default; the per-analyzer map only stores admin overrides.
+
+A batched facet-extraction pre-step runs ahead of the analyzers under the pseudo-analyzer id `enrichment`. It takes a model override and an enable/disable entry like any analyzer; disabling it leaves the facet-driven analyzers running on whatever rows already exist.
 
 ## Knobs
 
 | Setting | Default | What it does |
 |---|---|---|
 | `intelligenceEnabled` | `false` | Master kill switch. |
-| `intelligenceRefreshIntervalDays` | 7 | Cron regenerates a user's recs when their last successful run is at least this old AND no active recs are un-reviewed. |
+| `intelligenceRefreshIntervalDays` | 7 | Cron regenerates a user's recs when their last successful run is at least this old. Eligibility is purely interval-based; whether the user has engaged with the last batch doesn't matter. Also the operator-digest cadence. |
 | `intelligenceManualRefreshCooldownMinutes` | 60 | Per-user rate limit on manual "refresh recs" clicks. |
 | `intelligenceCandidateCap` | 50 | Max items per analyzer prompt. Caps token usage on power users. |
 | `intelligenceConcurrency` | 3 | Max parallel users in one cron tick. Avoid hitting provider rate limits. |
@@ -54,27 +71,57 @@ Each analyzer can be individually enabled/disabled via `intelligencePerAnalyzerE
 | `intelligenceRunStepsRetentionDays` | 30 | How long to keep `recommendation_run_steps` (per-step debug rows). |
 | `intelligenceDryRun` | `false` | When true, runs go through the full pipeline (model calls, step logging) but persist no `recommendations` rows. Run + run-step rows still write, so admins can debug without affecting users. |
 | `intelligenceModelOverride` | `null` | Optional model ID override. Provider/key/baseUrl still come from the global AI config; only the model name swaps. |
+| `intelligenceAnalyzerModels` | `{}` | Per-analyzer model map, `{ "<analyzerId>": "<model>" }`. Takes precedence over `intelligenceModelOverride`. Point cheap analyzers at a small model and leave the rest on the default. |
+| `intelligenceEmailEnabled` | `false` | Master kill switch for all intelligence email. |
+| `intelligenceEmailWeeklyDigestEnabled` | `false` | Gates the operator digest specifically. Both this and the master must be on. |
+| `intelligenceEmailTestRecipient` | `null` | When set, scheduled digests go to this one address instead of the admins. Also the target of the "Send test now" button. |
+| `intelligenceUpcomingWindowDays` | 45 | List-hygiene: how many days before an event counts as "in window" for nudges. |
+| `intelligenceMinDaysBeforeEventForRecs` | 1 | List-hygiene: floor on days-until-event. Below it, convert / create / privacy recs stop firing, so there's no same-day churn. |
+| `intelligenceListHygieneRenameWithAi` | `false` | List-hygiene: opt into an AI rename on the convert branch. Off means the deterministic regex rename. The prompt sees only the list name, target type, and event title/year - never item content, never claim data. |
+| `intelligenceStaleListPastEventDays` | 90 | List-hygiene: days past an event-bound list's occurrence before it can be flagged stale. Raise to let lists run longer. |
+| `intelligenceStaleListInactiveMonths` | 12 | List-hygiene: months of owner inactivity (list or any of its items) before a list can be flagged stale. Applies to wishlists too. |
 
 ## Skip States
 
-Every run path (cron, manual, CLI) records a row in `recommendation_runs` with a `skip_reason` if it didn't actually generate recs. Common values:
+Every run path (cron, manual, CLI) records a row in `recommendation_runs` with a `skip_reason` when the run didn't generate recs. There are four:
 
 | `skip_reason` | When |
 |---|---|
 | `disabled` | Master toggle off. |
 | `no-provider` | AI config not resolvable. |
-| `unread-recs-exist` | Cron only. User has active recs from a prior batch; we don't churn tokens before they engage with them. |
-| `unchanged-input` | Cron only. The combined per-analyzer input hash matches the last successful run AND we're inside the refresh window. |
-| `cooldown` | Manual only. User hit `intelligenceManualRefreshCooldownMinutes`. |
 | `lock-held` | Another run is in flight for this user. |
+| `cooldown` | Manual only. User hit `intelligenceManualRefreshCooldownMinutes`. |
 
 The Postgres advisory lock is keyed by user, so concurrent triggers for the same user collide rather than double-spending tokens.
+
+### Per-analyzer skips
+
+Separately from the run-level reasons above, each analyzer hashes its own candidate slice and compares it against the hash from the last real generation for that scope. When they match, the analyzer returns before its model call and its existing rec rows are carried forward untouched. The run itself still succeeds and is recorded as a success. This is a per-analyzer economy, not a run skip, so it never sets a run-level `skip_reason`.
 
 ## Dismissal Stickiness
 
 Each rec has a stable **fingerprint** (analyzer + kind + sorted target IDs). When a new batch produces a rec with the same fingerprint as a prior `dismissed` (or `applied`) rec, the runner carries the status forward instead of creating it as `active`.
 
 So if you dismiss a "duplicate item pair" rec, that exact pair stays dismissed across regenerations until one of the items is deleted or renamed enough that the fingerprint changes.
+
+## Notifications (Operator Digest)
+
+The one outbound email that isn't addressed to an end user: a periodic summary of system-wide Intelligence activity, sent to the deployment's admins. Configured under **Admin > Intelligence > Notifications**.
+
+**The gating chain** - all four must hold, or nothing sends:
+
+1. `intelligenceEnabled` (the feature master).
+2. `intelligenceEmailEnabled` (the master for all intelligence email).
+3. `intelligenceEmailWeeklyDigestEnabled` (this digest specifically).
+4. Outbound [email](/configuration/emails/) is configured.
+
+**Audience** is every user with the admin role, BCC'd so the addresses aren't exposed to each other. Setting `intelligenceEmailTestRecipient` redirects the scheduled send to that one address instead, which is the safe way to try it before pointing it at your admins.
+
+**Cadence** reuses `intelligenceRefreshIntervalDays`. The digest fires from a post-step of the intelligence cron rather than from the daily email tick, because it summarizes that pipeline. Each send stamps an internal last-sent flag and the next send waits out the interval.
+
+**It always sends when gated on and the interval has elapsed**, including an all-quiet "no runs this period" digest. That's deliberate: the heartbeat means an empty inbox is a signal rather than an ambiguity. The caveat is that the heartbeat is only as alive as the intelligence cron itself - if the cron stops firing, so does the digest.
+
+**Contents** are aggregate: run counts by status, skip-reason breakdown, token and cost rollups, users processed, active recs by analyzer and severity, and a capped "needs attention" list that names users only when they had errors or repeated skips. It never includes recommendation titles or bodies, and never any claim data.
 
 ## Spoiler Protection
 
@@ -93,4 +140,4 @@ Three ways to run the analyzer pipeline; pick whichever fits your stack. They al
 |---|---|---|
 | **Bundled HTTP cron** | `/api/cron/intelligence-recommendations`, `CRON_SECRET`-gated | Default. Works with Vercel Cron, Render Cron, system crontab, the bundled docker compose sidecar. |
 | **External scheduler** | Same endpoint, hit by your own scheduler | When you want central scheduling outside the app. Same secret. |
-| **Standalone worker** | `pnpm intelligence:worker` | When you want a separate Docker service that owns the analyzer drain. Keep the HTTP cron running too if you like - the lock prevents double-spend. |
+| **Standalone worker** | `node .output/scripts/intelligence-worker.mjs` (or `pnpm intelligence:worker` from source) | When you want a separate Docker service that owns the analyzer drain. Keep the HTTP cron running too if you like - the lock prevents double-spend. |

@@ -55,10 +55,11 @@ database has application tables but the drizzle migration tracker is empty or mi
 **Recovery.** There's no in-place fix — push and migrate can't coexist. Drop and recreate the database, then restart so migrations run from scratch:
 
 ```bash
-docker compose stop giftwrapt
-docker compose exec giftwrapt-db psql -U postgres -c "DROP DATABASE giftwrapt;"
-docker compose exec giftwrapt-db psql -U postgres -c "CREATE DATABASE giftwrapt;"
-docker compose start giftwrapt
+# Substitute the compose shape you actually deployed.
+docker compose -f docker/compose.selfhost-garage-minimal.yaml stop app
+docker compose -f docker/compose.selfhost-garage-minimal.yaml exec postgres psql -U postgres -c "DROP DATABASE giftwrapt;"
+docker compose -f docker/compose.selfhost-garage-minimal.yaml exec postgres psql -U postgres -c "CREATE DATABASE giftwrapt;"
+docker compose -f docker/compose.selfhost-garage-minimal.yaml start app
 ```
 
 If you have user data you can't lose, snapshot the volume first and figure out a manual data migration; the volume itself is unusable as a migrate target.
@@ -103,7 +104,7 @@ environment:
   BETTER_AUTH_SECRET: <paste here, save in a password manager>
 ```
 
-Restart the service. Sign back in (old sessions are invalidated by the secret change). Go to `/admin/settings` and re-paste your scraper tokens, Resend API key, and OIDC client secret if you use them.
+Restart the service. Sign back in (old sessions are invalidated by the secret change). Re-paste your scraper tokens, Resend API key, AI provider key, and OIDC client secret from their admin pages if you use them: **Admin → Scraping**, **Admin → Email**, **Admin → AI**, and **Admin → Auth**.
 
 <Aside type="danger">
 Don't rotate this secret casually. Every rotation invalidates every session cookie AND every encrypted secret in the DB. If you ever need to rotate it intentionally, follow [Option A in Rotating Secrets](/reference/secrets/#option-a-clean-rotation-recommended) so you re-encrypt before swapping.
@@ -115,29 +116,29 @@ Don't rotate this secret casually. Every rotation invalidates every session cook
 
 ```
 {"scope":"storage.boot","err":{"$metadata":{"httpStatusCode":403},...},
- "endpoint":"http://giftwrapt-storage:3900","bucket":"giftwrapt",
+ "endpoint":"http://garage:3900","bucket":"giftwrapt",
  "msg":"storage.init.failed"}
 ```
 
 The UI shows the "storage disabled" banner; image uploads (avatars, item images) don't work.
 
-**Cause.** The S3 credentials on the giftwrapt service (`STORAGE_ACCESS_KEY_ID` / `STORAGE_SECRET_ACCESS_KEY`) don't match the keys configured inside the storage sidecar (Garage or MinIO). Common after rebuilding the storage container or rotating its keys without propagating them.
+**Cause.** The S3 credentials on the app service (`STORAGE_ACCESS_KEY_ID` / `STORAGE_SECRET_ACCESS_KEY`) don't match the keys configured inside the storage sidecar (Garage or RustFS). Common after rebuilding the storage container or rotating its keys without propagating them.
 
-**Recovery.** Either align the giftwrapt env with the storage container's existing keys, or generate fresh keys on the storage side and update both.
+**Recovery.** Either align the app env with the storage container's existing keys, or generate fresh keys on the storage side and update both.
 
 For Garage:
 
 ```bash
-docker compose exec giftwrapt-storage /garage key list
+docker compose -f docker/compose.selfhost-garage-minimal.yaml exec garage /garage key list
 # pick the key you want to use, or:
-docker compose exec giftwrapt-storage /garage key create giftwrapt-app
+docker compose -f docker/compose.selfhost-garage-minimal.yaml exec garage /garage key create giftwrapt-app
 # then read the access/secret out of the create output and put them in the
-# giftwrapt service env as STORAGE_ACCESS_KEY_ID and STORAGE_SECRET_ACCESS_KEY
+# app service env as STORAGE_ACCESS_KEY_ID and STORAGE_SECRET_ACCESS_KEY
 ```
 
-For MinIO: check the `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` (or service-account credentials) configured on the storage container and put the same values in the giftwrapt env.
+For RustFS, or any other S3-compatible backend you pointed at yourself: read the access key and secret from that service's own configuration and put the same values in the app env.
 
-After updating env, `docker compose up -d --force-recreate giftwrapt`. The next boot's `storage.boot` log line should disappear or report `storage.ready`.
+After updating env, `docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d --force-recreate app`. The next boot's `storage.boot` log line should disappear or report `storage.ready`.
 
 This issue is independent of `BETTER_AUTH_SECRET` and migration recovery — fix in any order.
 
@@ -163,5 +164,5 @@ Put it in the compose env, save it in a password manager, restart.
 <Aside type="caution">
 Every existing session cookie is invalidated; users have to sign back in. Every encrypted secret in `app_settings` becomes unreadable; see [the previous section](#app-500s-with-zod-errors-after-better_auth_secret-changed) for what to do about that.
 
-If you're going to rotate this secret, do it **before** you've configured anything via `/admin/settings`. After that point, every rotation is destructive to your stored secrets unless you follow the [clean rotation](/reference/secrets/#option-a-clean-rotation-recommended) procedure.
+If you're going to rotate this secret, do it **before** you've configured anything through the admin pages. After that point, every rotation is destructive to your stored secrets unless you follow the [clean rotation](/reference/secrets/#option-a-clean-rotation-recommended) procedure.
 </Aside>

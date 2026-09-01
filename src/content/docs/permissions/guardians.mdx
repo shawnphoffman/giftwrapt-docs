@@ -24,6 +24,10 @@ A **guardian** has full access to a child's or [dependent's](/permissions/depend
 
 The guardian effectively acts as the child for list management. The child still owns the list row (`ownerId`); the guardian is just the one with the keys.
 
+<Aside type="note" title="Where the Grant Lives">
+Guardianship of a child user is checked by the **edit** predicate and by the "lists I can manage" queries, not by the plain view predicate - which, on its own, would turn a guardian away from a child's private list the same as anyone else. In practice guardians reach everything through the edit surfaces, so the access above is what you actually get. It's worth knowing the shape of it, though, if you're building a new surface: don't assume a bare view check will let a guardian through. Guardianship of a *dependent* is different and does short-circuit the view predicate directly.
+</Aside>
+
 ## Direction
 
 Guardianship is one-way: the guardian has access on the child's lists, the child has no special access on the guardian's lists. If you want bidirectional coordination, that's what [partners](/permissions/partners/) and [list editors](/permissions/) are for.
@@ -42,7 +46,7 @@ Removing a guardian doesn't remove the others, and doesn't archive the child's l
 
 A few hard rules:
 
-- **Children can't be guardians.** A user with the `child` role can't be assigned as a guardian, either of another child or of a [dependent](/permissions/dependents/). Enforced in the admin UI today; if you build any new programmatic surface that creates guardianships, add the check.
+- **Children can't be guardians.** A user with the `child` role can't be assigned as a guardian, either of another child or of a [dependent](/permissions/dependents/). This is enforced on the server: every write that creates or replaces a guardianship checks the proposed guardians' roles and refuses the whole call if any of them is a child. The admin pickers also filter child users out, but that's a convenience on top of the real check, not the check itself.
 - **Children can't be partners.** Related rule; same constraint.
 - **You can be a guardian of as many children and dependents as you like.** No cap.
 

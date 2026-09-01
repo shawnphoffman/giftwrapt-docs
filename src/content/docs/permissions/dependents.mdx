@@ -29,7 +29,7 @@ If the person is going to sign in - now or later - make them a user (or a child 
 |---|---|
 | Name | Required. Used everywhere the dependent's identity is rendered. |
 | Photo | Optional. Falls back to a Sprout icon. |
-| Birthday | Optional. Drives birthday reminders and auto-archive timing if the dependent owns birthday lists. |
+| Birthday | Optional, and it does less than you'd expect - see below. |
 | Guardians | One or more user accounts who manage the dependent's lists. Same model as guardian-of-a-child. |
 
 What a dependent does **not** have:
@@ -37,6 +37,16 @@ What a dependent does **not** have:
 - An email address (better-auth's "users have emails" rule stays intact)
 - Roles, partnerships, or access levels
 - A way to sign in or be impersonated
+
+### What the Birthday Actually Does
+
+A dependent's birthday is mostly a display field today. Concretely:
+
+- **No birthday reminder emails go out for a dependent.** The reminder crons read birthdays off user accounts only.
+- **It doesn't drive auto-reveal.** Lists with a dependent as their subject sit outside the auto-archive schedule entirely - there's no spoiler-protected recipient reading the list, since the guardian managing it is a giftgiver to the dependent, not the one being surprised. So no reveal date is computed and no archive badge renders.
+- **It does set the deadline for orphan-claim cleanup.** If a giftgiver's claim is orphaned on a dependent's birthday list, the cleanup uses the dependent's birthday as the date to resolve it.
+
+Set it if you want it on the record. Don't set it expecting a reminder.
 
 ## Guardianship of Dependents
 
@@ -79,4 +89,8 @@ The "you can't claim on your own list" block only fires when the list has no dep
 
 ## Setting Up Dependents
 
-Dependents are created from the dependents settings page by any non-child user. The creator is automatically added as a guardian; other guardians can be added afterward.
+**Creating a dependent is an admin action.** Every write - creating one, editing it, deleting it, adding or removing a guardian - goes through the admin panel and is refused for everyone else on the server, not just hidden in the UI.
+
+Your own `/settings/dependents` page is read-only. It lists the dependents you're a guardian of so you know what you're managing, and points you at an admin for anything else.
+
+Guardians are chosen explicitly when the dependent is created, from the ids submitted with the request. The admin who creates the dependent is recorded as its creator but is **not** added as a guardian unless they were named as one, so an admin setting up a pet for someone else's household doesn't quietly gain access to it.

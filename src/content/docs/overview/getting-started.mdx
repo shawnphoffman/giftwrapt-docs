@@ -27,7 +27,7 @@ Want to kick the tires before reading any more? This boots a complete stack loca
 ```bash
 git clone https://github.com/shawnphoffman/giftwrapt.git
 cd giftwrapt
-cp env.example docker/.env
+cp .env.example docker/.env
 $EDITOR docker/.env        # set POSTGRES_PASSWORD, BETTER_AUTH_SECRET, BETTER_AUTH_URL
 docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
 ```
@@ -51,7 +51,7 @@ Here's the canonical bare-minimum shape: app + Postgres + Garage storage. No cro
 # No optional sidecars - add an MCP or cron block manually if you need one, or grab a richer shape.
 #
 # Quick start:
-#   1. cp env.example docker/.env
+#   1. cp .env.example docker/.env
 #   2. Edit docker/.env - at minimum set POSTGRES_PASSWORD, BETTER_AUTH_SECRET,
 #      and BETTER_AUTH_URL (the public URL you'll reach the app from).
 #   3. Set GARAGE_RPC_SECRET and GARAGE_ADMIN_TOKEN (see .env.example).

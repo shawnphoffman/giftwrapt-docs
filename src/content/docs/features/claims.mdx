@@ -51,21 +51,37 @@ You can override the even split with a **custom split** in the claim's split edi
 Change the total cost or add / remove a co-gifter and a custom split is cleared back to an even share. A split you set for "$80 across four people" shouldn't silently survive becoming "$80 across two" - so it doesn't.
 </Aside>
 
-Either you **or your partner** can edit a claim's cost and split - it's the same household. Only the original claimer can release the claim. And you can't add the **recipient or their partner** as a co-gifter; GiftWrapt blocks it on the server, so the surprise can't help pay for itself.
+Either you **or your partner** can edit a claim's cost and split - it's the same household. Only the original claimer can release the claim.
+
+Two people can never be added as co-gifters, and GiftWrapt blocks both on the server rather than only in the picker:
+
+- **The recipient.** The surprise can't help pay for itself.
+- **Your own partner.** They already share the claim as part of your gifter unit, so adding them again would skim a phantom share off the split.
+
+The recipient's partner is *not* blocked - they can go in on a gift for their own partner like anyone else. Child accounts don't appear in the co-gifter picker at all.
 
 ## Reveal
 
 After the gift has been given, the list owner can trigger the **reveal flow** to see who claimed what.
 
-Reveal is **recipient-driven**. Gifters can never trigger a reveal themselves, even on items they've already given. The recipient (or anyone with edit access to their list - a guardian, a list editor) archives an item, or the auto-archive cron does it on birthdays / Christmas / configured holidays. At that point, and only at that point, the claim data becomes visible to the recipient.
+Reveal is **recipient-driven**. Gifters can never trigger a reveal themselves, even on items they've already given. On the web the reveal is a whole-list action, not a per-item one, and it happens in one of three ways:
+
+- **The auto-archive cron** fires it on the list's schedule (see below). This is the normal path.
+- **Reveal now**, on the archive badge that sits next to the list title. Open to the recipient and to anyone with edit access to their list (a guardian, a list editor), but only once the event has already passed and no reveal extension is active. If someone extended the reveal, that has to be cancelled first.
+- **Archive all purchases**, in list settings. Owner-only, and it only appears on lists that don't auto-archive - gift-ideas lists, mainly - where it's the sole way to reveal.
+
+At that point, and only at that point, the claim data becomes visible to the recipient.
 
 ### Auto-Reveal
 
 GiftWrapt auto-reveals claims on a schedule per list type. Operators control the offset via admin settings:
 
 - **Birthday lists** - reveal claims N days after the owner's birthday.
+- **Wishlists** - same schedule as birthday lists. A plain wishlist isn't exempt: its claims reveal N days after the owner's birthday too, so a wishlist owner with a birthday on file should expect a yearly reveal.
 - **Christmas lists** - reveal claims N days after Dec 25.
 - **Generic-holiday lists** - reveal claims N days after the configured holiday date.
+
+Anyone with edit access can push a list's reveal later from the same archive badge, up to an operator-set cap. Extending sends no notification, and the recipient-facing wording never hints at whether anything was claimed.
 
 The reveal is independent of email notifications. Disabling the post-birthday email doesn't disable the reveal, and vice versa.
 
@@ -73,7 +89,9 @@ The reveal is independent of email notifications. Disabling the post-birthday em
 
 - **Gifter names and co-gifters** for each claimed item.
 - **List add-ons** - extra gifts the giftgivers volunteered. The owner can decide whether to add them to a future list.
-- **Total cost** if the gifter recorded one (optional).
+- **Add-on cost** if the gifter recorded one.
+
+What the reveal does *not* surface is what a gifter paid for a claimed item, or the notes they wrote on the claim. Those stay on the gifter side permanently; the received-gifts page never reads them. Cost only reaches the recipient by way of an add-on.
 
 There's no separate "received" or "delivered" state. A claim either exists or doesn't.
 
@@ -107,7 +125,7 @@ A typical gift goes through these states:
 2. **A giftgiver claims it.** Other gifters see the claim immediately; the recipient sees nothing change.
 3. **(Optional) Co-gifters are added** to the claim. Everyone shares credit.
 4. **The event happens** - birthday, Christmas, etc.
-5. **The recipient archives the item**, manually or via the auto-archive cron.
+5. **The list reveals** - the auto-archive cron on its schedule, or a manual reveal by the recipient or an edit-access holder.
 6. **Claims become visible** to the recipient on the [Received gifts](/features/received-gifts/) page.
 
 </Steps>

@@ -23,7 +23,7 @@ Reporting errors to an external service is a useful operator convenience that we
 
 When something blows up in production:
 
-- The error is logged to `stdout` via `pino` ([src/lib/logger.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/core/src/lib/logger.ts)) with the surrounding context (request id, user id where applicable, never session tokens or PII bodies).
+- The error is logged to `stdout` via `pino` ([src/lib/logger.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/src/lib/logger.ts)) with the surrounding context (request id, user id where applicable, never session tokens or PII bodies).
 - The web app's `ErrorBoundary` renders a generic fallback page. Server-side handlers return sanitized JSON (the mobile API uses a coded envelope, the web side returns Nitro's generic 500 shape with no stack trace).
 - **Nothing is transmitted to anyone but you.**
 
@@ -48,7 +48,7 @@ There are a small number of outbound network calls. **All of them are explicitly
 
 Notably **not** in the list: WebAuthn / passkey registration. Passkeys are negotiated between the browser and your operating system's authenticator (Touch ID, Windows Hello, a YubiKey); the only network traffic is between the user's browser and your own GiftWrapt server. No external "passkey provider" is involved.
 
-Source of truth for outbound calls is the CSP `connect-src` directive in [vite.config.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/core/vite.config.ts). If a new dependency tries to phone home, that's where it surfaces. As of mid-2026 the production CSP under self-host / Docker / Vercel-production is `'self'`-only with `frame-src 'none'` - no third-party origin is allowlisted at all. Vercel preview builds open up `https://vercel.live` and the matching pusher WSS so the preview-comments overlay still works, and only those.
+Source of truth for outbound calls is the CSP `connect-src` directive in [vite.config.ts](https://github.com/shawnphoffman/giftwrapt/blob/main/vite.config.ts). If a new dependency tries to phone home, that's where it surfaces. Out of the box, the production CSP under self-host / Docker / Vercel-production is `'self'`-only with `frame-src 'none'`: no third-party origin is allowlisted at all. Exactly two things widen it, both of which you opt into yourself. Setting `SENTRY_DSN` at build time appends that DSN's origin to `connect-src`, since the browser SDK has to reach it; leave the DSN unset and the header is byte-for-byte the strict default. And Vercel preview builds open up `https://vercel.live` and the matching pusher WSS so the preview-comments overlay works. Nothing else is ever added.
 
 ## What About Cookies and Local Storage?
 

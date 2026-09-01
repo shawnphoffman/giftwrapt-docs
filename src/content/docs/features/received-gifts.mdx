@@ -24,11 +24,11 @@ Archive is the visibility trigger. Until archive, the list owner sees a normal l
 
 Two things can flip the archive:
 
-- **You** archive it manually from the list. This is the "I've already opened this gift, show me who gave it" action.
+- **You reveal the list manually**, from the archive badge next to the list title or from **Archive all purchases** in list settings. This is the "I've already opened these gifts, show me who gave them" action, and it covers the whole list at once rather than one item at a time.
 - **The auto-archive cron** flips it on a schedule per list type. See [Claims and reveal](/features/claims/#auto-reveal) for the per-type defaults; admins tune the offsets at `archiveDaysAfter*`.
 
-<Aside type="note" title="The Reveal Is One-Way">
-There's no "un-reveal." Once an item is archived, you've seen the claim data. Gifters can't reverse it either; the reveal is recipient-driven by design.
+<Aside type="note" title="Gifters Can Never Reverse the Reveal">
+Once an item is archived, you've seen the claim data, and no giftgiver can put it back - the reveal is recipient-driven by design. The archive flag itself isn't one-way: someone with edit access to the list (you, a [guardian](/permissions/guardians/), a list editor) can set it back to unarchived, though today only the [iOS app](/features/ios-app/) exposes a control for that. Either way it just tidies the page; it doesn't unsee anything.
 </Aside>
 
 ## What Shows Up on Each Entry
@@ -37,22 +37,24 @@ There's no "un-reveal." Once an item is archived, you've seen the claim data. Gi
 |---|---|
 | **Item** | Title, photo, price, your original notes. |
 | **Gifter** | The user who claimed it (or first claimer for split claims). Renders avatar + name. |
-| **Co-gifters** | Other users listed in the claim's `additionalGifterIds`. |
-| **Total cost** | Optional. Some gifters record what they actually paid; some don't. |
-| **Gifter notes** | Optional. Anything the gifter wanted you to know ("got it on sale", "the green one was sold out so I went with blue"). |
+| **Co-gifters** | Other users listed in the claim's `additionalGifterIds`. Two gifters from the same household collapse into a single pair. |
 | **Quantity** | For items where multiple people claimed partial quantities, each claim is its own row. |
 
 If your [partner](/permissions/partners/) was a co-gifter or claimed it, they're credited too - that's how partner-shared gift credit works on the receiving side as well.
 
+<Aside type="note" title="What a Gift Cost Stays on the Gifter's Side">
+The page tells you who, not how much. A gifter can record a total cost and private notes on their claim, but this page never reads either field, so neither reaches you - not at the reveal, not afterwards. The one exception is an add-on, which carries its own cost (see below).
+</Aside>
+
 ## List Add-Ons
 
-Below your items, the Received gifts page surfaces **list add-ons**: extra gifts giftgivers volunteered that weren't on your original list. Each add-on shows:
+Below your items, the Received gifts page surfaces **list add-ons**: extra gifts giftgivers volunteered that weren't on your original list. An add-on is a much simpler row than an item, and it shows:
 
-- The title and description the gifter typed.
-- The gifter (or co-gifters).
-- An optional photo and URL.
+- **A description.** One free-text field, and it's required - there's no separate title, photo, or product URL on an add-on.
+- **The gifter**, rendered as a household the same way claims are.
+- **A cost**, if the gifter recorded one.
 
-Add-ons only appear on Received gifts, never on the normal list view. You can decide whether to add an add-on to a future list, send a thank-you for it, or just acknowledge it - GiftWrapt doesn't enforce a workflow.
+Add-ons never appear on your own view of the list before the reveal, though the giftgivers can see each other's all along. You can decide whether to add an add-on to a future list, send a thank-you for it, or just acknowledge it - GiftWrapt doesn't enforce a workflow.
 
 <Aside type="caution" title="No 'Mark as Received' on Add-Ons">
 There was briefly a gifter-facing "mark as given" action on add-ons; it was removed in 2026-04. The recipient is the only one who decides when a gift counts as received.
@@ -79,7 +81,7 @@ The recipient can always see claim data for items they've revealed. That's the w
 
 ## Where to Find It
 
-The user menu has a **Received** link, or go directly to `/me/received`.
+The user menu has a **Received** link, or go directly to `/purchases/received`.
 
 ## Related
 

@@ -2,7 +2,7 @@
 title: Contributing
 ---
 
-Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Local development](/local-development/).
+Thanks for your interest. GiftWrapt is a personal project, but contributions are welcome. This page covers the dev workflow once your local stack is up. For first-time setup see [Local development](/contributing/local-development/).
 
 ## Project Layout
 
@@ -16,7 +16,6 @@ src/
   api/           Server-only utilities and integrations
 drizzle/         Generated SQL migrations (committed)
 docker/          Self-host compose files and runtime scripts
-docs/            All long-form documentation
 scripts/         CLI entry points (admin, seed, storage init)
 ```
 
@@ -59,9 +58,9 @@ scripts/         CLI entry points (admin, seed, storage init)
 | `pnpm db:studio`      | Drizzle Studio.                                                                                                                                                                                                                             |
 | `pnpm db:seed`        | Seed local DB with test users and data. Requires `SEED_SAFE=1`. **Truncates everything.**                                                                                                                                                   |
 
-There is no `db:push`. Schema changes go through `db:generate` + `db:migrate` only - push and migrate can't share a database without desynchronizing the migration tracker (see [local-development.md § Migrations workflow](/local-development/#migrations-workflow)).
+There is no `db:push`. Schema changes go through `db:generate` + `db:migrate` only - push and migrate can't share a database without desynchronizing the migration tracker (see [local-development.md § Migrations workflow](/contributing/local-development/#migrations-workflow)).
 
-The local seeded admin and other test users are documented in [local-dev-admin.md](/guides/local-dev-admin/).
+The local seeded admin and other test users are documented in [local-dev-admin.md](/contributing/local-dev-admin/).
 
 ## Storybook
 
@@ -77,7 +76,7 @@ Component stories live next to their components (`*.stories.tsx`). Storybook run
 
 ### shadcn Components
 
-Components in `src/components/ui/` are owned by this repo, not pulled from a package. See [shadcn-upgrades.md](/guides/shadcn-upgrades/) for how to pull upstream improvements without losing local customizations.
+Components in `src/components/ui/` are owned by this repo, not pulled from a package. When you pull an upstream shadcn improvement, diff it against the local file rather than overwriting: several of these carry local customizations.
 
 ### Styling
 
@@ -118,17 +117,16 @@ See sec-review L6.
 ## Pull Requests
 
 1. Branch from `main`.
-2. Run `pnpm check` and `pnpm test` before opening the PR.
+2. Run `pnpm check` and `pnpm test` before opening the PR. CI additionally runs `pnpm test:integration`, `pnpm db:check`, `pnpm db:check-drift`, `pnpm build-storybook`, and a production build, so running those locally too saves a round trip.
 3. If you touched the schema, commit the generated migration in `drizzle/`.
 4. If you touched UI, add or update a Storybook story.
-5. Note any new env vars in `env.example` and the relevant doc.
+5. Note any new env vars in `.env.example` and the relevant doc.
 
 ## Where to Find Things
 
 - App overview and quick start: [README](https://github.com/shawnphoffman/giftwrapt/blob/main/README.md)
-- Local dev: [local-development.md](/local-development/)
-- Self-hosting with Docker: [self-hosting.md](/self-hosting/)
-- Storage backends: [storage.md](/storage/)
-- URL scraping pipeline: [scraping.md](/scraping/)
-- Local dev admin / seeded users: [local-dev-admin.md](/guides/local-dev-admin/)
-- Upgrading shadcn components: [shadcn-upgrades.md](/guides/shadcn-upgrades/)
+- Local dev: [local-development.md](/contributing/local-development/)
+- Self-hosting with Docker: [self-hosting.md](/deploy/self-hosting/)
+- Storage backends: [storage.md](/configuration/storage/)
+- URL scraping pipeline: [scraping.md](/configuration/scraping/)
+- Local dev admin / seeded users: [local-dev-admin.md](/contributing/local-dev-admin/)

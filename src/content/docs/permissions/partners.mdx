@@ -22,7 +22,8 @@ Setting a partner does **not** give them implicit access to your private lists. 
 | Share gift credit on each other's claims | ✓ |
 | Auto-added as editor when you create a new public list | ✓ (default on, you can untick) |
 | Anniversary date mirrored to both profiles | ✓ |
-| Be marked Restricted or None by you | ✗ (rejected) |
+| Be marked Restricted by you | ✗ (rejected) |
+| Be marked None by you | ✓ (allowed, and it does hide your lists) |
 
 ## Shared Gift Credit
 
@@ -70,7 +71,7 @@ The anniversary drives the [anniversary reminder email](/configuration/emails/#r
 
 - **One partner at a time.** Partnership is a single nullable column on each user, not a many-to-many table.
 - **Children can't be partners.** A user with the `child` role can't be assigned as anyone's partner.
-- **Partners can't be Restricted or None.** The system rejects the change. The Restrict toggle is disabled in the settings UI for partner rows.
+- **Partners can't be Restricted.** The system rejects that change, and the Restrict toggle is disabled in the settings UI for partner rows. **None** is not covered by that rule: you can set a partner to None, it saves, and it does hide your lists from them.
 
 ## How Partnership Is Stored
 

@@ -17,7 +17,7 @@ The first user to sign up on a fresh deployment is auto-promoted to admin. If yo
 
 The default and the only mode that's enabled with no extra configuration. Anyone with a working email address can sign up; the first account on a fresh deployment is automatically promoted to admin.
 
-Password resets are tokenized URLs sent over email. If outbound email isn't configured the reset path still appears to work from the user's perspective (so it doesn't leak which accounts exist), but the email itself is a no-op. Configure [Resend or SMTP](/configuration/emails/) before relying on password resets.
+Password resets are tokenized URLs sent over email. If outbound email isn't configured the reset path still appears to work from the user's perspective (so it doesn't leak which accounts exist), but the email itself is a no-op. Configure [Resend](/configuration/emails/) before relying on password resets. Resend is the only supported transport; there is no SMTP path.
 
 Password reset tokens are good for 60 minutes.
 
@@ -33,6 +33,12 @@ Admins can wire up any OpenID Connect provider (Authentik, Authelia, Keycloak, G
 OIDC config is loaded once at server startup. Saving changes in the admin form requires a server restart to take effect, the same as Audiobookshelf and other better-auth-based apps.
 
 If the config is invalid at boot, GiftWrapt logs a warning and falls back to email + password only. Operators can still sign in, fix the config, and restart.
+
+<Aside type="danger" title="Rotate Your Client Secret If You Ran 0.45.0 or Earlier">
+On releases up to and including 0.45.0, the unauthenticated app-settings response that every page load prefetches included the decrypted OIDC client secret. Any deployment with OIDC configured on those versions served that secret to anyone who loaded a page.
+
+If that describes your deployment, treat the secret as public: generate a new one at your identity provider, paste it into **Admin > Auth**, and restart. Upgrading alone doesn't help, since the old secret may already be out.
+</Aside>
 
 ## Passkeys (WebAuthn)
 
@@ -66,6 +72,31 @@ It weakens cookie security globally to make a plain-HTTP origin work. The boot g
 better-auth's built-in rate limiter is enabled with database-backed counters (so the limits hold across instances on Vercel / Render / Railway). Sign-in, sign-up, password change, and session reads all have stricter caps applied automatically.
 
 API keys have their own per-key limit of 300 requests per minute. That's tuned for a chatty native client that pings `verifyApiKey` + `getSession` on every request; it still throttles a runaway client or a leaked key.
+
+### Where the Counters Live
+
+Two different backings, chosen per endpoint by what the limit is protecting.
+
+**Counted in Postgres** (table `rate_limit_buckets`), so the budget holds across instances and survives cold starts:
+
+| Endpoint | Limit |
+|---|---|
+| Mobile sign-in and `/api/mobile/v1/auth/*` | 10 / minute / IP |
+
+These run *before* a session exists, and they validate credentials by calling better-auth programmatically, which bypasses better-auth's own HTTP limiter. An in-memory counter would reset on every cold start and be per-instance on a scaled deploy, which is exactly the budget a brute-force attempt wants.
+
+**Counted in process memory**, and therefore per-instance by design:
+
+| Endpoint | Limit |
+|---|---|
+| URL scrape | 20 / minute / user |
+| Claim mutations | 60 / minute / user |
+| Comment writes | 30 / minute / user |
+| Barcode lookup | 30 / minute / user |
+| File proxy | 300 / minute / IP |
+| Intelligence manual refresh | 5 / hour / user |
+
+These shape cost (paid providers, LLM calls, outbound email) rather than guard credentials. A scaled deploy multiplying them by the instance count is an accepted trade, not an oversight.
 
 ## Related
 

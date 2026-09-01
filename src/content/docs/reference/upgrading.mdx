@@ -1,0 +1,49 @@
+---
+title: Upgrading
+description: What each release expects of you when you pull a new image. Migrations, one-time operator actions, and behavior changes worth knowing before you upgrade.
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+Most upgrades are a pull and a restart. Migrations run automatically on the first container start of the new image, so there is nothing to apply by hand.
+
+```bash
+# Substitute the shape you actually deployed.
+docker compose -f docker/compose.selfhost-garage-minimal.yaml pull
+docker compose -f docker/compose.selfhost-garage-minimal.yaml up -d
+```
+
+<Aside type="caution" title="Back Up First">
+Take a Postgres dump and a storage snapshot before pulling. Migrations are forward-only; there is no automated rollback. See [Backups](/deploy/self-hosting/#backups).
+</Aside>
+
+This page lists only the releases that ask something of you beyond pull-and-restart. If a version is not listed, it needed nothing.
+
+## 0.46.0
+
+### Rotate your OIDC client secret
+
+**Applies to:** deployments that had OIDC sign-in configured on `0.45.0` or earlier. Everyone else can skip this.
+
+Releases up to and including `0.45.0` included the decrypted OIDC client secret in the app-settings response that the app prefetches on every page load, including for signed-out visitors. On an affected deployment that value should be treated as public.
+
+1. Generate a new client secret at your identity provider.
+2. Paste it into **Admin → Auth**.
+3. Restart the server. better-auth reads provider config once at startup, so the new secret does not take effect until it does.
+4. Revoke the old secret at the IdP.
+
+Full procedure and context: [Rotating Secrets → OIDC Client Secrets](/reference/secrets/#oidc-client-secrets).
+
+### Two migrations apply automatically
+
+`0010` makes two timestamp columns on the AI analysis table timezone-aware, which fixes item re-analysis on deployments whose database session is not UTC. `0011` adds a `rate_limit_buckets` table. Both run on first boot of the new image and need no action.
+
+### Mobile sign-in rate limiting is now shared across instances
+
+The limiter on `POST /api/mobile/v1/sign-in` and the `/api/mobile/v1/auth/*` endpoints now counts in Postgres rather than in each process's memory, so the 10-per-minute-per-IP budget holds across restarts and across instances. If you run more than one app container, this endpoint is meaningfully better protected than it was. No configuration changed.
+
+### Real-time list updates now check visibility
+
+Subscribing to a list's event stream now requires that you be able to view that list. Previously any signed-in user could subscribe to any list id and observe the timing of activity on it, including when gifts were claimed. This is a spoiler-protection tightening with no operator action and no configuration change.

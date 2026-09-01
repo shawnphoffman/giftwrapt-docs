@@ -30,7 +30,9 @@ The runners themselves are idempotent and safe to run more frequently. Self-host
 All `/api/cron/*` endpoints check an `Authorization: Bearer <secret>` header against the `CRON_SECRET` env var. If the env var is unset, the handlers **fail closed** with HTTP 503 - they don't accidentally run publicly.
 
 - **Self-host**: required. The bundled cron sidecar fatals at startup if `CRON_SECRET` is unset, so the stack boot-loops until you set this.
-- **Vercel / Render / Railway**: the bundled platform configs (`vercel.json`, `render.yaml`) auto-generate or auto-attach the secret. You only need to set it yourself if you're hitting the endpoints from your own scheduler.
+- **Render**: `render.yaml` generates the value for you and attaches it to both the web service and the cron jobs.
+- **Vercel**: `vercel.json` declares the schedules but not the secret. Set `CRON_SECRET` yourself in the project's environment variables.
+- **Railway**: set it yourself. `railway.json` carries only build and healthcheck config, and Railway's cron is wired up through the dashboard.
 
 Generate one with:
 
@@ -49,9 +51,10 @@ Common skip states:
 | `disabled` | Feature flag off in app_settings (e.g. Intelligence disabled). |
 | `no-provider` | AI / email / storage config missing. |
 | `not-due` | Date math says today isn't the right day (e.g. auto-archive for a list whose birthday is in 200 days). |
-| `unchanged-input` | Intelligence: inputs haven't changed since last successful run AND we're inside the refresh window. |
 | `lock-held` | Intelligence: another run is in flight for this user. |
-| `unread-recs-exist` | Intelligence: cron path only, the user has active recs from a prior batch. |
+| `cooldown` | Intelligence, manual refresh only: the user hit `intelligenceManualRefreshCooldownMinutes`. |
+
+Intelligence also skips work *below* the run level: an analyzer whose candidate slice hashes the same as the last real generation returns before its model call and carries its existing recs forward. That's a per-analyzer economy, not a run skip, so the run still records as a success. See [Intelligence](/configuration/intelligence/#per-analyzer-skips).
 
 ## Deployment Shapes
 
@@ -65,7 +68,7 @@ Schedules live in `vercel.json` and run via Vercel Cron. The `CRON_SECRET` is se
 
 ### Railway
 
-No `railway.toml` cron config. Either wire up Railway's cron through the dashboard (one cron service per endpoint), or run an external scheduler.
+`railway.json` carries build and healthcheck config only - no schedules. Either wire up Railway's cron through the dashboard (one cron service per endpoint), or run an external scheduler.
 
 ### Self-Host (Docker Compose)
 

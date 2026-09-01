@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components'
 
 GiftWrapt reads most of its configuration from `app_settings` in the database (managed via the admin UI), but a handful of boot-time secrets and connection strings have to live in the environment.
 
-A working `env.example` is included in the repo. This page is the reference for what's in it.
+A working `.env.example` is included in the repo. This page is the reference for what's in it.
 
 ## Core (Required)
 
@@ -109,6 +109,11 @@ STORAGE_PUBLIC_URL=
 
 # Optional. Max upload size in MB, enforced before Sharp runs.
 STORAGE_MAX_UPLOAD_MB=8
+
+# Dev-only. Skips the boot-time HeadBucket connectivity check so fake
+# STORAGE_* values satisfy the configured-ness gate without reaching a
+# real bucket. Leave unset anywhere that uploads real images.
+STORAGE_SKIP_BOOT_CHECK=
 ```
 
 See the Storage backends docs for per-provider recipes.
@@ -162,6 +167,32 @@ LOG_PRETTY=           # true forces human-readable output even in prod
 `LOG_LEVEL` defaults to `info` and can be changed at runtime (in docker-compose, for example) without a rebuild. The better-auth library uses a slightly narrower set internally; `fatal` collapses to `error` and `trace` to `debug` for its purposes.
 
 `LOG_PRETTY` defaults to true in development (`NODE_ENV !== 'production'`) and false in production.
+
+## Observability (Optional)
+
+Two opt-in families: Sentry-compatible error reporting and a Prometheus metrics endpoint. See [Observability](/configuration/observability/) for the full operator picture.
+
+```bash
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=production      # defaults to NODE_ENV
+SENTRY_RELEASE=
+SENTRY_TRACES_SAMPLE_RATE=0.1      # 0 to 1
+METRICS_TOKEN=<16+ chars>
+```
+
+| Variable | What it does |
+|---|---|
+| `SENTRY_DSN` | Where error events go. Points at whatever you chose - your Sentry org, a self-hosted GlitchTip, your own proxy. Unset means no error reporting. |
+| `SENTRY_ENVIRONMENT` | Environment tag on each event. Falls back to `NODE_ENV`. |
+| `SENTRY_RELEASE` | Release tag on each event. Set it from your build's version or commit SHA. |
+| `SENTRY_TRACES_SAMPLE_RATE` | Performance-trace sample rate, `0` to `1`. Unset means the SDK default. |
+| `METRICS_TOKEN` | Bearer token that gates `/api/metrics` scraping. Minimum 16 characters. A real secret, unlike the DSN. |
+
+<Aside type="caution" title="Both Gates Have to Be On">
+Each family needs **both** the env var and the matching admin toggle (`enableSentry` / `enableMetrics`, both default off, under **Admin > General > Observability**). Setting `SENTRY_DSN` alone emits nothing; flipping the toggle without the env var emits nothing either. The gate is evaluated per request, so turning the admin toggle off kills emission mid-deploy without a restart.
+</Aside>
+
+`SENTRY_DSN` lives in the environment rather than `app_settings` because it's public by design - the Sentry SDK ships it in client HTML. `METRICS_TOKEN` is a genuine secret; treat it like `CRON_SECRET`.
 
 ## The Kitchen Sink
 
@@ -256,6 +287,7 @@ POSTGRES_PASSWORD=change-me
 # STORAGE_FORCE_PATH_STYLE=true   # true for Garage/MinIO/RustFS, false for AWS/R2
 # STORAGE_PUBLIC_URL=             # CDN base URL, optional
 # STORAGE_MAX_UPLOAD_MB=8
+# STORAGE_SKIP_BOOT_CHECK=true    # dev only - skips the boot HeadBucket check
 
 
 # ===================================================================
@@ -292,4 +324,20 @@ POSTGRES_PASSWORD=change-me
 
 # LOG_LEVEL=info                  # trace | debug | info | warn | error | fatal | silent
 # LOG_PRETTY=                     # true forces pretty output in prod
+
+
+# ===================================================================
+# Observability (optional - each family also needs its admin toggle)
+# ===================================================================
+
+# Sentry-compatible error reporting. Emits only when SENTRY_DSN is set
+# AND `enableSentry` is on in Admin > General > Observability.
+# SENTRY_DSN=
+# SENTRY_ENVIRONMENT=production   # defaults to NODE_ENV
+# SENTRY_RELEASE=                 # version or commit SHA
+# SENTRY_TRACES_SAMPLE_RATE=0.1   # 0 to 1
+
+# Bearer token gating /api/metrics. Min 16 chars. Scraping works only
+# when this is set AND `enableMetrics` is on. This one is a real secret.
+# METRICS_TOKEN=
 ```

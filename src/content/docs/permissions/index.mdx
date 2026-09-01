@@ -22,7 +22,7 @@ For each other user, you can dial in their access to your lists. There are four 
 | **None** | Can't see your lists at all, even public ones. You don't show up in their "people I can shop for" feed either. Useful for distant family who don't gift each other. |
 | **Restricted** | Can see your public lists at the list level. Items where the only claims are from other people are hidden from them. They never see other claimers, co-gifters, or list add-ons. |
 | **View** *(default)* | Can see your public lists and items, claim items, and see other people's claims on items they can see. The standard "family member" experience. |
-| **Edit** | Everything View can do, plus add / edit / delete items on the lists you've granted them as a list editor. Granted per-list, not per-user. |
+| **Edit** | Everything View can do, plus add / edit / delete items on **every** list you own. This is a blanket, per-person grant, not a per-list one. |
 
 ### Capability Matrix
 
@@ -33,13 +33,19 @@ This is what each level can do, assuming a public list with the default settings
 | Owner appears in your feed | ✗ | ✓ | ✓ | ✓ |
 | See the owner's public lists | ✗ | ✓ | ✓ | ✓ |
 | See items on those lists | ✗ | filtered\* | ✓ | ✓ |
-| See list add-ons | ✗ | ✗ | ✓ | ✓ |
+| See list add-ons | ✗ | own only | ✓ | ✓ |
 | See other people's claims | ✗ | filtered\* | ✓ | ✓ |
 | Claim items | ✗ | ✓ | ✓ | ✓ |
 | Add / edit / delete items | ✗ | ✗ | ✗ | ✓ |
 | Trigger reveal on items | ✗ | ✗ | ✗ | ✓ |
 
-\* Restricted viewers see only items where they (or their partner) are a claimer, or items with no claims yet. Items claimed entirely by other people disappear from their view. Remaining-quantity is still computed from *all* underlying claims, so a restricted viewer can never accidentally over-claim.
+\* Restricted viewers see only items where they (or their partner) are a claimer, or items with no claims yet. Items claimed entirely by other people disappear from their view. Remaining-quantity is still computed from *all* underlying claims, so a restricted viewer can never accidentally over-claim. The same rule covers add-ons: a restricted viewer sees the ones they volunteered themselves and none of anyone else's.
+
+<Aside type="caution" title="Edit Is Blanket, Not Per-List">
+Setting someone to **Edit** here hands them edit access to every list you own, including ones you create later, and including private ones. It is the strongest thing you can grant from this screen.
+
+If what you actually want is "help me with this one list," don't use the Edit tier - leave them on View and add them as a **list editor** on that specific list instead. The two are separate mechanisms and the per-list one is the narrower grant.
+</Aside>
 
 <Aside type="note" title="Access Levels Are Per-Direction">
 Setting Diana to **None** from your perspective has no effect on how Diana sees you - she'd have to set the same on her side for it to be mutual.
@@ -49,8 +55,9 @@ Setting Diana to **None** from your perspective has no effect on how Diana sees 
 
 A few combinations are blocked at write time:
 
-- **Partners can't be marked Restricted or None.** The system rejects the change. Partners share gift credit symmetrically; restricting them would break that.
-- **Guardian-paired users can't be marked Restricted or None.** Guardianship is a stronger grant and bypasses access levels entirely.
+- **Partners and guardian-paired users can't be marked Restricted.** The system rejects that specific change in either direction. Partners share gift credit symmetrically and restricting them would break it; guardianship is a stronger grant that bypasses access levels entirely.
+- **None is a different case, and it does stick.** Marking a partner as None is accepted and saved, and it does hide your lists from them. Only Restricted is refused for these pairs, so don't read "can't be restricted" as "can't be shut out."
+- **You can't set any level toward your own guardian.** The whole write is rejected, not just the Restricted part. An admin can adjust that pair from the admin panel; you can't.
 - **Restricting someone removes any list-editor rows you'd granted them.** And you can't add them as an editor again until you change them back.
 
 ## Relationships
@@ -97,12 +104,26 @@ Every user has one of three roles:
 
 ## How Access Decisions Get Made
 
-Two predicates gate everything: **can-view** and **can-edit**. Both consider, in order:
+Two predicates gate everything: **can-view** and **can-edit**. They don't ask quite the same questions.
+
+**Can-view**, in order:
+
+1. **Owner?** Yes → full access.
+2. **Guardian of the dependent who's the subject of this list?** Yes → full access, private or not.
+3. **Private list?** Yes → denied.
+4. **Marked as None by the owner?** Yes → denied. Restricted stays visible at the list level, with the item filter layered on top.
+5. Otherwise → view OK. Visibility is default-allow for signed-in users.
+
+**Can-edit**, in order:
 
 1. **Owner?** Yes → full access.
 2. **Guardian of the owner, or of the dependent who's the subject of this list?** Yes → full access.
-3. **Marked as None or Restricted by the owner?** None → denied. Restricted → list-level visible but with the item filter on top.
-4. **Public list?** Yes → view OK by default.
-5. **For edit only: explicit list-editor row for this user on this list?** Yes → edit OK.
+3. **Marked as Restricted by the owner?** Yes → denied, and that wins over both grants below.
+4. **Blanket Edit tier from the owner?** Yes → edit OK on every list they own.
+5. **Explicit list-editor row for this user on this list?** Yes → edit OK on that list.
+
+<Aside type="note" title="Guardians of a Child Come In Through Can-Edit">
+Being a guardian of a *user* (a child account) isn't a shortcut in can-view; only guardianship of a *dependent* is. A guardian reaches their child's private lists through the edit path and the "lists I can edit" queries instead, which is why the practical effect is the same full access described on the [Guardians](/permissions/guardians/) page.
+</Aside>
 
 Gift-ideas lists are always private and never surface in any "lists I can shop from" feed, even for users who would otherwise pass the public-lists filter.

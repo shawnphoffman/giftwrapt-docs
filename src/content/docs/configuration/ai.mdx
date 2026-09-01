@@ -18,7 +18,7 @@ GiftWrapt has several optional features that call an LLM. **All of them share a 
 |---|---|---|
 | **AI URL extractor** | Reads raw HTML when the basic scrape can't get useful fields. Parallel racer in the scraping chain. | [Scraping](/configuration/scraping/) - `scrapeAiProviderEnabled`. |
 | **AI title cleaner** | Post-scrape normalises noisy titles ("Amazon.com: Brand X Foo - 4-Pack, Black, Size M - Free Shipping" -> "Brand X Foo (4-Pack, Black, M)"). | [Scraping](/configuration/scraping/) - `scrapeAiCleanTitlesEnabled`. |
-| **Intelligence (recommendations)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | [Intelligence](/configuration/intelligence-ai/). |
+| **Intelligence (recommendations)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | [Intelligence](/configuration/intelligence/). |
 
 If you don't configure an AI provider, the toggles for these features disable themselves in the admin UI. The rest of GiftWrapt works fine.
 
@@ -82,7 +82,7 @@ Costs ballpark for a single-family deployment running everything on: pennies a m
 
 ## Per-Feature Model Override
 
-[Intelligence](/configuration/intelligence-ai/) supports a `intelligenceModelOverride` setting that swaps just the model ID for analyzer calls. The provider, API key, and base URL still come from the global AI config; the override only swaps the model within that provider.
+[Intelligence](/configuration/intelligence/) supports a `intelligenceModelOverride` setting that swaps just the model ID for analyzer calls. The provider, API key, and base URL still come from the global AI config; the override only swaps the model within that provider.
 
 Use this when you want frontier-tier scraping AI but cheap-tier Intelligence, or vice versa.
 

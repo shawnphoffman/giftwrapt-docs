@@ -11,7 +11,7 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
-GiftWrapt has an optional layer of AI-assisted hints called **Suggestions** (internally: Intelligence). It looks at your own lists and items and surfaces a small, focused set of recommendations: items that look stale, items that might be duplicates, sets of items that could be grouped together.
+GiftWrapt has an optional layer of AI-assisted hints called **Suggestions** (internally: Intelligence). It looks at your own lists and items and surfaces a small, focused set of recommendations: items that look stale, items that might be duplicates, sets of items that could be grouped together, gaps a giftgiver would trip over, and lists that aren't shaped right for an occasion that's coming up.
 
 This feature is opt-in and off by default. Your admin has to enable it.
 
@@ -21,20 +21,30 @@ Suggestions only ever look at *your own* items - the things on lists you own. It
 
 ## What It Can Suggest
 
+Ten analyzers run, each looking for one specific thing. Several are pure heuristics with no AI involved at all.
+
 | Kind | What it spots |
 |---|---|
-| **Primary list** | Picks the list you seem to be using most actively and surfaces it on your dashboard. Pure heuristic, no AI. |
+| **Primary list** | You haven't picked a primary list yet. The card gives you a picker to choose one. Pure heuristic, no AI. |
+| **List hygiene** | An occasion is coming up and your lists aren't shaped for it: no list matching the event, a matching list that's still private, or the wrong list marked primary. The decision is rule-based; a model is only consulted to propose a new name when it suggests converting a list. |
+| **Relation labels** | Mother's Day or Father's Day is approaching and you haven't told GiftWrapt who you shop for, so the reminders can't fire. Heuristic. |
 | **Stale items** | Items you added a long time ago and haven't touched - probably worth removing or refreshing. |
-| **Possible duplicates** | Items that look like they refer to the same thing ("AirPods Pro" and "Apple AirPods Pro 2nd Gen"). |
+| **Possible duplicates** | Items that look like they refer to the same thing ("AirPods Pro" and "Apple AirPods Pro 2nd Gen"). Same-URL pairs are caught without asking a model at all. |
 | **Grouping** | Sets of items that look like "I want one of these" or "this set in order," and could become an [item group](/features/items/#item-groups). |
+| **Missing price** | Items where you pasted a URL but never filled in a price. Heuristic. |
+| **Missing image** | Items where the [scraper](/features/scraping/) found candidate photos but none was ever picked. Heuristic. |
+| **Stale scrape** | Items with a URL that has never been scraped, or hasn't been re-scraped in a long time, so the price and availability may have drifted. Heuristic. |
+| **Clothing details** | Clothing items whose title and notes don't pin down a size or color, which is the usual way a giftgiver ends up guessing. |
 
 Each suggestion shows up as a card with a short rationale. Most are advisory - click through and decide what to do. A few are **apply-able** in one click (see below).
+
+Your admin can turn individual analyzers off, so a given deployment may surface fewer than all ten.
 
 ## What You Can Do With a Suggestion
 
 Every suggestion has three actions:
 
-- **Apply** *(when available)* - the change happens server-side without leaving the page. Grouping is the first analyzer with a one-click apply; clicking "Group as Pick One" creates the item group and links the items immediately.
+- **Apply** *(when available)* - the change happens server-side without leaving the page. Grouping and stale items both ship apply actions today: "Group as Pick One" creates the item group and links the items immediately, and a stale-item card can delete the item it flagged, or roll a set of co-flagged alternatives into one group. Other cards carry a link that takes you to the right screen instead.
 - **Dismiss** - hide this specific suggestion. It won't come back even when the analyzer re-runs, unless the underlying items change enough that GiftWrapt no longer recognizes it as the same suggestion.
 - **Ignore** - just close the card. It'll likely reappear on the next run.
 
@@ -42,10 +52,11 @@ Dismissed suggestions stay dismissed across regenerations until the underlying i
 
 ## When Suggestions Refresh
 
-By default the analyzer runs once a day per user, but it skips you if:
+By default suggestions refresh **every 7 days per user**, not daily. A background job works through whoever is overdue, oldest first, and you're overdue once your last successful run is older than that interval. Your admin can change the interval.
 
-- You still have un-reviewed suggestions from the previous run (no point churning tokens before you engage with what's there).
-- Your inputs haven't changed since the last successful run.
+Whether you've read the previous batch makes no difference. Suggestions regenerate on the interval either way, so an untouched pile of cards won't hold up the next run.
+
+A run is skipped outright only when the feature is switched off, when no AI provider is configured, or when a run for you is already in progress. Separately, each analyzer checks its own inputs before it calls a model: if nothing it looks at has changed since last time, it carries its existing cards forward rather than paying to regenerate the same answer. That's per analyzer, not all-or-nothing, so an unchanged duplicates check doesn't stop grouping from re-running.
 
 You can also manually refresh from the Suggestions page, subject to a per-user cooldown (default 60 minutes between manual triggers).
 
@@ -68,7 +79,7 @@ See [Privacy](/permissions/privacy/#spoiler-protection) for the full spoiler-pro
 
 ## Where to Find It
 
-The user menu has a **Suggestions** link (when the feature is enabled), or go directly to `/me/suggestions`. If the feature is off, the page shows a "feature offline" notice rather than a 404.
+The user menu has a **Suggestions** link (when the feature is enabled), or go directly to `/suggestions`. If the feature is off, the page shows a "feature offline" notice rather than a 404.
 
 ## For Operators
 
@@ -76,6 +87,6 @@ If you're configuring this for a deployment, the admin side lives across two pag
 
 <CardGrid>
 	<LinkCard title="AI Provider" href="/configuration/ai/" description="The LLM that powers Suggestions." />
-	<LinkCard title="Intelligence" href="/configuration/intelligence-ai/" description="Feature-specific knobs: schedule, retention, per-analyzer toggles." />
+	<LinkCard title="Intelligence" href="/configuration/intelligence/" description="Feature-specific knobs: schedule, retention, per-analyzer toggles." />
 	<LinkCard title="Privacy" href="/permissions/privacy/" description="What the AI can and can't see." />
 </CardGrid>

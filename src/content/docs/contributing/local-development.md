@@ -2,7 +2,7 @@
 title: Local Development
 ---
 
-Hacking on the app from a local checkout. For running GiftWrapt (self-hosted or on a managed platform) see [Get started](/getting-started/).
+Hacking on the app from a local checkout. For running GiftWrapt (self-hosted or on a managed platform) see [Get started](/overview/getting-started/).
 
 ## Requirements
 
@@ -65,7 +65,7 @@ SEED_SAFE=1 pnpm db:seed   # optional, populates test users
 ```
 
 > [!WARNING]
-> `db:seed` truncates the database before inserting fixtures. It refuses to run unless `DATABASE_URL` points at a known-local host AND `SEED_SAFE=1` is set, but it absolutely will clobber your local data. See [local-dev-admin.md](/guides/local-dev-admin/) for the seeded credentials.
+> `db:seed` truncates the database before inserting fixtures. It refuses to run unless `DATABASE_URL` points at a known-local host AND `SEED_SAFE=1` is set, but it absolutely will clobber your local data. See [local-dev-admin.md](/contributing/local-dev-admin/) for the seeded credentials.
 
 ## 5. Run the App
 
@@ -129,6 +129,6 @@ For the full workflow and the guardrails (`pnpm db:check`, `pnpm db:check-drift`
 
 ## Next Steps
 
-- [Contributing](/contributing/) - scripts, conventions, PR workflow
-- [Storage](/storage/) - swapping backends, env reference
-- [Scraping](/scraping/) - URL scraping pipeline (browserless, AI extractors)
+- [Contributing](/contributing/contributing/) - scripts, conventions, PR workflow
+- [Storage](/configuration/storage/) - swapping backends, env reference
+- [Scraping](/configuration/scraping/) - URL scraping pipeline (browserless, AI extractors)

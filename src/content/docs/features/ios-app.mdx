@@ -10,13 +10,11 @@ sidebar:
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
-<Aside>Coming Soon...</Aside>
-
 ## Status
 
-The app lives in the [`ios/`](https://github.com/shawnphoffman/giftwrapt/tree/main/ios) repo and is built from source in Xcode. A public distribution is on the roadmap but not dated.
+The app is a separate codebase from the server and is built from source in Xcode. Its repository is not public yet, and there is no App Store distribution, so the sections below describe what the app does rather than how to get it. Both are on the roadmap without a date.
 
-If you're self-hosting and comfortable with Xcode, you can sideload it against your own server today. The setup steps live in the [iOS repo README](https://github.com/shawnphoffman/giftwrapt/blob/main/ios/README.md).
+The server side is ready either way: everything the app talks to is the mobile API that ships with your deployment. That surface is gated behind the `enableMobileApp` admin toggle and is **off by default**, so a deployment that has no use for it is already closed.
 
 ## What It Does Today
 
