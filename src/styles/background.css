@@ -1,0 +1,109 @@
+/*
+ * Page background texture + brand accent.
+ *
+ * The texture is painted once, on two fixed pseudo-elements behind the whole
+ * page, so it reads as a single continuous sheet:
+ *   - `body::before` - soft brand blooms over a faint diagonal stripe (a nod to
+ *     wrapping paper).
+ *   - `body::after`  - fine SVG grain, blended so it reads as paper tooth
+ *     rather than a grey wash.
+ * Starlight's panels (sidebar, main, footer) are transparent so none of them
+ * re-draws its own copy of the wash. Only the sticky header keeps a tint, and
+ * that is frosted glass over the same sheet, not a second one.
+ */
+
+:root {
+	/* Brand accent: the coral red from the logo, replacing Starlight's blue. */
+	--sl-color-accent-low: hsl(6, 88%, 92%);
+	--sl-color-accent: hsl(6, 74%, 43%);
+	--sl-color-accent-high: hsl(6, 78%, 30%);
+
+	--gw-bg-base: #ffffff;
+	--gw-bloom-1: rgba(224, 74, 58, 0.13);
+	--gw-bloom-2: rgba(247, 160, 90, 0.11);
+	--gw-bloom-3: rgba(90, 120, 210, 0.08);
+	--gw-stripe: rgba(120, 60, 50, 0.022);
+	--gw-grain-opacity: 0.4;
+	--gw-grain-blend: multiply;
+	--gw-nav-tint: rgba(255, 255, 255, 0.62);
+}
+
+:root[data-theme='dark'] {
+	--sl-color-accent-low: hsl(6, 52%, 18%);
+	--sl-color-accent: hsl(6, 72%, 50%);
+	--sl-color-accent-high: hsl(6, 84%, 82%);
+
+	--gw-bg-base: #17181c;
+	--gw-bloom-1: rgba(224, 74, 58, 0.2);
+	--gw-bloom-2: rgba(247, 160, 90, 0.09);
+	--gw-bloom-3: rgba(96, 124, 220, 0.14);
+	--gw-stripe: rgba(255, 235, 230, 0.016);
+	--gw-grain-opacity: 0.28;
+	--gw-grain-blend: overlay;
+	--gw-nav-tint: rgba(23, 24, 28, 0.62);
+}
+
+body {
+	background: var(--gw-bg-base);
+}
+
+body::before,
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+}
+
+/* Colour: three wide blooms over a low-contrast diagonal stripe. */
+body::before {
+	background-image:
+		repeating-linear-gradient(135deg, var(--gw-stripe) 0 1px, transparent 1px 14px),
+		radial-gradient(90rem 55rem at 8% -12%, var(--gw-bloom-1), transparent 62%),
+		radial-gradient(70rem 45rem at 96% 4%, var(--gw-bloom-2), transparent 60%),
+		radial-gradient(80rem 60rem at 55% 108%, var(--gw-bloom-3), transparent 62%);
+}
+
+/* Grain: one tiled fractal-noise tile, blended into the colour beneath it. */
+body::after {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+	background-size: 180px 180px;
+	opacity: var(--gw-grain-opacity);
+	mix-blend-mode: var(--gw-grain-blend);
+}
+
+/* One sheet: no panel paints its own background over the texture. */
+.page,
+.main-frame,
+.main-pane,
+.sidebar-pane,
+.sidebar-content,
+main,
+footer {
+	background: transparent;
+}
+
+/* The sticky header is the one exception - content scrolls under it, so it
+   needs a frosted tint to stay legible. */
+header.header {
+	background-color: var(--gw-nav-tint);
+	backdrop-filter: blur(14px) saturate(1.4);
+	-webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+
+/* Below Starlight's layout breakpoint the sidebar becomes an overlay panel, so
+   there it does need to be opaque or page content shows through the open menu. */
+@media (max-width: 50rem) {
+	.sidebar-pane {
+		background-color: var(--gw-bg-base);
+	}
+}
+
+/* The texture is static, but it has no place on a printed page. */
+@media print {
+	body::before,
+	body::after {
+		display: none;
+	}
+}
