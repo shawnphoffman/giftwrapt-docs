@@ -27,7 +27,7 @@ This page walks the base deployment first, then each addon in its own section. R
 - The published image: `ghcr.io/shawnphoffman/giftwrapt:latest` (or pin a tag like `:vX.Y.Z`)
 
 <Aside type="tip" title="Pin a Tag in Production">
-`:latest` follows the main branch. Once you're past "does it work," set `APP_IMAGE=ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z` in `.env` so you control when you upgrade.
+`:latest` tracks the most recent release, not every commit on `main`. Once you're past "does it work," set `APP_IMAGE=ghcr.io/shawnphoffman/giftwrapt:vX.Y.Z` in `.env` so you control when you upgrade.
 </Aside>
 
 ## Base Deployment
@@ -39,7 +39,7 @@ The base stack is the app container plus a Postgres database. Migrations run aut
 ```bash
 git clone https://github.com/shawnphoffman/giftwrapt.git
 cd giftwrapt
-cp env.example docker/.env
+cp .env.example docker/.env
 $EDITOR docker/.env
 ```
 
@@ -271,7 +271,7 @@ For reference, here's the `-full` shape with every addon wired up - app, Postgre
 # Includes the cron sidecar always-on AND the MCP sidecar profile-gated. Pass `--profile mcp` to bring MCP up.
 #
 # Quick start:
-#   1. cp env.example docker/.env
+#   1. cp .env.example docker/.env
 #   2. Edit docker/.env - at minimum set POSTGRES_PASSWORD, BETTER_AUTH_SECRET,
 #      and BETTER_AUTH_URL (the public URL you'll reach the app from).
 #   3. Set GARAGE_RPC_SECRET and GARAGE_ADMIN_TOKEN (see .env.example).
