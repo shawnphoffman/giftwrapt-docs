@@ -33,27 +33,28 @@ When it works, the scraper extracts:
 If a field is missing, just fill it in. The form never clobbers fields you've already typed in - once you touch a field, the scraper leaves it alone.
 
 <Aside type="tip" title="Best Effort, Not Guaranteed">
-Some sites change their markup faster than scrapers can keep up; others block scrapers entirely. A partial fill is normal. Fill in the rest by hand and move on.
+Some sites change their markup faster than any parser keeps up with, and some pages simply don't expose the fields in a form we can read. A partial fill is normal. Fill in the rest by hand and move on.
 </Aside>
 
-## When Sites Push Back
+## Harder Pages
 
-Some retailers actively block bots, gate content behind login, or change their markup faster than scrapers can keep up. When the basic scrape can't get a usable result, GiftWrapt can fall back to other providers:
+Plenty of product pages don't yield much to a plain HTTP fetch: the content is assembled in the browser, or the markup shifts often enough that a simple parse comes back thin. When the basic fetch doesn't produce a usable result, GiftWrapt can fall through a configurable chain of additional providers:
 
-- A **JS-rendering provider** (self-hosted Browserless or hosted Browserbase) for sites that only render content via JavaScript.
-- A **Cloudflare-bypass provider** (FlareSolverr) for sites gated by a Cloudflare challenge.
-- An **anti-bot provider** (ScrapFly) for retailers with aggressive WAFs like Amazon.
-- An optional **AI extractor** that reads the raw HTML and extracts fields, when nothing else works.
+- **Headless rendering** (self-hosted Browserless, hosted Browserbase, or a self-hosted GiftWrapt Scraper gateway) for JavaScript-heavy pages that need a real browser before there is anything to parse.
+- **FlareSolverr**, for pages that only return content after an interstitial resolves.
+- **ScrapFly**, a hosted rendering service, for pages the lighter providers cannot render.
+- A **custom HTTP endpoint**, if you run your own renderer and want GiftWrapt to call it.
+- An optional **AI extractor** that reads the fetched HTML and pulls out fields when structured parsing comes back empty.
 
-Operators configure these through the admin scraping settings. Pages where the cheap providers work never escalate to the paid ones, so a typical deployment spends very little.
+Operators configure these through the admin scraping settings. Pages the cheap providers handle never escalate to the paid ones, so a typical deployment spends very little.
 
-If none of that works, you'll see a clean failure and the form will prompt you to fill in fields manually.
+If none of them produce a result, you'll see a clean failure and the form will prompt you to fill the fields in by hand.
 
 ## For Self-Hosters
 
 The scraping pipeline is fully configurable per deployment:
 
-- Add multiple providers and arrange them into **tiers**. Tier 1 runs first; tier 2 only runs if tier 1 didn't get a good enough result. Same for tier 2 → tier 3.
+- Add multiple providers and arrange them into **tiers**, 1 through 5. Everything in a tier runs in parallel; the next tier only runs if the merged result from the previous one fell below the quality threshold.
 - Each provider has its own timeout, secret fields (encrypted at rest), and admin-controlled enable/disable.
 - A small **always-on fetch provider** runs first on every scrape; everything else is opt-in.
 - A **per-URL cache** dedups repeat scrapes for a configurable TTL.

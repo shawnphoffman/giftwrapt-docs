@@ -70,10 +70,10 @@ All configured at **Admin > Scraping**. Secret fields are encrypted at rest in `
 | Type | Mode | Secret | Best for |
 |---|---|---|---|
 | `browserless` | sequential | `token` | Self-hosted JS rendering |
-| `flaresolverr` | sequential | - | Self-hosted Cloudflare bypass |
+| `flaresolverr` | sequential | - | Self-hosted; resolves interstitials before returning HTML |
 | `browserbase-fetch` | sequential | `apiKey` | Hosted JS rendering, no LLM |
 | `browserbase-stagehand` | **parallel** | `apiKey` | Hosted structured extraction with LLM |
-| `scrapfly` | sequential | `apiKey` | Hosted scraping with anti-bot |
+| `scrapfly` | sequential | `apiKey` | Hosted rendering service |
 | `custom-http` | sequential | `customHeaders` | Bring-your-own scraper service |
 | `ai-provider` | **parallel** | - | LLM extraction from raw HTML |
 
@@ -148,7 +148,7 @@ Rotating `BETTER_AUTH_SECRET` invalidates every encrypted value in `app_settings
 |---|---|---|
 | Vercel, no extras | `fetch-provider` only | Best-effort; manual entry fallback. |
 | Vercel + Browserbase Fetch | `fetch -> browserbase-fetch` | Cheapest hosted upgrade. |
-| Vercel + ScrapFly | `fetch -> scrapfly` | Anti-bot bypass via `asp=true`. Pay per credit. |
+| Vercel + ScrapFly | `fetch -> scrapfly` | Hosted rendering via `asp=true`. Pay per credit. |
 | Vercel + Browserbase + Stagehand | `fetch -> browserbase-fetch -> ai \| stagehand` | Stagehand races; wins on thin tier-1 data. |
 | Vercel + custom HTTP | `fetch -> custom-http` | Bring-your-own scraper, no vendor cost. |
 | Self-host containers | Full chain incl. browserless + flaresolverr | Run them as sidecars. |

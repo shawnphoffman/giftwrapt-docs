@@ -18,7 +18,7 @@ GiftWrapt's docs use a handful of overlapping terms - "Recipient" and "Owner" me
 | **Guardian** | A user with full view + edit access to a [Child's](#child-vs-dependent-vs-user) or [Dependent's](/permissions/dependents/) lists. The strongest relationship grant. | On a dependent list, the **Guardian** is also the **Owner**. They are *not* the Recipient. |
 | **Dependent** | A non-user gift recipient (pet, baby, account-less family member). Has no login; managed by their Guardians. | The **Recipient** and **Subject** of dependent-subject lists. Never an Owner. |
 | **Partner** | A user linked symmetrically to another user. Shares gift credit on every claim, both directions. | Not a permission - Partners need normal access (public list, Editor grant, etc.) to actually see things. |
-| **Editor** | A user with an explicit per-list grant to add / edit / delete items on one specific list. | A Gifter on every other list. The Editor grant is scoped to the one list. |
+| **Editor** | A user who can add / edit / delete items on a list they don't own. Two separate mechanisms produce one: a **list-editor** grant, scoped to a single list, or the **Edit** access level, which is a blanket grant across every list that owner holds. | A Gifter on any list they don't have either grant on. See [Permissions](/permissions/) for which one you actually want. |
 | **Restricted Viewer** | A user marked as Restricted by an Owner. Sees public lists but with a filtered item view (other people's claims are hidden). | Still counts as a Gifter when they claim items. |
 | **Child** (role) | A user account with the Child role. Can't be a Partner, can't be a Guardian, can't create gift-ideas lists, can't be an Editor. | Always paired with one or more **Guardians**. |
 | **Admin** | A user with access to the admin panel. Tunes deployment-wide settings (list types, archive offsets, email toggles, etc.). | Has no per-item override - Admins can't force a reveal any more than any other user. |
@@ -55,8 +55,9 @@ See [Dependents](/permissions/dependents/) for the full split.
 | **Claim** | A record that says "I'm getting this for them." Visible to other Gifters immediately; hidden from the Recipient until reveal. |
 | **Reveal** | Making a claim visible to the Recipient. The Recipient-side word for "the item got archived." |
 | **Archive** | Marking an item as archived. The item-side word for the same event. "Archive an item" and "reveal an item" describe the same action from different angles. |
-| **Auto-Archive** | The scheduled job that archives items per list type (N days after the Recipient's birthday, Christmas, or the list's configured holiday). |
-| **Force-Archive** | What happens when a list with active claims is deleted: the list is archived instead of removed, to preserve gift history. Not a separate user action. |
+| **Auto-Archive** | The scheduled job that archives items per list type, a configurable number of days after the triggering date. Birthday **and wishlist** lists follow the Recipient's birthday; Christmas lists follow Dec 25; holiday lists follow their configured holiday. |
+| **Force-Archive** (list deletion) | What happens when a list with active claims is deleted: the list is archived instead of removed, to preserve gift history. Not a user-invoked action, just the fallback path for delete. |
+| **Reveal now** (force reveal) | A separate, deliberate action: someone with edit access reveals a list's claimed gifts ahead of the scheduled date. Only available after the event has passed and while no deferral is active. Confusingly named `forceArchiveList` in the code; unrelated to the row above. |
 | **Add-On** | An extra gift a Gifter volunteered that wasn't on the Recipient's list. Surfaces on Received gifts after reveal. |
 | **Subject** | The Recipient of a dependent-subject list. Distinct from the **Owner** (the Guardian who created it). |
 | **Pending Deletion** | State of an item the Recipient deleted while it had active claims. Gifters get an alert; the item resolves through the orphan-claim flow, not the reveal flow. |
