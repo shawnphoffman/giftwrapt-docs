@@ -1,38 +1,108 @@
 ---
 title: iOS App
-description: The GiftWrapt companion iOS app - current status, what it does today, and how to try it on a self-hosted deployment.
+description: The GiftWrapt companion app for iPhone - on the App Store, with home screen widgets and an import workflow for your deployment.
 sidebar:
   order: 8
   badge:
-    text: Beta
-    variant: tip
+    text: App Store
+    variant: success
 ---
 
+import { Image } from 'astro:assets'
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
-## Status
+import upcomingLight from '../../../screenshots/ios/light/upcoming.png'
+import upcomingDark from '../../../screenshots/ios/dark/upcoming.png'
+import importLight from '../../../screenshots/ios/light/import.png'
+import importDark from '../../../screenshots/ios/dark/import.png'
+import widgetsLight from '../../../screenshots/ios/light/widgets.png'
+import widgetsDark from '../../../screenshots/ios/dark/widgets.png'
+import saveToListLight from '../../../screenshots/ios/light/save-to-list.png'
+import saveToListDark from '../../../screenshots/ios/dark/save-to-list.png'
 
-The app is a separate codebase from the server and is built from source in Xcode. Its repository is not public yet, and there is no App Store distribution, so the sections below describe what the app does rather than how to get it. Both are on the roadmap without a date.
+export const Shot = ({ light, dark, alt, caption }) => (
+	<figure class="phone-shot">
+		<Image src={light} alt={alt} width={640} class="dark:sl-hidden" />
+		<Image src={dark} alt={alt} width={640} class="light:sl-hidden" />
+		<figcaption>{caption}</figcaption>
+	</figure>
+)
+
+## Download
+
+<CardGrid>
+	<LinkCard
+		title="GiftWrapt on the App Store"
+		href="https://apps.apple.com/us/app/giftwrapt/id6764892496"
+		description="Free companion app for iPhone. Requires a GiftWrapt deployment to sign in to."
+	/>
+</CardGrid>
+
+<Aside type="caution" title="It is a companion, not a standalone app">
+	The app has no account creation and no data of its own. It signs in to a GiftWrapt server you already have - your self-hosted
+	deployment or one you have an account on - and works against that account. Without a server there is nothing to sign in to.
+</Aside>
+
+It is also deliberately narrower than the web app: feature parity is not the goal. The app covers the things that are better on a phone - a glanceable
+**upcoming** view, **home screen widgets**, and an **import workflow** for getting items into a list from wherever you found them. Everything else
+(browsing and claiming, editing items, purchases, relationships, admin) stays on the web.
 
 The server side is ready either way: everything the app talks to is the mobile API that ships with your deployment. That surface is gated behind the `enableMobileApp` admin toggle and is **off by default**, so a deployment that has no use for it is already closed.
 
+## A Look at It
+
+<div class="phone-shots not-content">
+	<Shot light={upcomingLight} dark={upcomingDark} alt="The Upcoming tab listing birthdays and holidays by how many days away they are" caption="Upcoming" />
+	<Shot light={importLight} dark={importDark} alt="The Import tab with a Paste from Clipboard suggestion above the link field" caption="Import" />
+	<Shot light={widgetsLight} dark={widgetsDark} alt="Birthdays and Upcoming Holidays widgets on the iOS home screen" caption="Home screen widgets" />
+	<Shot light={saveToListLight} dark={saveToListDark} alt="The Save to List sheet with a scraped title, photo, and price ready to edit" caption="Compose sheet" />
+</div>
+
+Screenshots follow the site theme. More of the web UI is on the [Screenshots](/overview/screenshots/) page.
+
+<style>{`
+	.phone-shots {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: 1.5rem;
+		margin-block: 1.5rem;
+	}
+	.phone-shots figure {
+		margin: 0;
+		text-align: center;
+	}
+	.phone-shots img {
+		width: 100%;
+		height: auto;
+		border-radius: 1.25rem;
+		border: 1px solid var(--sl-color-hairline);
+	}
+	.phone-shots figcaption {
+		margin-top: 0.5rem;
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
+	}
+`}</style>
+
 ## What It Does Today
 
-- **Sign in per device.** Each install authenticates via a per-device API key minted from the user's account settings (see [API Keys (Mobile App)](/configuration/auth/#api-keys-mobile-app)). Revoking one device doesn't sign the user out elsewhere.
-- **Save from anywhere.** A share extension lets you send a URL into the app from any other app (Safari, a retailer app, Messages) and queues it as an item with a scraped preview.
-- **Compose items on the go.** Type an item directly, or use the **quick-add by barcode** flow to scan a product's UPC, EAN, or GTIN. When a [barcode provider](/configuration/settings/) is configured server-side, the scan prefills the title, brand, photo, and a candidate URL for review before save.
-- **See upcoming holidays and birthdays.** A dedicated view lists the next holidays and dependent birthdays so you can plan ahead from your phone.
-- **Home screen widgets.** Pin GiftWrapt to your home screen with widgets that surface upcoming holidays and birthdays at a glance, no app launch required.
-
+- **Sign in per device.** Enter your server's host, your email and password, and a name for the device. The server mints a per-device API key for that install (see [API Keys (Mobile App)](/configuration/auth/#api-keys-mobile-app)); TOTP, passkey, and OIDC sign-in are all supported. Revoking one device from **Settings → Account → Devices** doesn't sign the user out elsewhere.
+- **Import workflow.** The Import tab turns a link or a product into an item on one of your writable lists:
+  - **Paste a URL** - one-tap paste when the clipboard already holds a link, then the server scrapes the title, photo, and price for review before saving.
+  - **Scan a barcode** - point the camera at a UPC, EAN, or GTIN. When a [barcode provider](/configuration/settings/) is configured server-side, the scan prefills the title, brand, photo, and a candidate URL. Without a provider, the app hides the scanner button.
+  - **Share from any other app** - the share extension sends a URL in from Safari, a retailer app, or Messages, and drops you into the same compose sheet.
+- **Home screen widgets.** Birthdays and Holidays widgets surface who and what is coming up without launching the app. Both come in small and medium home screen sizes plus Lock Screen and StandBy variants, and they follow the system's tinted and vibrant rendering modes. Each widget is configurable for how far ahead it looks.
+- **See upcoming holidays and birthdays.** The Upcoming tab combines dependent birthdays and holiday lists into a single day-by-day feed, so the phone answers "what's next" without a trip to the web app.
 
 ## Enabling It on a Self-Hosted Deployment
 
 1. In **Admin Settings**, turn on `enableMobileApp`. This exposes the mobile API surface and the per-user API-key UI. See [Admin Settings](/configuration/settings/) for context.
-2. Have each user mint a device API key from their account settings page and paste it into the iOS app's login screen alongside the server URL.
+2. Have each user install the app and sign in with your server's host, their email and password, and a device name. The key is minted for that device automatically - nothing to copy and paste.
 3. Optional: to enable the quick-add by barcode flow, configure a lookup provider at `/admin/barcode`. Without a provider, the app hides the scanner button.
 
 ## Related
 
 <CardGrid>
 	<LinkCard title="API Keys (Mobile App)" href="/configuration/auth/#api-keys-mobile-app" description="How per-device authentication works." />
+	<LinkCard title="Admin Settings" href="/configuration/settings/" description="The enableMobileApp toggle and the barcode provider." />
 </CardGrid>

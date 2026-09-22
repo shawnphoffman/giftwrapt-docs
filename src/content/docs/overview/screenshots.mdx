@@ -17,6 +17,14 @@ export const darkImages = import.meta.glob(
   '../../../screenshots/basic/dark/*.png',
   { eager: true, import: 'default' },
 );
+export const iosLightImages = import.meta.glob(
+  '../../../screenshots/ios/light/*.png',
+  { eager: true, import: 'default' },
+);
+export const iosDarkImages = import.meta.glob(
+  '../../../screenshots/ios/dark/*.png',
+  { eager: true, import: 'default' },
+);
 
 export const pairs = Object.entries(lightImages)
   .map(([path, light]) => {
@@ -29,6 +37,15 @@ export const pairs = Object.entries(lightImages)
 
 export const adminPairs = pairs.filter((p) => p.name.startsWith('admin'));
 export const userPairs = pairs.filter((p) => !p.name.startsWith('admin'));
+
+export const iosPairs = Object.entries(iosLightImages)
+  .map(([path, light]) => {
+    const name = path.split('/').pop().replace('.png', '');
+    const dark = iosDarkImages[path.replace('/light/', '/dark/')];
+    return { name, light, dark };
+  })
+  .filter((p) => p.dark)
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 export const Compare = ({ light, dark, name }) => (
   <div
@@ -50,3 +67,17 @@ export const Compare = ({ light, dark, name }) => (
 ## Admin Interface
 
 {adminPairs.map((p) => <Compare key={p.name} {...p} />)}
+
+## iOS App
+
+The [companion app for iPhone](/features/ios-app/): the Upcoming feed, the home screen widgets, and the compose sheet that the import workflow and the
+share extension both land in.
+
+<div class="ios-shots">{iosPairs.map((p) => <Compare key={p.name} {...p} />)}</div>
+
+<style>{`
+  .ios-shots > div {
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+`}</style>
