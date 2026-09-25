@@ -13,13 +13,17 @@ GiftWrapt has a handful of scheduled jobs that handle reveal-after-event, outbou
 
 | Endpoint | Suggested schedule | What it does |
 |---|---|---|
-| `/api/cron/auto-archive` | `0 6 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. Skips lists with an active per-list extension and reveals any whose extension has elapsed. |
-| `/api/cron/birthday-emails` | `0 7 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, relationship reminders, and the [orphan-claim cleanup passes](#orphan-claim-cleanup). |
+| `/api/cron/auto-archive` | `0 14 * * *` | Archives claimed items past the birthday / Christmas / holiday reveal date. This is what triggers the recipient-facing reveal. Skips lists with an active per-list extension and reveals any whose extension has elapsed. |
+| `/api/cron/birthday-emails` | `0 15 * * *` | Day-of birthday greetings, post-birthday gifter summaries, pre-event reminders, relationship reminders, and the [orphan-claim cleanup passes](#orphan-claim-cleanup). |
 | `/api/cron/cleanup-verification` | `0 3 * * *` | Deletes expired better-auth verification rows; sweeps cron-run retention rows. |
 | `/api/cron/intelligence-recommendations` | `0 4 * * *` | Runs the per-user analyzer pipeline; persists recommendations + run rows. |
 | `/api/cron/item-scrape-queue` | `0 5 * * *` | Drains pending `item_scrape_jobs` rows from bulk-import. |
 
-All five are **daily** in the default schedule, deliberately staggered so they don't pile up at the same minute.
+All five are **daily** in the default schedule, deliberately staggered so they don't pile up at the same minute. Times are UTC.
+
+<Aside type="tip" title="Run the Email Jobs in Your Morning">
+`auto-archive` and `birthday-emails` work out which date it is from the time zone set in **Admin > Core settings**, then send that day's emails. Their defaults (14:00 and 15:00 UTC) land in the morning across the Americas and the afternoon in Europe. East of there they run late at night, and `/admin/scheduling` shows a warning. Move them to a morning time in your zone.
+</Aside>
 
 <Aside type="note" title="Schedules Are Documented Defaults, Not Hard Caps">
 The runners themselves are idempotent and safe to run more frequently. Self-hosters can crank cadence up if they want faster turnaround on the scrape queue or Intelligence; the suggested schedules just match the daily cadence shipped in `vercel.json`.

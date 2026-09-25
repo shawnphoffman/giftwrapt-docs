@@ -42,8 +42,8 @@ Render reads [`render.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/mai
 | `/api/cron/cleanup-verification` | `0 3 * * *` |
 | `/api/cron/intelligence-recommendations` | `0 4 * * *` |
 | `/api/cron/item-scrape-queue` | `0 5 * * *` |
-| `/api/cron/auto-archive` | `0 6 * * *` |
-| `/api/cron/birthday-emails` | `0 7 * * *` |
+| `/api/cron/auto-archive` | `0 14 * * *` |
+| `/api/cron/birthday-emails` | `0 15 * * *` |
 
 Each cron job uses the `curlimages/curl` image and inherits `CRON_SECRET` and `BETTER_AUTH_URL` from the web service via `fromService:` references. There's no manual env paste.
 
