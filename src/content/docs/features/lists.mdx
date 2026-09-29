@@ -17,7 +17,7 @@ There are five gift-giving list types in active use:
 - **Birthday** - tied to the owner's birthday. Claims auto-reveal a configurable number of days after their birthday.
 - **Christmas** - the annual Christmas list. Claims auto-reveal after Dec 25.
 - **Holiday** - pinned to a specific occasion (Easter, Mother's Day, Mexico's Día de la Madre, an admin-defined one-off date, etc.) that an admin has added to the deployment's curated set. Claims auto-reveal a configurable number of days after the holiday's date. Public or private.
-- **Gift ideas** - a private list of ideas *for someone else*. Anyone (except children) can create one, and it can optionally be pinned to a specific person. Never public.
+- **Gift ideas** - a private list of ideas *for someone else*. Anyone (except children) can create one, and it can optionally be pinned to a specific person or dependent. Never public. When it's pinned, its ideas also show up on that person's lists for you (see [Gift Ideas on Someone's List](#gift-ideas-on-someones-list)).
 
 ## Todo Lists
 
@@ -58,6 +58,17 @@ Two ways to let someone else help manage a list:
 When the owner creates a new **public** list, GiftWrapt auto-ticks "add my partner as an editor" by default. The owner can untick it before saving. Private lists never auto-add anyone.
 
 If you change your partner later, GiftWrapt offers to fix existing list-editor grants for you: pre-checked lists to add the new partner to, pre-checked lists to remove the old partner from. Nothing is removed silently.
+
+## Gift Ideas on Someone's List
+
+When you're shopping from someone's list, any gift-ideas list you keep for them shows up right there, in a **Gift Ideas** section between their items and the [add-ons](/features/items/#add-ons). You don't have to flip back and forth between their list and your notes.
+
+- **Who sees it:** the owner of the gift-ideas list and its editors, and nobody else. The ideas list has to be pinned to that person (or dependent) and still active. An editor the ideas-list owner has restricted doesn't see it.
+- **Where it shows:** on every one of that person's lists you can give from, except todo lists. If you don't have any ideas for them, the section doesn't appear at all.
+- **What shows:** ideas nobody has used yet. Ideas marked unavailable still show, with their badge, in case they spark something; you just can't claim them.
+- **The person it's about never sees it**, on their own lists or anywhere else.
+
+**Claiming an idea** opens the add-on form, filled in from the idea: its name, price, notes, link, and picture. Save it and the idea becomes an ordinary add-on on the list you're looking at, and the idea is removed from your gift-ideas list, so it disappears from their other lists too. There's no link back and no notification; from then on it's just an add-on. If someone else on your ideas list claims the same idea first, you'll see "This idea was already used."
 
 ## Archive vs Delete
 
