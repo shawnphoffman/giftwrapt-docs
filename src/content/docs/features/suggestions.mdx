@@ -30,7 +30,7 @@ Ten analyzers run, each looking for one specific thing. Several are pure heurist
 | **Relation labels** | Mother's Day or Father's Day is approaching and you haven't told GiftWrapt who you shop for, so the reminders can't fire. Heuristic. |
 | **Stale items** | Items you added a long time ago and haven't touched - probably worth removing or refreshing. |
 | **Possible duplicates** | Items that look like they refer to the same thing ("AirPods Pro" and "Apple AirPods Pro 2nd Gen"). Same-URL pairs are caught without asking a model at all. |
-| **Grouping** | Sets of items that look like "I want one of these" or "this set in order," and could become an [item group](/features/items/#item-groups). |
+| **Grouping** | Sets of items that look like "I want one of these" or "this set in order," and could become an [item group](/features/items/#item-groups), or ungrouped items that belong in a group you already have. It reads each list as a whole, so a suggested group can be any size. |
 | **Missing price** | Items where you pasted a URL but never filled in a price. Heuristic. |
 | **Missing image** | Items where the [scraper](/features/scraping/) found candidate photos but none was ever picked. Heuristic. |
 | **Stale scrape** | Items with a URL that has never been scraped, or hasn't been re-scraped in a long time, so the price and availability may have drifted. Heuristic. |
@@ -44,7 +44,7 @@ Your admin can turn individual analyzers off, so a given deployment may surface 
 
 Every suggestion has three actions:
 
-- **Apply** *(when available)* - the change happens server-side without leaving the page. Grouping and stale items both ship apply actions today: "Group as Pick One" creates the item group and links the items immediately, and a stale-item card can delete the item it flagged, or roll a set of co-flagged alternatives into one group. Other cards carry a link that takes you to the right screen instead.
+- **Apply** *(when available)* - the change happens server-side without leaving the page. Grouping and stale items both ship apply actions today: "Group as Pick One" creates the item group and links the items immediately, "Add to Group" moves items into an existing group, and a stale-item card can delete the item it flagged, or roll a set of co-flagged alternatives into one group. Other cards carry a link that takes you to the right screen instead.
 - **Dismiss** - hide this specific suggestion. It won't come back even when the analyzer re-runs, unless the underlying items change enough that GiftWrapt no longer recognizes it as the same suggestion.
 - **Ignore** - just close the card. It'll likely reappear on the next run.
 
