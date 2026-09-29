@@ -221,7 +221,7 @@ docker compose -f docker/compose.selfhost-garage-minimal.yaml exec app \
 
 Other bundled CLIs under `.output/scripts/`:
 
-- `admin-reset-password.mjs` - reset a user's password and revoke their sessions
+- `admin-reset-password.mjs` - set a user's password and revoke their sessions (works for users with no password yet, such as SSO-only users or everyone after a wipe and restore)
 - `migrate.mjs` - run pending migrations manually
 - `init-garage.mjs` / `init-rustfs.mjs` - bootstrap the storage bucket and keys (the entrypoint runs these for you when `INIT_GARAGE` / `INIT_RUSTFS` is set)
 - `intelligence-run-once.mjs` - generate suggestions once, for testing
@@ -251,6 +251,27 @@ A nightly `pg_dump` plus an `aws s3 sync` against your storage bucket is enough.
 
 <Aside type="danger" title="Encrypt Your Database Backups">
 better-auth stores session tokens in the `session` table as plaintext (the token IS the cookie). Anyone who can read a `pg_dump` can hijack every active session until those sessions expire. Same for `verification` (password-reset tokens). Use full-disk encryption on the volume that holds your dumps, or pipe the dump through `gpg`/`age`.
+</Aside>
+
+### Admin Export and Restore
+
+Admins can also download a JSON backup from `/admin/data` and import one there. It's handy for moving family data between deployments, but it is not a replacement for `pg_dump`.
+
+**What's in the file:** users and profiles, relationships and permissions, guardians and dependents, relation labels, custom holidays and their reminder history, lists, item groups, items, todos, claims and contribution splits, comments, off-list gifts, list editors, pending scrape jobs, and suggestion dismiss / apply status (so a restore doesn't re-surface suggestions people already handled). App settings are included too, and encrypted settings only decrypt on a deployment with the same `BETTER_AUTH_SECRET`.
+
+**What's not:**
+
+- **Images and attachments.** The file holds their URLs, not the files. Back up your storage bucket separately.
+- **Sign-in credentials.** Passwords, passkeys, 2FA enrollment, API keys, and sessions are never exported.
+- **Caches and history.** Barcode lookups and AI analysis rebuild on their own. Scrape history and suggestion run logs start fresh.
+
+**Import modes:**
+
+- **Merge by ID** updates rows that exist and adds the ones that don't. Nothing is deleted, and sign-ins keep working.
+- **Wipe and Restore** deletes all app data, then loads the file. You must type the confirmation phrase, your own account must be in the file, and storage must be configured: a snapshot of the current data is written to `backups/pre-wipe-<timestamp>.json` in your bucket first, so there's a way back.
+
+<Aside type="caution" title="Wipe and Restore Clears Every Sign-In">
+Because credentials aren't in the file, every user (you included) comes back without a password, passkey, or 2FA. People get back in through **Forgot password**, which needs [email](#addon-email) configured, or through [SSO](/configuration/auth/), if your identity provider marks their email as verified. With neither, set passwords from the shell with `admin-reset-password.mjs` (see [Admin CLI](#admin-cli)), starting with your own. Users who had 2FA re-enroll from their settings.
 </Aside>
 
 ## Troubleshooting
