@@ -54,7 +54,7 @@ Users can enable TOTP-based 2FA from their account settings. Enrollment requires
 
 The companion iOS app authenticates via per-device API keys minted from the user's account settings. Each install gets its own key, stored in the device Keychain. Revoking one device's key doesn't sign the user out of the web.
 
-API keys are kept fully separate from the web session cookie. The web's CSRF defense relies on the `sameSite=lax` cookie, and API keys never travel as cookies.
+API keys are kept fully separate from the web session cookie. The web's CSRF defense relies on the `sameSite=lax` cookie, and API keys never travel as cookies. The reverse holds too: a key only works on the mobile API as a bearer token. Sending one to the web app in an `x-api-key` header does not sign anyone in, so turning off the mobile app really does lock every device key out.
 
 ## Cookies and Origins
 
