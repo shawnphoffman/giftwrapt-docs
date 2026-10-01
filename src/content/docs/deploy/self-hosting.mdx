@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem, Aside, LinkCard, CardGrid } from '@astrojs/starlight/components'
 
-Self-hosting GiftWrapt is meant to be boring: one published image, one compose file, one `.env`. The base stack is app + Postgres + S3-compatible storage. Cron, email, and MCP are addons you opt into by picking a richer compose shape.
+Self-hosting GiftWrapt is meant to be boring: one published image, one compose file, one `.env`. The base stack is app + Postgres + S3-compatible storage. Cron and email are addons you opt into by picking a richer compose shape; AI assistants (MCP) are built into the app and need no sidecar.
 
 Each shape lives at `docker/compose.selfhost-{backend}-{shape}.yaml`. Storage backend is `garage` or `rustfs`. Shape is one of:
 
@@ -15,7 +15,7 @@ Each shape lives at `docker/compose.selfhost-{backend}-{shape}.yaml`. Storage ba
 |---|---|
 | `minimal` | Nothing. The smallest path. |
 | `cron` | + cron sidecar (always-on) |
-| `full` | + cron + MCP. MCP is profile-gated (`--profile mcp`). |
+| `full` | + cron. (Kept for compatibility; it used to add a profile-gated MCP sidecar, which is retired.) |
 | `traefik` | + Traefik reverse-proxy. App ports closed; ingress through the proxy. |
 
 This page walks the base deployment first, then each addon in its own section. Read them in order if you're starting from scratch.
@@ -67,7 +67,7 @@ Open `BETTER_AUTH_URL` in a browser - the first user to sign up is auto-promoted
 
 ### 3. Done
 
-That's it. You're running with image uploads via the bundled Garage sidecar. If you need scheduled jobs, email, or the MCP sidecar, keep reading and swap to a richer shape.
+That's it. You're running with image uploads via the bundled Garage sidecar. If you need scheduled jobs or email, keep reading and swap to a richer shape.
 
 ## Addon: Storage
 
@@ -175,15 +175,9 @@ AI_BASE_URL=                      # required for openai-compatible
 
 Every AI feature ships **off by default**. See [AI provider](/configuration/ai/) for the full story.
 
-## Addon: MCP
+## AI Assistants (MCP)
 
-The `-full` compose shape defines a **Model Context Protocol** sidecar (profile-gated) so you can talk to your wishlist from Claude Desktop / Claude Code. It's a thin shim over the mobile API. Switch to `-full.yaml` and pass `--profile mcp` to bring it up:
-
-```bash
-docker compose -f docker/compose.selfhost-garage-full.yaml --profile mcp up -d
-```
-
-You'll need to mint an API key from `/settings/devices` first. See the [giftwrapt-mcp repo](https://github.com/shawnphoffman/giftwrapt-mcp) for client wiring.
+Nothing to deploy: the MCP server is part of the app. An admin turns it on under **Admin → General** and users connect Claude, Cursor, ChatGPT, or any MCP client with the server URL (`https://your-host/api/mcp`). Make sure your reverse proxy forwards `/.well-known/` paths; the admin page checks that for you. See [AI Assistants](/features/ai-assistants/).
 
 ## Multi-Origin and LAN Access
 
@@ -286,15 +280,15 @@ Because credentials aren't in the file, every user (you included) comes back wit
 
 ## The Full Compose File
 
-For reference, here's the `-full` shape with every addon wired up - app, Postgres, Garage storage, cron, and the profile-gated MCP sidecar. The canonical version lives at [`docker/compose.selfhost-garage-full.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage-full.yaml).
+For reference, here's the `-full` shape with every addon wired up - app, Postgres, Garage storage, and cron. The canonical version lives at [`docker/compose.selfhost-garage-full.yaml`](https://github.com/shawnphoffman/giftwrapt/blob/main/docker/compose.selfhost-garage-full.yaml).
 
 {/* compose:start file=docker/compose.selfhost-garage-full.yaml */}
 ```yaml
 # Synced from docker/compose.selfhost-garage-full.yaml
 # =============================================================================
-# Self-Hosted (Garage backend, full (cron + profile-gated MCP))
+# Self-Hosted (Garage backend, full (cron))
 # =============================================================================
-# Includes the cron sidecar always-on AND the MCP sidecar profile-gated. Pass `--profile mcp` to bring MCP up.
+# Includes the cron sidecar always-on. The MCP server is built into the app (enable it from Admin, General), so this shape no longer carries a sidecar for it.
 #
 # Quick start:
 #   1. cp .env.example docker/.env
@@ -376,31 +370,6 @@ services:
     volumes:
       - ./cron-entrypoint.sh:/cron-entrypoint.sh:ro
     command: ['sh', '/cron-entrypoint.sh']
-    depends_on:
-      app:
-        condition: service_started
-    restart: unless-stopped
-
-  # Model Context Protocol sidecar (opt-in via `--profile mcp`). Lets you
-  # interact with your wishlist via Claude Desktop / Code / Web. Talks to
-  # the app over the compose network using a giftwrapt apiKey (mint one
-  # at /settings/devices). The image is published from the
-  # shawnphoffman/giftwrapt-mcp repo. The service stays defined in
-  # *-full.yaml so you can enable it on demand without editing the file.
-  mcp:
-    image: ${MCP_IMAGE:-ghcr.io/shawnphoffman/giftwrapt-mcp:latest}
-    profiles: ['mcp']
-    environment:
-      GIFTWRAPT_BASE_URL: http://app:3001
-      # Single-tenant pin: leave unset for multi-user pass-through (each
-      # client sends its own Bearer header). See the giftwrapt-mcp README.
-      GIFTWRAPT_API_KEY: ${GIFTWRAPT_MCP_API_KEY:-}
-      # Shared-secret port gate; only meaningful when GIFTWRAPT_API_KEY is set.
-      MCP_BEARER_TOKEN: ${MCP_BEARER_TOKEN:-}
-      MCP_PORT: 8787
-      MCP_LOG_LEVEL: ${MCP_LOG_LEVEL:-info}
-    ports:
-      - '${MCP_PORT:-8787}:8787'
     depends_on:
       app:
         condition: service_started

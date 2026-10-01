@@ -1,0 +1,129 @@
+---
+title: AI Assistants
+description: Connect Claude, Cursor, ChatGPT, or any MCP client to your GiftWrapt account and manage lists, shop for people, and track gifts by talking.
+sidebar:
+  order: 9
+  label: AI Assistants
+  badge:
+    text: MCP
+    variant: tip
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+GiftWrapt is a [Model Context Protocol](https://modelcontextprotocol.io) server. Any MCP-capable assistant can connect to your deployment, sign in as you, and then add things to your lists, read the lists of people you shop for, claim gifts, keep track of what you have bought, and act on GiftWrapt's own suggestions. There is nothing extra to install or host: the server is built into the app.
+
+<Aside type="note">
+An assistant acts **as you**, with exactly the access you have and never as an admin. It sees what you see: your own lists never show who claimed what, and other people's lists do.
+</Aside>
+
+## Turn It On
+
+An admin enables the feature once per deployment:
+
+<Steps>
+
+1. Open **Admin → General** and turn on **Enable MCP Server**.
+
+2. Open **Admin → MCP**. The page shows the server URL to hand to users, checks that the two discovery documents are reachable at your origin, and lists the clients that have registered and every active connection.
+
+</Steps>
+
+With the switch off, nothing related to assistants exists: the endpoint, the sign-in pages, the discovery documents, the admin page, and every connected assistant stop at once.
+
+## Connect an Assistant
+
+Every client needs one thing: your deployment's server URL, which is your site's address followed by `/api/mcp` (for example `https://gifts.example.com/api/mcp`). You can copy it from **Settings → Connected Apps** at any time. The first time a client connects, it sends you to GiftWrapt to sign in (if you are not already) and to approve the connection.
+
+<Tabs>
+<TabItem label="Claude.ai">
+
+Open **Settings → Connectors → Add custom connector**, paste the server URL, and finish the sign-in and consent in the browser window that opens. The connector then shows up in every Claude chat, on the web, in the desktop app, and on mobile.
+
+</TabItem>
+<TabItem label="Claude Code">
+
+```bash
+claude mcp add --transport http giftwrapt https://gifts.example.com/api/mcp
+```
+
+Then run `/mcp` inside Claude Code and sign in when prompted.
+
+</TabItem>
+<TabItem label="Cursor, VS Code, Windsurf">
+
+Add the server to the client's MCP configuration as a URL entry:
+
+```json
+{
+  "mcpServers": {
+    "giftwrapt": { "url": "https://gifts.example.com/api/mcp" }
+  }
+}
+```
+
+</TabItem>
+<TabItem label="ChatGPT">
+
+In developer mode, add a connector with the server URL. ChatGPT registers itself with your deployment and walks you through the sign-in.
+
+</TabItem>
+<TabItem label="Anything else">
+
+Clients that only run local (stdio) servers can bridge through `mcp-remote`, which handles the sign-in in your browser:
+
+```json
+{
+  "mcpServers": {
+    "giftwrapt": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://gifts.example.com/api/mcp"]
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+You are asked to approve the connection every time a client starts a fresh sign-in. Once connected, a client stays signed in for 30 days of inactivity and refreshes itself while you keep using it.
+
+## What an Assistant Can Do
+
+The assistant gets a set of tools that mirror the app. A few examples of what you can ask:
+
+- "Add this to my wishlist" with a product link. The page is read for the title, price, and image, exactly like pasting a link in the app.
+- "What's on Mom's list that nobody has claimed yet?" The assistant sees her list the way you would as a gifter, including what others already claimed and how many of each item remain.
+- "I bought the espresso machine for Sam with Kate." The claim is recorded with Kate as a co-gifter, so both households get credit.
+- "What have I spent on Christmas so far?" A summary of your claims and off-list gifts with totals per person.
+- "Who has a birthday in the next month that I haven't planned a gift for?"
+- "Tidy my list." Duplicates, missing prices, items that look like alternatives of each other, and GiftWrapt's own suggestions, with proposed edits before anything changes.
+
+Three ready-made prompts come with the server (plan gifts for someone, tidy a list, what's coming up) for clients that surface prompts.
+
+### What stays private
+
+- Your own lists never reveal claims to the assistant, so your surprises stay surprises even if you ask directly. Marking items received (which reveals the givers) is a deliberate action the assistant will ask about.
+- On other people's lists, other gifters' costs and private notes stay hidden; only who is giving what is visible, as in the app.
+- Restricted viewers see the same filtered view they see in the app.
+- Child accounts cannot connect an assistant at all.
+
+## Manage Connections
+
+- **Settings → Connected Apps** lists the assistants connected to your account with when they were last used. **Disconnect** signs that assistant out immediately.
+- **Admin → MCP** shows every registered client and every active connection across users. Admins can revoke a single connection, disable a client (which signs out everyone using it and blocks new sign-ins), or delete it. Clients re-register automatically the next time someone connects with them.
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| The client says it cannot find the authorization server. | A reverse proxy is not forwarding paths under `/.well-known/`. The **Admin → MCP** connect card checks both discovery URLs; both must return JSON at your public origin. |
+| The client gets a 503 from the server. | **Enable MCP Server** is off. |
+| Sign-in works but the client is told it is unauthorized afterwards. | The connection was revoked or the client was disabled by an admin. Reconnect. |
+| A child account cannot connect. | By design. |
+| Requests are refused with "too many requests". | Per-user limits: 120 tool calls a minute, and the same scrape and barcode limits the app uses. |
+
+## Related
+
+- [Admin settings](/configuration/settings/) for the `enableMcp` toggle and the admin pages.
+- [Authentication](/configuration/auth/) for how the OAuth tokens relate to the web session and mobile API keys.

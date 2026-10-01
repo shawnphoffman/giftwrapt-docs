@@ -103,6 +103,8 @@ Synced from the core registry at build time. Edit `core/src/lib/observability/me
 | `items_created_total` | counter | _(none)_ | Items created on a list. |
 | `items_pending_deletion_total` | counter | _(none)_ | Items flipped to pending-deletion via recipient delete on a claimed item. |
 | `lists_created_total` | counter | `type` | Lists created, by type. |
+| `mcp_tool_calls_total` | counter | `outcome`, `tool` | MCP tool calls, by tool and outcome. |
+| `mcp_tool_duration_ms` | histogram | `tool` | MCP tool call duration in milliseconds, by tool. |
 | `orphan_claims_cleaned_up_total` | counter | _(none)_ | Orphan claims hard-deleted by the daily cleanup pass. |
 | `reveals_triggered_total` | counter | `trigger` | Reveals (item archive) triggered, by trigger source. |
 {/* metrics:end */}

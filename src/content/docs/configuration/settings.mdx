@@ -24,7 +24,7 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 
 | Section | Path | What it controls |
 |---|---|---|
-| General | `/admin` | App Settings (title, default list type, list-type toggles, mobile, passkeys), Comments, Birthday / Christmas / Holiday Lists (including archive timing and custom holidays), Relationship Reminders, Todo Lists, Observability. |
+| General | `/admin` | App Settings (title, default list type, list-type toggles, mobile, MCP, passkeys), Comments, Birthday / Christmas / Holiday Lists (including archive timing and custom holidays), Relationship Reminders, Todo Lists, Observability. |
 | Email | `/admin/email` | Email-family toggles (comments, birthday, Christmas, holiday, reminders, relationship reminders) and a test-send button. |
 | Auth | `/admin/auth` | OIDC client config; passkey toggle. |
 | Users | `/admin/users` | User list, roles, partner/guardian relationships, user-detail pages, impersonation. |
@@ -34,6 +34,7 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 | Import / Export | `/admin/data` | Data import, export, and purge. See [Admin Export and Restore](/deploy/self-hosting/#admin-export-and-restore). |
 | Scheduling | `/admin/scheduling` | Cron-run history and next-fire times per endpoint. |
 | Barcode | `/admin/barcode` | Mobile barcode-lookup provider, API key, cache TTL, and scraper fallback. Surfaced when `enableMobileApp` is on. |
+| MCP | `/admin/mcp` | How to connect an AI assistant, the clients that have registered, and every active connection with revoke. Surfaced when `enableMcp` is on. |
 | Debug | `/admin/debug` | Build info, session, and the resolved `app_settings` payload. |
 
 [Intelligence](/configuration/intelligence/) has its own section, reached at `/admin/intelligence` and split across six tabs:
@@ -79,6 +80,7 @@ A few app-wide toggles that shape what users see:
 | `enableTodoLists` | false | Todo lists, a separate row shape from gift items. |
 | `enableComments` | true | Item comments. |
 | `enableMobileApp` | false | Exposes the mobile API and shows the per-device API key UI. See [iOS App](/features/ios-app/). |
+| `enableMcp` | false | Lets users connect AI assistants over MCP: turns on the `/api/mcp` endpoint, the OAuth sign-in and consent pages, Admin → MCP, and Settings → Connected Apps. Turning it off disconnects every assistant immediately. See [AI Assistants](/features/ai-assistants/). |
 | `enablePasskeys` | false | WebAuthn passkey enrollment. |
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.

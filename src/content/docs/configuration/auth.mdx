@@ -56,6 +56,10 @@ The companion iOS app authenticates via per-device API keys minted from the user
 
 API keys are kept fully separate from the web session cookie. The web's CSRF defense relies on the `sameSite=lax` cookie, and API keys never travel as cookies. The reverse holds too: a key only works on the mobile API as a bearer token. Sending one to the web app in an `x-api-key` header does not sign anyone in, so turning off the mobile app really does lock every device key out.
 
+## OAuth Tokens (AI Assistants)
+
+When the MCP server is enabled, GiftWrapt is also an OAuth 2.1 authorization server for AI clients. A client registers itself, the user signs in and approves it on a consent screen, and the client receives an access token (one hour) plus a refresh token (30 days). Those tokens work only on `/api/mcp`; they never act as a web session or a mobile API key, and the other two credentials never work on the MCP endpoint. Child accounts are refused. Users manage their connections under **Settings → Connected Apps**; admins see everything under **Admin → MCP**. See [AI Assistants](/features/ai-assistants/).
+
 ## Cookies and Origins
 
 Session cookies are `httpOnly`, `sameSite=lax`, and `Secure` (when the deployment is HTTPS). Two environment variables affect cookie behavior:
