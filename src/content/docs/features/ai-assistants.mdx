@@ -119,6 +119,7 @@ Three ready-made prompts come with the server (plan gifts for someone, tidy a li
 |---|---|
 | The client says it cannot find the authorization server. | A reverse proxy is not forwarding paths under `/.well-known/`. The **Admin → MCP** connect card checks both discovery URLs; both must return JSON at your public origin. |
 | The client gets a 503 from the server. | **Enable MCP Server** is off. |
+| Claude (web, desktop, or mobile) shows "Authorization failed" right after you click Allow, while Claude Code connects fine. | A firewall in front of your deployment is blocking AI-assistant user agents. Claude's hosted connector calls your server as `Claude-User`; rules such as Vercel's **AI Bots** managed ruleset or Cloudflare's AI crawler blocking reject it at the edge, so the request never reaches GiftWrapt. Add a bypass or allow rule for the path `/api/mcp`. |
 | Sign-in works but the client is told it is unauthorized afterwards. | The connection was revoked or the client was disabled by an admin. Reconnect. |
 | A child account cannot connect. | By design. |
 | Requests are refused with "too many requests". | Per-user limits: 120 tool calls a minute, and the same scrape and barcode limits the app uses. |
