@@ -8,7 +8,8 @@
 		"start": "astro dev",
 		"sync:compose": "node scripts/sync-compose.mjs",
 		"sync:metrics": "node scripts/sync-metrics.mjs",
-		"prebuild": "node scripts/sync-compose.mjs && node scripts/sync-metrics.mjs",
+		"sync:catalogs": "node scripts/sync-catalogs.mjs",
+		"prebuild": "node scripts/sync-compose.mjs && node scripts/sync-metrics.mjs && node scripts/sync-catalogs.mjs",
 		"build": "astro build",
 		"preview": "astro preview",
 		"astro": "astro"

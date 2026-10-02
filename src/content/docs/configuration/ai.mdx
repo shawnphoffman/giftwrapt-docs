@@ -29,14 +29,16 @@ Every AI feature is off until a provider is configured, and new features ship **
 
 ## What Each Feature Sends
 
-Each feature on **Admin > AI** has a "What is sent to the AI provider" section with the same lists as below. They describe what the code sends, feature by feature.
+Each feature on **Admin > AI** has a "What is sent to the AI provider" section. The table below is generated from the same source as that screen, so the two always agree.
 
+{/* ai-features:start file=catalogs/ai-features.json */}
 | Feature | Sent to the provider | Never sent |
 |---|---|---|
-| **AI scraper** | The product page URL being added. The text and markup of that page with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
-| **Clean imported titles** | The scraped title, the product page URL, and the store name when known. | Anything about your users, their lists, or their gifts. |
-| **Photo to item** | The uploaded photo. | Anything about your users, their lists, or their gifts. |
-| **Suggestions** | Titles and notes of the items on the user's own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
+| **AI Scraper** | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
+| **Clean Imported Titles** | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
+| **Photo to Item** | The uploaded photo. | Anything about your users, their lists, or their gifts. |
+| **Suggestions** | Titles and notes of the items on the user’s own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
+{/* ai-features:end */}
 
 To keep everything on your own hardware, point the provider at a local OpenAI-compatible runtime such as Ollama or LM Studio.
 

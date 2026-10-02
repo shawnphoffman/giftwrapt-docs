@@ -99,6 +99,62 @@ The assistant gets a set of tools that mirror the app. A few examples of what yo
 
 Three ready-made prompts come with the server (plan gifts for someone, tidy a list, what's coming up) for clients that surface prompts.
 
+### All tools
+
+Every tool an assistant can call, generated from the server itself. "Reads" tools only look things up; "Changes" tools add, edit, or remove something, and assistants ask before using the destructive ones. Tools for features your deployment has turned off answer that the feature is off.
+
+<details>
+<summary>Show the full tool list</summary>
+
+{/* mcp-tools:start file=catalogs/mcp-tools.json */}
+| Tool | Kind | What it does |
+|---|---|---|
+| `add_comment` | Changes | Post a comment on an item the user can see. Mention someone with @[Their Name](userId). The list owner and anyone mentioned may be emailed. |
+| `add_item` | Changes, reads the web | Add one item to a list the user owns or can edit (defaults to their primary list). Give a title, a product URL, or both. With a URL the page is read to fill in the title, price, and image unless enrich is false; pass your own values to override what the page says. |
+| `add_items` | Changes, reads the web | Add several items at once (a brain dump or a pasted list). Each needs a title or a URL. URLs are enriched in the background by the import queue rather than while you wait. Requires the deployment’s import feature. |
+| `add_off_list_gift` | Changes | Record something the user is giving that is not on the recipient’s list, so other gifters see it and the recipient learns of it at reveal time. Only on other people’s lists. |
+| `apply_recommendation` | Changes (destructive) | Run one of a suggestion’s applicable actions (by its index from list_recommendations). Actions marked destructive should be confirmed with the user first. |
+| `archive_items` | Changes | Archive items on the user’s own list to mark them received. This REVEALS who gave each gift to the user, so only do it after the occasion, when they ask. Pass archived false to undo. |
+| `assign_items_to_group` | Changes | Put items into a group (all must be on the group’s list), or pass group_id null to take them out of any group. |
+| `claim_item` | Changes | Reserve an item on someone else’s list as a gift the user will give, so other gifters see it is taken. Optional cost and private notes; co_gifter_ids share the gift (and the credit) with other users. Respects pick-one and in-order groups and remaining quantity. |
+| `create_dependent` | Changes | Add a dependent (a pet, a baby, anyone without their own account) that the user and any extra guardians will manage lists for. Admin only on this deployment, matching the web. |
+| `create_item_group` | Changes | Group items on one of the user’s lists. An "or" group means pick one of these (once any is claimed the rest lock); an "order" group means buy them in sequence. Items in a group share the group’s priority. Optionally add items right away. |
+| `create_list` | Changes | Create a list for the user (or for a dependent they manage). Gift-ideas lists are always private and may target the person the ideas are for. Holiday lists need a custom_holiday_id from this deployment. Ask before creating if the user already has a list of that type. |
+| `delete_item` | Changes (destructive) | Remove an item from one of the user’s lists. If a gifter had already claimed it, the item quietly enters a pending-deletion state and the gifter is alerted; the user never sees that difference. Confirm with the user first. |
+| `delete_item_group` | Changes (destructive) | Remove a group. Its items stay on the list, ungrouped. |
+| `delete_list` | Changes (destructive) | Delete a list the user owns. If any item on it has already been claimed by a gifter, the list is archived instead of deleted so gift history survives; the result says which happened. Confirm with the user first. |
+| `delete_off_list_gift` | Changes (destructive) | Remove one of the user’s off-list gifts. |
+| `dismiss_recommendation` | Changes | Hide a suggestion (it stays hidden across regenerations). Pass undo true to bring a dismissed one back. |
+| `get_list` | Reads | A list the user owns or can edit, with its items, item groups, and reveal schedule. Owner view: claims are never included, so never guess whether something was bought. A giftideas list holds the user’s private ideas for someone else, not things that person asked for. Use get_wishlist for other people’s lists. |
+| `get_me` | Reads | The signed-in user: profile, partner, children and dependents they manage, their primary list, and which features this deployment has turned on. Call this first. |
+| `get_wishlist` | Reads | Everything needed to shop for another person: their list items with what is already claimed and how many remain, pick-one / in-order group rules, off-list gifts other gifters are bringing, and, kept separate, the user’s own private gift ideas for this person. Only `items` are things the person asked for; `myGiftIdeas` are the user’s notes that the person never sees, so never present them as on the person’s list. Give list_id, or person_id to use that person’s primary list. Never works on the user’s own lists (use get_list). |
+| `list_comments` | Reads | The conversation on an item the user can see (questions about sizes, coordination between gifters). Only available when the deployment has comments turned on. |
+| `list_my_gifts` | Reads | Everything the user (or their partner) is giving: claims and off-list gifts across every list, with costs and totals per recipient. Filter by recipient_id (user or dependent) or by list type. Costs are this household’s share. |
+| `list_my_lists` | Reads | Every list the user can edit: their own (wishlists, birthday, Christmas, holiday, gift-ideas), lists shared with them as an editor, and lists belonging to children or dependents they manage. Owner view: never includes claims. |
+| `list_people` | Reads | Everyone whose lists the user can see and shop from: family, friends, children, and dependents (pets, babies), each with their birthday and their visible lists. Use a person’s primary list id or a list id with get_wishlist to shop. Optional query filters by name or email. |
+| `list_received_gifts` | Reads | Gifts that have been revealed to the user (and to dependents they manage): what was given and by whom. Only revealed gifts appear; unrevealed claims stay hidden. |
+| `list_recommendations` | Reads | GiftWrapt’s own suggestions for the user’s lists (stale items, duplicates, grouping, missing prices, set-up nudges), with the actions each one offers. Pass include_resolved to also see dismissed and applied ones. Requires the deployment’s intelligence feature. |
+| `list_upcoming_occasions` | Reads | Birthdays of everyone the user can shop for (including children and dependents), plus the holidays this deployment celebrates and the user’s anniversary, within the next N days, each with whether the user has already planned a gift. Sorted soonest first. |
+| `lookup_barcode` | Reads, reads the web | Identify a product from a UPC / EAN barcode number. Returns candidate titles, brands, images, and product URLs to feed into add_item. |
+| `move_items` | Changes (destructive) | Move items to another list the user can edit. Moving between lists of different types (for example wishlist to gift-ideas) clears any claims gifters had made, so confirm with the user first. |
+| `preview_url` | Reads, reads the web | Read a product page and return its title, price, images, and the choices a buyer must make, without adding anything. Useful before add_item or to check a price. |
+| `refresh_recommendations` | Changes | Regenerate the user’s suggestions now instead of waiting for the nightly run. Subject to a per-user cooldown; may take a while and may call an AI provider. |
+| `search_my_items` | Reads | Find items across every list the user owns by words in the title or notes. Results from gift-ideas lists (isGiftIdea true) are the user’s private ideas for someone else, not things the user or that person asked for. |
+| `set_claim_split` | Changes | Set how much each co-gifter owes on one of the user’s claims; the user’s own share is the remainder. Pass an empty list to go back to an even split. The claim needs a total cost first. |
+| `set_item_availability` | Changes | Mark an item unavailable (sold out, discontinued) so gifters skip it, or available again. |
+| `set_primary_list` | Changes | Mark one of the user’s lists as their primary list (the default for add_item and the one others see first). Gift-ideas lists cannot be primary. |
+| `unclaim_item` | Changes (destructive) | Release one of the user’s claims so others can give the item. Permanent: the claim and its notes are deleted. Confirm with the user first. |
+| `update_claim` | Changes | Change the quantity, cost, notes, tracking number, or co-gifters on one of the user’s claims (their partner’s too). co_gifter_ids REPLACES the whole set; pass [] to clear. The partner is already credited automatically and need not be listed. |
+| `update_dependent` | Changes | Rename a dependent or set their birthday. Admin only on this deployment, matching the web. |
+| `update_item` | Changes | Change an item’s title, URL, price, notes, priority, quantity, or image. Pass null to clear a nullable field. Only fields you pass change. |
+| `update_item_group` | Changes | Change a group’s type, name, or priority. An "or" group means pick one of these (once any is claimed the rest lock); an "order" group means buy them in sequence. Items in a group share the group’s priority. |
+| `update_list` | Changes | Rename, describe, re-type, archive (is_active false), or change the privacy of a list the user owns or can edit. Changing a list to or from giftideas clears its target; todo lists cannot change type. |
+| `update_off_list_gift` | Changes | Edit the description, cost, notes, tracking number, or URL of one of the user’s off-list gifts. |
+| `use_gift_idea` | Changes (destructive) | Turn one of the user’s gift ideas for a person into an off-list gift on that person’s list (the idea is removed from the ideas list). Ideas come from get_wishlist’s myGiftIdeas. |
+{/* mcp-tools:end */}
+
+</details>
+
 ### What stays private
 
 - Your own lists never reveal claims to the assistant, so your surprises stay surprises even if you ask directly. Marking items received (which reveals the givers) is a deliberate action the assistant will ask about.
