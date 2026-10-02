@@ -102,7 +102,7 @@ Every successful result, from every tier, feeds **one running merge**. Falling t
 
 - The highest-scoring result is the "base."
 - Any field the base left empty (`title`, `description`, `price`, `currency`, `siteName`, ratings) is filled from the others, best score first.
-- `imageUrls` are pooled from everyone, then de-duplicated (different sizes of the same photo count as one, keeping the largest) and ranked: real product photos first, social-share cards next, thumbnails last.
+- `imageUrls` are pooled from everyone, then de-duplicated (different sizes of the same photo count as one, keeping the largest), ranked (real product photos first, social-share cards next, thumbnails last), and capped at the best 12.
 - Before a result joins, a **same-product check** compares it with the base. Different Amazon product IDs, or titles that share too few words, keep it out, so a later tier that hit a captcha page or a different product can't graft its data onto a good result.
 
 The merged result is persisted as its own row with `scraperId: 'merged:a,b,c'`, marked as the run's result. The **Scrape History** card in `/admin/scraping` shows it with a **Result** badge directly above that run's individual attempts, and its detail lists which providers contributed and which were kept out (and why).
