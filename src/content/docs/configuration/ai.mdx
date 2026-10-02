@@ -16,15 +16,36 @@ GiftWrapt has several optional features that call an LLM. **All of them share a 
 
 | Feature | What it does | Where to enable |
 |---|---|---|
-| **AI URL extractor** | Reads raw HTML when the basic scrape can't get useful fields. Parallel racer in the scraping chain. | [Scraping](/configuration/scraping/) - `scrapeAiProviderEnabled`. |
-| **AI title cleaner** | Post-scrape normalises noisy titles ("Amazon.com: Brand X Foo - 4-Pack, Black, Size M - Free Shipping" -> "Brand X Foo (4-Pack, Black, M)"). | [Scraping](/configuration/scraping/) - `scrapeAiCleanTitlesEnabled`. |
-| **Intelligence (recommendations)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | [Intelligence](/configuration/intelligence/). |
+| **AI scraper** | Reads raw HTML when the basic scrape can't get useful fields. One of the providers in the scraping chain. | [Scraping](/configuration/scraping/): add an AI provider entry. |
+| **Clean imported titles** | Post-scrape normalises noisy titles ("Amazon.com: Brand X Foo - 4-Pack, Black, Size M - Free Shipping" -> "Brand X Foo (4-Pack, Black, M)"). | **Admin > AI** - `scrapeAiCleanTitlesEnabled`. |
+| **Photo to item** | Fills in a new item (title, price, notes) from a photo the user uploads. | **Admin > AI** - `aiPhotoExtractEnabled`. |
+| **Suggestions (Intelligence)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | **Admin > AI** - `intelligenceEnabled`. More under [Intelligence](/configuration/intelligence/). |
 
 If you don't configure an AI provider, the toggles for these features disable themselves in the admin UI. The rest of GiftWrapt works fine.
 
 <Aside type="caution" title="AI Is Opt-In and Admin-Gated">
-Every AI feature ships **off by default**. Enabling them costs money against whichever provider you've configured. Watch token usage during the first week.
+Every AI feature is off until a provider is configured, and new features ship **off by default**. Photo to item is the one exception: it turns on with the provider, as it did before it had its own switch. Enabling features costs money against whichever provider you've configured; **Admin > AI** shows what each one is costing (see [Usage and Cost](#usage-and-cost)).
 </Aside>
+
+## What Each Feature Sends
+
+Each feature on **Admin > AI** has a "What is sent to the AI provider" section with the same lists as below. They describe what the code sends, feature by feature.
+
+| Feature | Sent to the provider | Never sent |
+|---|---|---|
+| **AI scraper** | The product page URL being added. The text and markup of that page with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
+| **Clean imported titles** | The scraped title, the product page URL, and the store name when known. | Anything about your users, their lists, or their gifts. |
+| **Photo to item** | The uploaded photo. | Anything about your users, their lists, or their gifts. |
+| **Suggestions** | Titles and notes of the items on the user's own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
+
+To keep everything on your own hardware, point the provider at a local OpenAI-compatible runtime such as Ollama or LM Studio.
+
+## Usage and Cost
+
+**Admin > AI** has an **AI Usage** card: every AI call the deployment made in the last 30 days, by feature, with calls, errors, tokens in and out, and an estimated cost. The estimate is computed from token counts and a built-in rate table, so treat it as a guide and your provider's bill as the truth.
+
+- **Monthly ceiling.** Set **Monthly Ceiling (USD)** (`aiMonthlyCostCeilingUsd`) to stop AI features once the month's estimated spend reaches it. The month is the UTC calendar month. While paused, photo to item reports that the budget has been reached, titles are left as scraped, the AI scraper is skipped, and Suggestions runs record an error. The connection test still works so you can check the provider. The ceiling is a guard rail: a burst of calls can overshoot it slightly.
+- **Retention.** Usage rows are kept for `aiUsageRetentionDays` (default 90) and never contain prompt or response text.
 
 ## Supported Providers
 
@@ -50,7 +71,7 @@ Go to **Admin > AI**:
 - **Base URL** - required for `openai-compatible`. Examples: `https://openrouter.ai/api/v1`, `https://api.groq.com/openai/v1`, `http://localhost:11434/v1` for Ollama.
 - **API key** - encrypted at rest using a key derived from `BETTER_AUTH_SECRET`.
 - **Model** - the model ID to use. Examples: `gpt-4o-mini`, `claude-haiku-4-5`, `meta-llama/llama-3.1-8b-instruct`.
-- **Max output tokens** - optional cap on generated tokens per call.
+- **Max output tokens** - optional cap on generated tokens per call. Applies to the connection test, scraping, title clean-up, and photo to item. Suggestions are bounded by batch size instead.
 
 Changes apply on the next read (no restart needed). A "Send test prompt" button verifies the config end-to-end.
 
