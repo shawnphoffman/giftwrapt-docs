@@ -8,7 +8,7 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components'
 
-When you open someone else's list, a **Help Me Choose** panel sits under their items. It has two tools. One works everywhere; the other is optional and uses AI.
+If your admin has turned on **Gift Suggestions**, a **Help Me Choose** panel sits under the items when you open someone else's list. It has two tools: one ranks what is already on the list, and the other uses AI to suggest things that are not. With the setting off, which is the default, the panel does not appear at all.
 
 ## Pick for Me
 
@@ -18,11 +18,11 @@ Press **Pick for Me** and GiftWrapt shows the best three things still open on th
 - Each pick says why: its priority, whether it fits your budget, and how many are left.
 - Tap a pick to jump to that item on the list.
 
-Pick for Me is plain ranking, not AI. It works on every deployment and for every account, including children.
+Pick for Me is plain ranking, not AI. Nothing is sent anywhere to produce it, and it is available to every account that sees the panel, including children.
 
 ## Need Ideas?
 
-If your admin has turned on **Gift Suggestions**, the panel also has a **Need Ideas?** button. It suggests new gift ideas that are *not* on the person's list, based on what their lists say about their taste.
+The **Need Ideas?** button suggests new gift ideas that are *not* on the person's list, based on what their lists say about their taste.
 
 - Each idea says what to look for (the kind of thing, useful features, sensible variations), why it suits them based on their list, and a rough price band. There are no product links and no search button: the idea is the starting point, and where you shop is up to you.
 - **Save Idea** adds it, with what to look for, to your private gift ideas for that person, creating that list the first time. From there it shows under **Gift Ideas** on their lists and can be turned into an off-list gift once you buy it. The person never sees your gift ideas.
@@ -40,8 +40,8 @@ It is never shown who claimed anything, what anyone paid, claim notes, item note
 
 ### Who can use it
 
-- An admin has to turn it on under **Admin > AI**. It is off by default.
-- Child accounts cannot use Need Ideas?. An adult can use it for a child's list.
+- An admin turns the whole panel on under **Admin > AI** (**Gift Suggestions**). It is off by default.
+- Child accounts see the panel but not Need Ideas?. An adult can use it for a child's list.
 - It never works on your own list: it is for shopping for someone else.
 - You can ask up to ten times an hour.
 
