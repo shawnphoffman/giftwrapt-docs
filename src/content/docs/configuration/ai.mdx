@@ -19,6 +19,7 @@ GiftWrapt has several optional features that call an LLM. **All of them share a 
 | **AI scraper** | Reads raw HTML when the basic scrape can't get useful fields. One of the providers in the scraping chain. | [Scraping](/configuration/scraping/): add an AI provider entry. |
 | **Clean imported titles** | Post-scrape normalises noisy titles ("Amazon.com: Brand X Foo - 4-Pack, Black, Size M - Free Shipping" -> "Brand X Foo (4-Pack, Black, M)"). | **Admin > AI** - `scrapeAiCleanTitlesEnabled`. |
 | **Photo to item** | Fills in a new item (title, price, notes) from a photo the user uploads. | **Admin > AI** - `aiPhotoExtractEnabled`. |
+| **Gift suggestions** | A "Need Ideas?" button on other people's lists that suggests gifts not on the list. Runs only when a user asks. See [Help Choosing a Gift](/features/gift-help/). | **Admin > AI** - `aiGiftSuggestionsEnabled`. |
 | **Suggestions (Intelligence)** | Per-user analyzers that surface stale items, duplicates, grouping suggestions. | **Admin > AI** - `intelligenceEnabled`. More under [Intelligence](/configuration/intelligence/). |
 
 If you don't configure an AI provider, the toggles for these features disable themselves in the admin UI. The rest of GiftWrapt works fine.
@@ -37,6 +38,7 @@ Each feature on **Admin > AI** has a "What is sent to the AI provider" section. 
 | **AI Scraper** | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
 | **Clean Imported Titles** | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
 | **Photo to Item** | The uploaded photo. | Anything about your users, their lists, or their gifts. |
+| **Gift Suggestions** | The first name of the person the gift is for. Titles, prices, priorities, and categories of the items on that person’s lists that the user asking can already see. For each of those items, whether it is already claimed (yes or no only). The asking user’s own private gift ideas for that person, and the titles of gifts they already gave them. The occasion and the budget, when given. | Who claimed anything, what anyone paid, and claim notes. Item notes, links, and images. Items the asking user cannot see, including anything hidden from a restricted viewer. Other people’s gift ideas, off-list gifts, and comments. Last names, email addresses, and birth dates. |
 | **Suggestions** | Titles and notes of the items on the user’s own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
 {/* ai-features:end */}
 

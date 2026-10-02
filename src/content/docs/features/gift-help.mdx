@@ -1,0 +1,50 @@
+---
+title: Help Choosing a Gift
+description: Pick for Me ranks what is still open on someone's list, and optional AI gift suggestions offer ideas that are not on it.
+sidebar:
+  order: 6
+  label: Help Choosing
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+When you open someone else's list, a **Help Me Choose** panel sits under their items. It has two tools. One works everywhere; the other is optional and uses AI.
+
+## Pick for Me
+
+Press **Pick for Me** and GiftWrapt shows the best three things still open on the list, most wanted first. Enter a budget first and anything priced over it is left out.
+
+- It only picks things you could claim right now. Fully claimed and unavailable items are skipped, a "pick one" group is skipped once someone has claimed from it, and in an "in order" group only the next item is offered.
+- Each pick says why: its priority, whether it fits your budget, and how many are left.
+- Tap a pick to jump to that item on the list.
+
+Pick for Me is plain ranking, not AI. It works on every deployment and for every account, including children.
+
+## Need Ideas?
+
+If your admin has turned on **Gift Suggestions**, the panel also has a **Need Ideas?** button. It suggests new gift ideas that are *not* on the person's list, based on what their lists say about their taste.
+
+- Each idea has a short reason tied to something on their list, a rough price band, and a **Search** link that opens a web search for it.
+- **Save Idea** adds it to your private gift ideas for that person, creating that list the first time. From there it shows under **Gift Ideas** on their lists and can be turned into an off-list gift once you buy it. The person never sees your gift ideas.
+- Ideas you do not save are not kept anywhere.
+
+<Aside type="caution" title="Check Before You Buy">
+The ideas come from an AI model. It does not know what is in stock or what things cost today, and it never supplies product links, which is why each idea comes with a search instead. Treat an idea as a starting point.
+</Aside>
+
+### What the AI is shown
+
+To suggest something sensible, the model is shown the person's first name, the items on their lists that you can already see (title, price, priority, and category), whether each item is already claimed, your own gift ideas and past gifts for them, and your budget if you gave one.
+
+It is never shown who claimed anything, what anyone paid, claim notes, item notes or links, anything you cannot see yourself, or last names, email addresses, and birth dates. The full, generated list is on the [AI Provider](/configuration/ai/#what-each-feature-sends) page.
+
+### Who can use it
+
+- An admin has to turn it on under **Admin > AI**. It is off by default.
+- Child accounts cannot use Need Ideas?. An adult can use it for a child's list.
+- It never works on your own list: it is for shopping for someone else.
+- You can ask up to ten times an hour.
+
+## What Their List Is Mostly About
+
+When [Suggestions](/features/suggestions/) is on and enough of a list has been analysed, the panel also shows a one-line summary such as "This list is mostly Sports & Outdoors, Clothing". It comes from categories GiftWrapt already worked out for the items; nothing new is sent anywhere to show it.
