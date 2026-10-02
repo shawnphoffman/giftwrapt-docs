@@ -83,6 +83,8 @@ Clients that only run local (stdio) servers can bridge through `mcp-remote`, whi
 </TabItem>
 </Tabs>
 
+When you approve a connection you choose what the assistant may do: **Read and Make Changes** (it can add items, claim gifts, and edit lists when you ask) or **Read Only** (it can answer questions but cannot change anything). You can switch an assistant between the two at any time under **Settings → Connected Apps**; the change applies to its next request.
+
 You are asked to approve the connection every time a client starts a fresh sign-in. Once connected, a client stays signed in for 30 days of inactivity and refreshes itself while you keep using it.
 
 ## What an Assistant Can Do
@@ -165,7 +167,7 @@ Every tool an assistant can call, generated from the server itself. "Reads" tool
 
 ## Manage Connections
 
-- **Settings → Connected Apps** lists the assistants connected to your account with when they were last used. **Disconnect** signs that assistant out immediately.
+- **Settings → Connected Apps** lists the assistants connected to your account with when they were last used. Each has a switch between **Can Make Changes** and **Read Only**, and **Disconnect** signs that assistant out immediately.
 - **Admin → MCP** shows every registered client and every active connection across users. Admins can revoke a single connection, disable a client (which signs out everyone using it and blocks new sign-ins), or delete it. Clients re-register automatically the next time someone connects with them.
 
 ## Troubleshooting
@@ -177,6 +179,7 @@ Every tool an assistant can call, generated from the server itself. "Reads" tool
 | Claude (web, desktop, or mobile) shows "Authorization failed" right after you click Allow, while Claude Code connects fine. | A firewall in front of your deployment is blocking AI-assistant user agents. Claude's hosted connector calls your server as `Claude-User`; rules such as Vercel's **AI Bots** managed ruleset or Cloudflare's AI crawler blocking reject it at the edge, so the request never reaches GiftWrapt. Add a bypass or allow rule for the path `/api/mcp`. |
 | Sign-in works but the client is told it is unauthorized afterwards. | The connection was revoked or the client was disabled by an admin. Reconnect. |
 | A child account cannot connect. | By design. |
+| The assistant says it cannot add, claim, or change anything. | It was connected as **Read Only**. Switch it under **Settings → Connected Apps**. |
 | Requests are refused with "too many requests". | Per-user limits: 120 tool calls a minute, and the same scrape and barcode limits the app uses. |
 
 ## Related
