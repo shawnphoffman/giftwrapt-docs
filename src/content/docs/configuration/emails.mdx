@@ -72,6 +72,15 @@ Four independent families with their own master toggles and lead-days settings:
 
 Mother's Day, Father's Day, and Valentine's Day use the country configured under `relationshipRemindersCountry` (default US). Anniversary reminders follow each couple's own date.
 
+#### Gift Picks in Reminders
+
+Turn on **Include Gift Picks** (`enableReminderPicks`, off by default) and each of these reminders also lists up to three things still open on the person's lists, most wanted first, each linked to the item. It is plain ranking by priority, with no AI involved.
+
+- Picks are built from what the reader can see. Someone with [restricted](/permissions/privacy/) access gets picks only from the items they can see, and nobody gets picks from a list they cannot open.
+- The email says what is still open and nothing about who claimed anything else.
+- A copy of a child's reminder also goes to their guardians. Those copies never include picks, because a guardian is often the very person the reminder is about.
+- When nothing is open, the reminder is sent exactly as before.
+
 ## Sender Setup
 
 For deliverability, the from-address domain needs verified SPF, DKIM, and DMARC records on the Resend side. Resend's docs walk through it; once your domain is verified, just paste the from-address into `RESEND_FROM_EMAIL` and you're done.

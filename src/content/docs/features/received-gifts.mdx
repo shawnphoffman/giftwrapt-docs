@@ -73,6 +73,15 @@ There's no dedicated reveal timestamp on items. The Received gifts query uses `i
 
 If your deployment ever needs an exact reveal time (audit, accounting), treat that as a new column - don't overload `updatedAt`.
 
+## Thank-You Note Drafts
+
+If your admin has turned on **Thank-You Note Drafts**, each giver's section on this page ends with a **Draft a Thank-You** button. It writes a short note for that giver's gifts that you can edit, then copy into a card or a message. GiftWrapt does not send it to anyone.
+
+- The draft comes from an AI model. It is shown your first name, the givers' first names, and the titles of the gifts, which you can already see here. It is never shown what anything cost, gift notes, or gifts that have not been revealed.
+- For a pet or a baby you manage, the note is written from you, thanking the giver for what they gave them.
+- **New Draft** writes another version. One note covers up to twelve gifts from the same giver.
+- It is off by default. An admin turns it on under **Admin > AI**; see [AI Provider](/configuration/ai/).
+
 ## Privacy
 
 The recipient can always see claim data for items they've revealed. That's the whole point. But the page never exposes things the recipient shouldn't see:

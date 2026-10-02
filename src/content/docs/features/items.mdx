@@ -22,6 +22,18 @@ Every item has:
 - **Availability** - mark an item **unavailable** when it's out of stock or no longer wanted. Unavailable items can't be claimed.
 - **Comments** - back-and-forth between owner and giftgivers. Type `@` in a comment to mention anyone who can see the list; they get an email when [comment emails](/configuration/emails/#comment-notifications) are enabled.
 
+## Adding Many Items at Once
+
+The arrow next to **Add Item** on a list you can edit opens the import options. Each one shows a preview where you can fix or remove rows before anything is added.
+
+- **Upload Photo** fills in one new item from a photo, when your admin has photo to item turned on.
+- **Paste URLs** takes one product link per line. Titles, prices, and images are filled in afterwards.
+- **Apple Notes** takes a checklist copied from the Notes app.
+- **Amazon Wish List** reads a public Amazon list from its link.
+- **Paste Text** takes any text at all, such as a list from your notes or a message from a relative, and an AI model picks out the items. It only appears when your admin has turned on **Paste Text to Items**. Only the text you paste is sent to the model, and a link is kept only if it was in your text.
+
+Todo lists do not take gift items, so they have no import options.
+
 ## Quantity and Split Claims
 
 If an item has `quantity > 1`, multiple giftgivers can claim partial quantities. Each claim is independent: one giftgiver might take 2 of the 5 socks, another takes the remaining 3. GiftWrapt enforces the invariant that claims never exceed the item's total quantity.
