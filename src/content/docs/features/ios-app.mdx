@@ -90,9 +90,10 @@ Screenshots follow the site theme. More of the web UI is on the [Screenshots](/o
 ## What It Does Today
 
 - **Sign in per device.** Enter your server's host, your email and password, and a name for the device. The server mints a per-device API key for that install (see [API Keys (Mobile App)](/configuration/auth/#api-keys-mobile-app)); TOTP, passkey, and OIDC sign-in are all supported. Revoking one device from **Settings → Account → Devices** doesn't sign the user out elsewhere.
-- **Save workflow.** The Save tab turns a link, a product, or just a title into an item on one of your writable lists. Every route ends on the same save form, which starts on your primary list; pick another list there if it belongs somewhere else.
+- **Save workflow.** The Save tab turns a link, a product, a photo, or just a title into an item on one of your writable lists. Every route ends on the same save form, which starts on your primary list; pick another list there if it belongs somewhere else.
   - **Paste or type a link** - the server scrapes the title, photo, and price for review before saving.
-  - **Scan a barcode** - point the camera at a UPC, EAN, or GTIN. When [barcode lookup](/configuration/settings/) is turned on server-side, the scan prefills the title, brand, photo, and a candidate URL. If more than one product matches, the form lists the matches so you can pick one. With lookup off, the Save tab doesn't offer the scanner at all.
+  - **Scan a barcode** - point the camera at a UPC, EAN, or GTIN. When [barcode lookup](/configuration/settings/) is turned on server-side, the scan prefills the title, brand, photo, and a candidate URL. If more than one product matches, the form lists the matches so you can pick one. With lookup off, the Save tab doesn't offer the scanner at all. When the server takes photos (see below) and a barcode finds nothing, the scanner stays open and offers **Take a Photo Instead**: point it at the product and it saves the item from a photo. It offers the same after a few seconds without finding a barcode.
+  - **Snap a photo** - take a picture or choose one from your library. With [object storage](/configuration/storage/) set up, the photo becomes the item's image. With [Photo to Item](/configuration/ai/) on, the server also looks at the photo and fills in the title and price for you to check before saving. The Save tab offers photos when the server can do either; when it can only identify photos, the photo fills in the details but isn't kept.
   - **Type it in** - no link, just a title, for things you can't point at a web page.
   - **Share from any other app** - the share extension sends a URL in from Safari, a retailer app, or Messages, and drops you into the same save form without opening the app.
 - **Home screen widgets.** Three widgets surface who and what is coming up without launching the app:
@@ -109,6 +110,7 @@ Screenshots follow the site theme. More of the web UI is on the [Screenshots](/o
 1. In **Admin Settings**, turn on `enableMobileApp`. This exposes the mobile API surface and the per-user API-key UI. See [Admin Settings](/configuration/settings/) for context.
 2. Have each user install the app and sign in with your server's host, their email and password, and a device name. The key is minted for that device automatically - nothing to copy and paste.
 3. Optional: to enable adding items by barcode, turn on barcode lookup at `/admin/barcode`. It's off by default, and until it's on the app doesn't offer the scanner.
+4. Optional: to enable adding items from a photo, set up [object storage](/configuration/storage/) so photos are kept as item images, and an [AI provider](/configuration/ai/) with Photo to Item on so the app can identify what's in them. Either one is enough for the app to offer photos.
 
 ## Related
 
