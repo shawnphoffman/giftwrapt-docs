@@ -12,6 +12,9 @@ export const collections = {
 				base: 'changelog',
 				owner: 'shawnphoffman',
 				repo: 'giftwrapt',
+				// Unauthenticated GitHub API calls share a 60/hr limit per IP, which
+				// Vercel build machines exhaust. A read-only token lifts it to 5000/hr.
+				token: process.env.GITHUB_TOKEN || undefined,
 				process: ({ title }) => {
 					// If the version title contains "-beta", filter it out.
 					if (title.includes('-beta')) return
