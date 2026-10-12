@@ -42,9 +42,10 @@ export const Shot = ({ light, dark, alt, caption }) => (
 	deployment or one you have an account on - and works against that account. Without a server there is nothing to sign in to.
 </Aside>
 
-It is also deliberately narrower than the web app: feature parity is not the goal. The app covers the things that are better on a phone - a glanceable
-**upcoming** view, **home screen widgets**, and a **save workflow** for getting items into a list from wherever you found them. Everything else
-(browsing and claiming, editing items, purchases, relationships, admin) stays on the web.
+Its native screens are deliberately the things that are better on a phone - a glanceable **upcoming** view, **home screen widgets**, and a
+**save workflow** for getting items into a list from wherever you found them. Everything else (browsing and claiming, editing items, purchases,
+relationships, admin) is the web app itself, shown in the app's **Lists** tab and signed in automatically from the paired device, so there is one
+place to do everything without a second sign-in. Nothing from the web is rebuilt natively, and nothing is missing from it.
 
 The server side is ready either way: everything the app talks to is the mobile API that ships with your deployment. That surface is gated behind the `enableMobileApp` admin toggle and is **off by default**, so a deployment that has no use for it is already closed.
 
