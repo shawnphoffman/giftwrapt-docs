@@ -1,55 +1,83 @@
 ---
 title: Help Choosing a Gift
-description: A Need ideas? button on someone else's list shows the best of what is still open and, with AI, ideas that are not on it.
+description: A Need ideas? button on someone else's list asks an AI for gifts that are not on it, remembers the answer, and learns from what you tell it.
 sidebar:
   order: 6
   label: Help Choosing
+  badge:
+    text: AI
+    variant: caution
 ---
 
 import { Aside } from '@astrojs/starlight/components'
 
-If your admin has turned on **Gift Suggestions**, a **Need ideas?** button appears with the filters at the top of someone else's list. With the setting off, which is the default, the button is not there and nothing else changes.
+If your admin has turned on **Gift Suggestions**, a **Need ideas?** button appears with the filters at the top of someone else's list. With the setting off, which is the default, the button is not there and nothing else changes. The whole feature needs an AI provider; on a site without one it does not exist.
 
 ## How It Works
 
-Press **Need ideas?** and a dialog asks one optional question: your budget. The occasion is taken from the list you are on (a Christmas list means Christmas, a birthday list a birthday), so there is nothing else to fill in. Press **Find Ideas** and you get two kinds of answer.
+Press **Need ideas?** and a dialog asks one optional question: your budget. The occasion is taken from the list you are on (a Christmas list means Christmas, a birthday list a birthday, a plain wishlist counts as a birthday gift only when their birthday is within 60 days), so there is nothing else to fill in. Press **Find Ideas** and the AI writes five to eight gift ideas that are *not* on the person's list.
 
-### From Their List
-
-The best three things still open on the list, most wanted first. With a budget, anything priced over it is left out.
-
-- It only offers things you could claim right now. Fully claimed and unavailable items are skipped, a "pick one" group is skipped once someone has claimed from it, and in an "in order" group only the next item is offered.
-- Each one says why: its priority, whether it fits your budget, and how many are left.
-- Choose one to close the dialog and jump to that item on the list.
-
-This part is plain ranking, not AI. Nothing is sent anywhere to produce it.
-
-### Not on Their List
-
-New gift ideas that are *not* on the person's list, based on what their lists say about their taste.
-
-- Each idea says what to look for (the kind of thing, useful features, sensible variations), why it suits them based on their list, and a rough price band. There are no product links and no search button: the idea is the starting point, and where you shop is up to you.
-- **Save Idea** adds it, with what to look for, to your private gift ideas for that person, creating that list the first time. From there it shows under **Gift Ideas** on their lists and can be turned into an off-list gift once you buy it. The person never sees your gift ideas.
-- Ideas you do not save are not kept anywhere.
-- **Change Budget** takes you back to the questions.
+- Each idea says what to look for (the kind of thing, useful features, sensible variations), why it suits them based on what you can see of their lists, and a rough price band.
+- There are no product links. If your admin has set a search link, each idea gets a **Search** button that opens that page with the idea's title filled in; otherwise where you shop is up to you.
+- **Save to Gift Ideas** adds the idea, with what to look for and why, to your private gift ideas for that person, creating that list the first time. From there it shows under **Gift Ideas** on their lists and can be turned into an off-list gift once you buy it. The person never sees your gift ideas.
+- **Add as Off-List Gift** puts it straight on the list as something you are giving. Other gifters see it the way they see any off-list gift; the person sees it only after the reveal. Only the title and what to look for go on it, never the AI's reasoning about them.
 
 <Aside type="caution" title="Check Before You Buy">
-The ideas come from an AI model. It does not know what is in stock or what things cost today, and it never supplies product links or points you at a store. Treat an idea as something to research, not a recommendation to buy a particular product.
+The ideas come from an AI model. It does not know what is in stock or what things cost today. Treat an idea as something to research, not a recommendation to buy a particular product.
 </Aside>
 
-### What the AI is shown
+## Your Last Answer Is Kept
 
-To suggest something sensible, the model is shown the person's first name, the items on their lists that you can already see (title, price, priority, and category), whether each item is already claimed, your own gift ideas and past gifts for them, and your budget if you gave one.
+The ideas you get are saved for you, so opening **Need ideas?** again for the same person shows the same answer at once, with a line such as "Ideas from 3 days ago, for Christmas, up to $50", instead of asking the AI again. Press **New Ideas** to go back to the budget question and get a fresh set, which replaces the old one.
 
-It is never shown who claimed anything, what anyone paid, claim notes, item notes or links, anything you cannot see yourself, or last names, email addresses, and birth dates. The full, generated list is on the [AI Provider](/configuration/ai/#what-each-feature-sends) page.
+- Only you can see your saved answer. The person never can, and other gifters each get their own.
+- Anything you saved or added is still marked when you come back.
+- Saved answers are cleared after a while (90 days unless your admin changes it) and whenever you ask again. What you did with an idea lives on as a gift idea or an off-list gift regardless.
 
-### Who can use it
+## Telling It What They Have
+
+Two small buttons on each idea tune future answers. Both can be undone from the same spot.
+
+| Button | What it means | Who it affects |
+|---|---|---|
+| **They have it** | The person already owns this, or something just like it. | Everyone who shops for that person: the idea, and near copies of it, stay out of all future answers for them. Nobody is shown who marked it. |
+| Thumbs down | Not something you would give them. | Only you. Other gifters' answers are not changed. |
+
+The person never sees either mark. Saving an idea is the positive signal: your saved ideas and past gifts tell the AI what kind of thing you think fits them.
+
+## How Ideas Are Weighed
+
+The AI is not handed a score for each item. It is handed a short profile of the person in sections, strongest first, and told in plain words how much to lean on each one. The profile is capped at 60 lines and filled in this order, so what they want now is never crowded out by history.
+
+| Section | Where it comes from | How the AI is told to treat it |
+|---|---|---|
+| On their lists now | Items on every list of theirs you can see, each tagged open or claimed, with price, priority, and category when known. Open items are listed before claimed ones. Up to 40. | The strongest evidence of current taste. A claimed item shows taste too, but someone else is giving it, so never suggest it or a near copy. |
+| Already has | Gifts revealed on those lists in the last two years, with the month they were revealed, plus anything a gifter marked **They have it**. Up to 30. | Evidence of taste, but never suggest it or a near copy. A complement, an accessory, or the next step in that interest is good. Older gifts count less. |
+| Your ideas and past gifts | Your own gift ideas for them and the gifts you (or your partner) gave them. | What you think fits this person: favour more of that kind without repeating it. |
+| No longer on their list | Items they marked unavailable, and items they removed after nobody gave them, in the last two years. Up to 15. | The weakest hint. Do not suggest the same thing and do not read much else into it. |
+| Your thumbs down | Ideas you turned down. | Off the table, including close variants. |
+
+Whatever the AI writes is then checked: anything that repeats an item on their lists, something they have, something you gave or saved, something you turned down, or that shares most of its words with one of those, is dropped before you see it. That check is a rule, not AI, and it also removes near duplicates within one answer.
+
+The AI can see which section a line is in. It is not told which of their lists an item is on, who claimed or gave anything, or any numbers beyond prices. Priority reaches it as a word ("priority high"), and only when it is not normal.
+
+## What the AI Is Shown
+
+To write sensible ideas, the model is shown the person's first name; the items on their lists that you can already see (title, price, priority, category, and whether each is claimed); gifts they received on those lists in the last two years and items they removed or marked unavailable (titles and months only); your own gift ideas and past gifts for them; the **They have it** marks from any gifter and your own thumbs-downs; the occasion; and your budget if you gave one.
+
+It is never shown who claimed or gave anything, what anyone paid, claim notes, item notes, links, or images, anything you cannot see yourself (a restricted viewer's hidden items stay hidden here too), or last names, email addresses, and birth dates. The full, generated list is on the [AI Provider](/configuration/ai/#what-each-feature-sends) page.
+
+## Who Can Use It
 
 - An admin turns it on under **Admin > AI** (**Gift Suggestions**). It is off by default.
-- Child accounts get the picks from the list but not the AI ideas. An adult can ask for ideas for a child's list.
+- Child accounts do not get the button. An adult can ask for ideas for a child's list.
 - It never works on your own list: it is for shopping for someone else.
-- You can ask up to ten times an hour.
+- You can ask the AI up to ten times an hour. Reopening a saved answer does not count.
 
 ## What Their List Is Mostly About
 
 When [Suggestions](/features/suggestions/) is on and enough of a list has been analysed, the dialog also opens with a one-line summary such as "Their list is mostly Sports & Outdoors, Clothing". It comes from categories GiftWrapt already worked out for the items; nothing new is sent anywhere to show it.
+
+## Assistants Get the Same Profile
+
+A connected [AI assistant](/features/ai-assistants/) planning a gift through `get_gift_context` receives the same picture: the person's lists, your ideas and past gifts, what they already have (with whether each came from a revealed gift or a gifter's mark), and what they no longer list. It never receives who gave or marked anything.
