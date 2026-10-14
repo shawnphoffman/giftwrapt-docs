@@ -104,7 +104,7 @@ State-changing TanStack server functions and route handlers should always use `m
 
 - **Lax** prevents the auth cookie from being attached to cross-origin `POST` requests. An attacker page on `evil.example` can render a form that posts to our server function, but the browser strips the cookie, the auth middleware sees no session, and the call is refused.
 - **Top-level navigation `GET`s do carry the Lax cookie**, but state changes are POST-only, so a malicious link can't trigger one. Reads (`method: 'GET'` server fns) are CSRF-irrelevant by definition; they don't change state.
-- **Same-site XSS would defeat this** (along with any explicit CSRF token), so the `Content-Security-Policy` headers in `vite.config.ts` and the existing input-validation pattern (every server fn uses `.inputValidator()` with zod) are the actual XSS defense.
+- **Same-site XSS would defeat this** (along with any explicit CSRF token), so the `Content-Security-Policy` header built in `src/lib/csp.ts` and the existing input-validation pattern (every server fn uses `.inputValidator()` with zod) are the actual XSS defense.
 
 Concretely, when adding a new server function or route:
 
