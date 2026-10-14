@@ -26,7 +26,7 @@ Client-side analytics (Plausible, Umami, PostHog, Vercel Analytics) is **deliber
 
 ## Sentry-compatible Error Reporting
 
-Server-side errors (caught at the Nitro `error` hook and the TanStack server-fn `loggingMiddleware`) and browser-side errors (caught at the React `ErrorBoundary` plus Sentry's React SDK) are forwarded to the backend you point `SENTRY_DSN` at. Works with sentry.io, self-hosted [Glitchtip](https://glitchtip.com/), or any compatible HTTP ingest.
+Server-side errors (caught by a global middleware on every server function, the Nitro `error` hook for API routes, and the mobile API and MCP error handlers) and browser-side errors (caught at the React `ErrorBoundary` plus Sentry's React SDK) are forwarded to the backend you point `SENTRY_DSN` at. Works with sentry.io, self-hosted [Glitchtip](https://glitchtip.com/), or any compatible HTTP ingest.
 
 ### Required env
 
@@ -43,6 +43,7 @@ Server-side errors (caught at the Nitro `error` hook and the TanStack server-fn 
 1. Set `SENTRY_DSN` (and any optional env vars above) in your deployment env.
 2. Restart the app so CSP picks up the DSN origin for `connect-src`.
 3. In **Admin > Observability**, flip **Enable Sentry Error Reporting** on.
+4. Click **Send Test Error** under the toggle. A `SentryTestError` event should show up in your backend within a minute. It takes the same path as a real server failure, so if it arrives, production errors will too.
 
 ### Disabling
 
