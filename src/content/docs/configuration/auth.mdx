@@ -17,6 +17,8 @@ The first user to sign up on a fresh deployment is auto-promoted to admin. If yo
 
 The default and the only mode that's enabled with no extra configuration. Anyone with a working email address can sign up; the first account on a fresh deployment is automatically promoted to admin.
 
+To run a closed deployment, turn off **Allow Sign-Ups** in Admin → Auth and add people from Admin → Users. A deployment with no admin stays open so first-admin setup and recovery still work. OIDC has its own auto-register setting.
+
 Password resets are tokenized URLs sent over email. If outbound email isn't configured the reset path still appears to work from the user's perspective (so it doesn't leak which accounts exist), but the email itself is a no-op. Configure [Resend](/configuration/emails/) before relying on password resets. Resend is the only supported transport; there is no SMTP path.
 
 Password reset tokens are good for 60 minutes.

@@ -82,6 +82,7 @@ A few app-wide toggles that shape what users see:
 | `enableMobileApp` | false | Exposes the mobile API and shows the per-device API key UI. See [iOS App](/features/ios-app/). |
 | `enableMcp` | false | Lets users connect AI assistants over MCP: turns on the `/api/mcp` endpoint, the OAuth sign-in and consent pages, Admin → MCP, and Settings → Connected Apps. Turning it off disconnects every assistant immediately. See [AI Assistants](/features/ai-assistants/). |
 | `enablePasskeys` | false | WebAuthn passkey enrollment. |
+| `enableSignUps` | true | Lets anyone who can reach the site create an account. When off, add people from Admin → Users. A deployment with no admin stays open. |
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
 
