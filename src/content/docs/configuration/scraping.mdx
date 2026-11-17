@@ -149,6 +149,16 @@ A successful scrape is reused for the same URL for `scrapeCacheTtlHours`. The ca
 
 AI extraction itself is a regular provider entry (type `ai`) in a tier of your choosing. The legacy `scrapeAiProviderEnabled` toggle is only read at boot, to create that entry when none exists.
 
+It runs on the Default AI model and reads the page an earlier tier already fetched, so put it in a later tier than your rendering providers (Browserless, the GiftWrapt Scraper, ScrapFly). If no earlier tier got a readable page, it fetches the page itself with a plain request.
+
+The entry has one option, **Web Fetch**, off by default. With it on, when the page the scraper has does not give what the scrape is still missing (a title, a price, or a product photo), or it has no page at all, the AI provider's own servers fetch the URL and the model reads that instead. Things to know before turning it on:
+
+- It only works when the Default AI provider is Anthropic. On any other provider the switch does nothing.
+- It can add two model calls to a scrape, and a page that never shows a price will always trigger it.
+- The store sees a request from Anthropic, not from your server.
+- It fetches the exact URL only. It never searches the web.
+- It may need a longer **Timeout Override** on the entry than the default.
+
 The AI features here depend on a configured [AI provider](/configuration/ai/). The toggles disable themselves in the admin UI if no AI provider exists.
 
 ## Item Scrape Queue

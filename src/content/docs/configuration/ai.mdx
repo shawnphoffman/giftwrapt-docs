@@ -37,7 +37,7 @@ Each feature on **Admin > AI** has a "What is sent to the AI provider" section. 
 {/* ai-features:start file=catalogs/ai-features.json */}
 | Feature | Model | Sent to the provider | Never sent |
 |---|---|---|---|
-| **AI Scraper** | Default | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
+| **AI Scraper** | Default | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). With Web Fetch turned on for the AI scraper: the AI provider’s own servers request that URL, so the store sees a visit from the provider. | Anything about your users, their lists, or their gifts. |
 | **Clean Imported Titles** | Fast | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
 | **Photo to Item** | Vision | The uploaded photo. The barcode number, when the photo follows a scan in the iOS app that found nothing. | Anything about your users, their lists, or their gifts. |
 | **Clean Up Barcode Results** | Fast | The product title and brand the barcode provider returned. The barcode number. | Anything about your users, their lists, or their gifts. |
