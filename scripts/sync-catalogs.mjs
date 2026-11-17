@@ -44,10 +44,12 @@ function sentence(text) {
 
 const RENDERERS = {
 	'ai-features': catalog => {
+		// `slots` is absent from a catalog published before model slots existed.
 		const rows = catalog.map(
-			f => `| **${cell(f.label)}** | ${f.sent.map(sentence).join(' ')} | ${f.neverSent.map(sentence).join(' ')} |`
+			f =>
+				`| **${cell(f.label)}** | ${(f.slots ?? ['Default']).map(cell).join(', ')} | ${f.sent.map(sentence).join(' ')} | ${f.neverSent.map(sentence).join(' ')} |`
 		)
-		return ['| Feature | Sent to the provider | Never sent |', '|---|---|---|', ...rows].join('\n')
+		return ['| Feature | Model | Sent to the provider | Never sent |', '|---|---|---|---|', ...rows].join('\n')
 	},
 	'mcp-tools': catalog => {
 		const rows = catalog.map(t => {

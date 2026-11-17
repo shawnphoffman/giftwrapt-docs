@@ -88,6 +88,19 @@ Three provider families are supported via the Vercel AI SDK:
 - **`anthropic`** - Anthropic's hosted API. `AI_BASE_URL` is ignored.
 - **`openai-compatible`** - any OpenAI-shape endpoint (OpenRouter, Groq, Together, Mistral, DeepSeek, Ollama, LM Studio, vLLM, etc.). `AI_BASE_URL` is required.
 
+Two optional models can sit beside the main one: a Fast model for mechanical, high-volume work and a Vision model for photo to item. See [Fast and Vision Models](/configuration/ai/#fast-and-vision-models).
+
+```bash
+AI_FAST_MODEL=                    # a model on the provider above
+AI_FAST_PROVIDER_TYPE=            # set to give the Fast model its own provider
+AI_FAST_API_KEY=                  # required with AI_FAST_PROVIDER_TYPE
+AI_FAST_BASE_URL=                 # required for openai-compatible
+AI_VISION_MODEL=
+AI_VISION_PROVIDER_TYPE=
+AI_VISION_API_KEY=
+AI_VISION_BASE_URL=
+```
+
 ## Storage (Optional)
 
 Any S3-compatible bucket works. The bundled compose files include Garage or RustFS as sidecars; for hosted deploys you'd typically use AWS S3, Cloudflare R2, or Supabase Storage.

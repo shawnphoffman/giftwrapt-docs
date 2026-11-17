@@ -1,6 +1,6 @@
 ---
 title: AI Provider
-description: Configure an LLM provider for GiftWrapt's optional AI features. One provider config powers everything.
+description: Configure an LLM provider for GiftWrapt's optional AI features. One provider config powers everything, with optional cheaper and image-reading models.
 sidebar:
   order: 7
   badge:
@@ -10,7 +10,7 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components'
 
-GiftWrapt has several optional features that call an LLM. **All of them share a single provider configuration.** Set it up once at **Admin > AI** (or via env vars) and every AI feature picks it up.
+GiftWrapt has several optional features that call an LLM. **All of them share a single provider configuration.** Set it up once at **Admin > AI** (or via env vars) and every AI feature picks it up. If you want, you can also name a cheaper model for mechanical work and a separate model for reading photos; see [Fast and Vision Models](#fast-and-vision-models).
 
 ## What AI Is Used For
 
@@ -32,18 +32,19 @@ Every AI feature is off until a provider is configured, and new features ship **
 
 ## What Each Feature Sends
 
-Each feature on **Admin > AI** has a "What is sent to the AI provider" section. The table below is generated from the same source as that screen, so the two always agree.
+Each feature on **Admin > AI** has a "What is sent to the AI provider" section. The table below is generated from the same source as that screen, so the two always agree. The Model column says which model the feature runs on (see [Fast and Vision Models](#fast-and-vision-models)).
 
 {/* ai-features:start file=catalogs/ai-features.json */}
-| Feature | Sent to the provider | Never sent |
-|---|---|---|
-| **AI Scraper** | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
-| **Clean Imported Titles** | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
-| **Photo to Item** | The uploaded photo. | Anything about your users, their lists, or their gifts. |
-| **Paste Text to Items** | The text the user pasted (up to 8,000 characters). | Anything about your users, their lists, or their gifts. |
-| **Thank-You Note Drafts** | The first name of the user writing the note. The first names of the people who gave the gifts. The titles of the gifts, which have already been revealed to that user. The name of the pet or baby, when the gifts were for a dependent. | What anything cost, and gift notes. Gifts that have not been revealed yet. Last names and email addresses. |
-| **Gift Suggestions** | The first name of the person the gift is for. Titles, prices, priorities, and categories of the items on that person’s lists that the user asking can already see. For each of those items, whether it is already claimed (yes or no only). The asking user’s own private gift ideas for that person, and the titles of gifts they already gave them. The occasion, taken from the type of list being viewed (a Christmas list, a birthday list, a holiday list). The budget, when the user gives one. Titles of gifts that person received in the last two years on lists the user can see, with the month they were revealed. Titles of items that person removed after nobody gave them, or marked unavailable. Titles any gifter marked as something that person already has. Titles the asking user marked as not for them. | Who claimed anything, who gave any received gift, what anyone paid, and claim notes. Item notes, links, and images. Items the asking user cannot see, including anything hidden from a restricted viewer. Other people’s gift ideas, off-list gifts, and comments. Last names, email addresses, and birth dates. |
-| **Suggestions** | Titles and notes of the items on the user’s own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
+| Feature | Model | Sent to the provider | Never sent |
+|---|---|---|---|
+| **AI Scraper** | Fast | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
+| **Clean Imported Titles** | Fast | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
+| **Photo to Item** | Vision | The uploaded photo. The barcode number, when the photo follows a scan in the iOS app that found nothing. | Anything about your users, their lists, or their gifts. |
+| **Clean Up Barcode Results** | Fast | The product title and brand the barcode provider returned. The barcode number. | Anything about your users, their lists, or their gifts. |
+| **Paste Text to Items** | Fast | The text the user pasted (up to 8,000 characters). | Anything about your users, their lists, or their gifts. |
+| **Thank-You Note Drafts** | Default | The first name of the user writing the note. The first names of the people who gave the gifts. The titles of the gifts, which have already been revealed to that user. The name of the pet or baby, when the gifts were for a dependent. | What anything cost, and gift notes. Gifts that have not been revealed yet. Last names and email addresses. |
+| **Gift Suggestions** | Default | The first name of the person the gift is for. Titles, prices, priorities, and categories of the items on that person’s lists that the user asking can already see. For each of those items, whether it is already claimed (yes or no only). The asking user’s own private gift ideas for that person, and the titles of gifts they already gave them. The occasion, taken from the type of list being viewed (a Christmas list, a birthday list, a holiday list). The budget, when the user gives one. Titles of gifts that person received in the last two years on lists the user can see, with the month they were revealed. Titles of items that person removed after nobody gave them, or marked unavailable. Titles any gifter marked as something that person already has. Titles the asking user marked as not for them. | Who claimed anything, who gave any received gift, what anyone paid, and claim notes. Item notes, links, and images. Items the asking user cannot see, including anything hidden from a restricted viewer. Other people’s gift ideas, off-list gifts, and comments. Last names, email addresses, and birth dates. |
+| **Suggestions** | Default, Fast | Titles and notes of the items on the user’s own lists. The names and types of those lists, and when each item was last changed. Whether an item is marked unavailable, and the item groups already on the list. | Claims: who is giving what, costs, and gift notes. Gift-ideas lists (private notes about other people). Items already revealed or deleted. Profile details: names, email addresses, and birthdays (a name typed into a list name or an item is sent as written). |
 {/* ai-features:end */}
 
 To keep everything on your own hardware, point the provider at a local OpenAI-compatible runtime such as Ollama or LM Studio.
@@ -51,6 +52,8 @@ To keep everything on your own hardware, point the provider at a local OpenAI-co
 ## Usage and Cost
 
 **Admin > AI** has an **AI Usage** card: every AI call the deployment made in the last 30 days, by feature, with calls, errors, tokens in and out, and an estimated cost. The estimate is computed from token counts and a built-in rate table, so treat it as a guide and your provider's bill as the truth.
+
+- **Prices for other models.** The built-in table knows Claude Haiku, Sonnet and Opus. Any other model is estimated at $3 in and $15 out per million tokens. When a Fast or Vision model is not in the table, its card shows two optional **Price** fields; enter the model's real price there and new usage rows, and the monthly ceiling, use it.
 
 - **Monthly ceiling.** Set **Monthly Ceiling (USD)** (`aiMonthlyCostCeilingUsd`) to stop AI features once the month's estimated spend reaches it. The month is the UTC calendar month. While paused, photo to item reports that the budget has been reached, titles are left as scraped, the AI scraper is skipped, and Suggestions runs record an error. The connection test still works so you can check the provider. The ceiling is a guard rail: a burst of calls can overshoot it slightly.
 - **Retention.** Usage rows are kept for `aiUsageRetentionDays` (default 90) and never contain prompt or response text.
@@ -97,23 +100,55 @@ AI_MAX_OUTPUT_TOKENS=
 
 When set, env vars take precedence over the admin form's stored values. The admin UI shows a "managed via env" banner in that case.
 
+## Fast and Vision Models
+
+The provider and model above are the **Default**. Two more models are optional, each with its own card on **Admin > AI**:
+
+| Model | What runs on it | Why you might set it |
+|---|---|---|
+| **Default** | Gift suggestions, thank-you note drafts, and the Suggestions analyzers that need judgment (grouping, list set-up). | Always set. Everything runs here until you fill in another. |
+| **Fast** | The AI scraper, title clean-up, barcode clean-up, paste text to items, and the mechanical parts of Suggestions (item enrichment, duplicates, stale items). | High volume, simple work. A small model costs far less. |
+| **Vision** | Photo to item. | The only feature that sends an image. Use a model that reads images well, or keep photos on a different provider. |
+
+Leave a card empty and its features use the Default, exactly as if the card were not there. Which feature uses which model is fixed; you choose the model, not the mapping.
+
+Each card can be filled in one of two ways:
+
+- **A model only.** Pick a model and save. It runs on the Default provider with the Default key.
+- **A different provider.** Turn on **Use a Different Provider**, then choose the provider, enter its API key, and pick a model. That card then uses only its own provider and key. Nothing is borrowed from the Default except max output tokens.
+
+Each card has its own **Test** button. The Vision card's test sends a small image and checks the model can read it, so a text-only model fails there and not on someone's photo. **Clear** returns a card to the Default.
+
+Or with env vars, which take precedence over the cards and lock their fields:
+
+```bash
+# A model only: runs on the provider set by AI_PROVIDER_TYPE / AI_API_KEY.
+AI_FAST_MODEL=claude-haiku-4-5
+
+# Its own provider: the type, key and model are all required.
+AI_VISION_PROVIDER_TYPE=openai    # openai | anthropic | openai-compatible
+AI_VISION_API_KEY=sk-...
+AI_VISION_MODEL=gpt-4o
+AI_VISION_BASE_URL=               # required for openai-compatible
+```
+
+`AI_FAST_PROVIDER_TYPE`, `AI_FAST_API_KEY` and `AI_FAST_BASE_URL` work the same way for the Fast model. If a provider type is set but its key or model is missing, those features run on the Default and **Admin > AI** marks the card Incomplete.
+
 ## Picking a Model
 
 GiftWrapt doesn't care which model you use; it cares about cost and latency.
 
-| Use case | Reasonable choices |
+| Model | Reasonable choices |
 |---|---|
-| Title cleaner | Smallest available. Output is one short string. |
-| URL extractor | Small or medium. Reads HTML, emits structured JSON. |
-| Intelligence analyzers | Small to medium. Most prompts are small (per-user item lists). |
+| Default | Medium to frontier. Gift suggestions and thank-you drafts are read by people. Low volume. |
+| Fast | Smallest available that follows a JSON schema. It reads HTML and short titles and emits short structured answers. |
+| Vision | Any model that accepts images. Reading a hang tag or a box is not hard, but a text-only model cannot do it at all. |
 
 Costs ballpark for a single-family deployment running everything on: pennies a month with a cheap small model, dollars a month with a frontier model.
 
-## Per-Feature Model Override
+## Intelligence Model Overrides
 
-[Intelligence](/configuration/intelligence/) supports a `intelligenceModelOverride` setting that swaps just the model ID for analyzer calls. The provider, API key, and base URL still come from the global AI config; the override only swaps the model within that provider.
-
-Use this when you want frontier-tier scraping AI but cheap-tier Intelligence, or vice versa.
+[Intelligence](/configuration/intelligence/) also has an `intelligenceModelOverride` setting, and a per-analyzer map, that swap just the model ID for analyzer calls. They predate the Fast model and still win over it: an analyzer with an override uses that model on the Default provider, whatever the Fast card says. With no override, the mechanical analyzers use the Fast model when it is set.
 
 ## Security Notes
 
