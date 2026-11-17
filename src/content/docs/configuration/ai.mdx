@@ -37,7 +37,7 @@ Each feature on **Admin > AI** has a "What is sent to the AI provider" section. 
 {/* ai-features:start file=catalogs/ai-features.json */}
 | Feature | Model | Sent to the provider | Never sent |
 |---|---|---|---|
-| **AI Scraper** | Fast | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
+| **AI Scraper** | Default | The product page URL being added. The text and markup of that page, with scripts and styles removed (up to 32 KB). | Anything about your users, their lists, or their gifts. |
 | **Clean Imported Titles** | Fast | The scraped title. The product page URL. The store name, when known. | Anything about your users, their lists, or their gifts. |
 | **Photo to Item** | Vision | The uploaded photo. The barcode number, when the photo follows a scan in the iOS app that found nothing. | Anything about your users, their lists, or their gifts. |
 | **Clean Up Barcode Results** | Fast | The product title and brand the barcode provider returned. The barcode number. | Anything about your users, their lists, or their gifts. |
@@ -106,8 +106,8 @@ The provider and model above are the **Default**. Two more models are optional, 
 
 | Model | What runs on it | Why you might set it |
 |---|---|---|
-| **Default** | Gift suggestions, thank-you note drafts, and the Suggestions analyzers that need judgment (grouping, list set-up). | Always set. Everything runs here until you fill in another. |
-| **Fast** | The AI scraper, title clean-up, barcode clean-up, paste text to items, and the mechanical parts of Suggestions (item enrichment, duplicates, stale items). | High volume, simple work. A small model costs far less. |
+| **Default** | The AI scraper, gift suggestions, thank-you note drafts, and the Suggestions analyzers that need judgment (grouping, list set-up). | Always set. Everything runs here until you fill in another. |
+| **Fast** | Title clean-up, barcode clean-up, paste text to items, and the mechanical parts of Suggestions (item enrichment, duplicates, stale items). | High volume, simple work. A small model costs far less. |
 | **Vision** | Photo to item. | The only feature that sends an image. Use a model that reads images well, or keep photos on a different provider. |
 
 Leave a card empty and its features use the Default, exactly as if the card were not there. Which feature uses which model is fixed; you choose the model, not the mapping.
@@ -140,8 +140,8 @@ GiftWrapt doesn't care which model you use; it cares about cost and latency.
 
 | Model | Reasonable choices |
 |---|---|
-| Default | Medium to frontier. Gift suggestions and thank-you drafts are read by people. Low volume. |
-| Fast | Smallest available that follows a JSON schema. It reads HTML and short titles and emits short structured answers. |
+| Default | Medium to frontier. Gift suggestions and thank-you drafts are read by people, and the AI scraper only sees the pages the simpler scrapers could not read. Low volume. |
+| Fast | Smallest available that follows a JSON schema. It reads short titles and pasted text and emits short structured answers. |
 | Vision | Any model that accepts images. Reading a hang tag or a box is not hard, but a text-only model cannot do it at all. |
 
 Costs ballpark for a single-family deployment running everything on: pennies a month with a cheap small model, dollars a month with a frontier model.
