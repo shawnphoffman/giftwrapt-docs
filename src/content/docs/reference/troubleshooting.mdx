@@ -124,6 +124,10 @@ The UI shows the "storage disabled" banner; image uploads (avatars, item images)
 
 **Cause.** The S3 credentials on the app service (`STORAGE_ACCESS_KEY_ID` / `STORAGE_SECRET_ACCESS_KEY`) don't match the keys configured inside the storage sidecar (Garage or RustFS). Common after rebuilding the storage container or rotating its keys without propagating them.
 
+<Aside>
+The boot check doesn't run on Vercel. A Vercel function can be paused with the check still in flight and resume after its request signature has expired, which used to produce a spurious 403 and crash the instance. On Vercel, bad storage credentials show up on the first upload instead, logged as `storage.put.failed`.
+</Aside>
+
 **Recovery.** Either align the app env with the storage container's existing keys, or generate fresh keys on the storage side and update both.
 
 For Garage:
