@@ -170,6 +170,14 @@ These are first-boot seed values only. On the first server start after upgrading
 
 New deploys should configure scraping providers directly in the admin UI rather than using these.
 
+## Languages (Optional)
+
+```bash
+APP_LOCALES=en,fr     # languages this instance offers, default first
+```
+
+Unset means English only. List one language to put the whole instance in it, or several to let people choose. Read at startup, so a prebuilt image is configured the same way as a source build. See [Languages](/configuration/languages/) for what each setup does.
+
 ## Logging
 
 ```bash
@@ -329,6 +337,13 @@ POSTGRES_PASSWORD=change-me
 # BROWSERLESS_URL=
 # BROWSER_TOKEN=
 # FLARESOLVERR_URL=
+
+
+# ===================================================================
+# Languages (optional - unset means English only)
+# ===================================================================
+
+# APP_LOCALES=en                  # en | fr | en,fr | fr,en (default first)
 
 
 # ===================================================================

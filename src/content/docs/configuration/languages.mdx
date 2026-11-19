@@ -1,0 +1,102 @@
+---
+title: Languages
+description: Choose which languages your GiftWrapt instance offers, and how each person ends up seeing one of them.
+sidebar:
+  order: 11
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+GiftWrapt ships in English and French. Which of them your instance offers is your choice, made with one environment variable. A deployment is somebody's own, so a language is never switched on for you: if you set nothing, the instance is English only, exactly as it was before translations existed.
+
+## Choosing the Languages
+
+Set `APP_LOCALES` to a comma-separated list of language codes. The first one listed is the default.
+
+```bash
+# English only. The same as leaving it unset.
+APP_LOCALES=en
+
+# French only.
+APP_LOCALES=fr
+
+# Both, English by default.
+APP_LOCALES=en,fr
+
+# Both, French by default.
+APP_LOCALES=fr,en
+```
+
+| Code | Language |
+|---|---|
+| `en` | English |
+| `fr` | French, as written in France |
+
+The variable is read when the server starts, not when the image is built, so a prebuilt Docker image is configured the same way as a source build. Change it and restart.
+
+A code GiftWrapt has no translation for is ignored, with a warning in the server log at startup. If nothing usable is left, the instance falls back to English.
+
+<Aside type="caution" title="Renamed From an Earlier Preview Switch">
+Builds that tried French before it was finished used `VITE_PREVIEW_LOCALES`. That variable is no longer read. Use `APP_LOCALES`.
+</Aside>
+
+## One Language
+
+With a single language listed, the whole instance is in that language and there is nothing to configure or choose:
+
+- No language picker in **Settings**.
+- No **Default Language** field in **Admin**.
+- A visitor's browser language is not consulted.
+
+This is the right setup for most households: everybody reads the same language, so nobody should have to think about it.
+
+## Several Languages
+
+With two or more listed, people can pick, and GiftWrapt works out a sensible language for anyone who has not.
+
+### What Each Person Sees
+
+In order, the first that applies:
+
+1. **Their own choice.** Each person can pick a language under **Settings → Appearance**. It is saved on their account, so it follows them to a new browser or device when they sign in.
+2. **Their browser's language**, when it is one the instance offers. Regional variants match their base language: a browser set to Canadian or Belgian French gets French.
+3. **The instance default.** The first language in `APP_LOCALES`, until an admin picks a different one (below).
+
+The language picker offers "Match My Browser" as well as each language, for people who would rather not pin one.
+
+### The Default Language Setting
+
+**Admin → Settings → Default Language** appears once the instance offers more than one language. It decides the language for:
+
+- Pages shown to someone who is not signed in and whose browser asks for a language the instance does not offer.
+- Emails to people who have not chosen a language.
+- [Suggestions](/configuration/intelligence/) written for people who have not chosen a language.
+
+Leave it alone and the first language in `APP_LOCALES` is used.
+
+## What Follows the Language
+
+- **Every screen**, including the admin area.
+- **Emails.** Each email is written in its recipient's language. A guardian's copy of an email about a child account is written in the guardian's language, not the child's.
+- **Dates, numbers and money.** `12,50 €` and `18 nov. 2026` in French, `€12.50` and `Nov 18, 2026` in English.
+- **Suggestions.** They are written in a person's language when they are generated. After someone changes language, their existing suggestions stay in the old language until the next run.
+- **AI-written text**, such as thank-you drafts and gift ideas, is requested in the reader's language.
+- **The iOS app.** Its own screens follow the phone's language. Messages the server sends it, and the holiday names in its widgets, follow the phone's language too, as long as the instance offers that language.
+
+## What Is Never Translated
+
+Anything a person typed stays as they typed it:
+
+- Names, list names, item titles and notes, comments.
+- Custom holiday titles an admin created.
+- The instance's own title (`appTitle`).
+
+Product pages are a related case: when someone adds an item from a link, GiftWrapt asks the shop for the page in that person's language, so a French reader may get the French product title where the shop has one.
+
+## Currency
+
+Prices are shown in the currency saved with each item. **Admin → Settings → Default Currency** sets the currency for prices that have none and for new amounts, and defaults to `USD`. It is independent of the language: a French instance in Canada can use `CAD`, and the amount is still formatted the French way.
+
+## Helping With a Translation
+
+The translations live in the main repository as plain JSON, one file per area, under `messages/<language>/`. The French was written and reviewed against a style guide by AI sessions, not by a native speaker, so corrections from people who speak the language are welcome. `TRANSLATION.md` in the repository has the voice, the glossary and the typography rules, and explains how to change a string.
