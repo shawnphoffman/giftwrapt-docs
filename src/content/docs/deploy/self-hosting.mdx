@@ -251,7 +251,7 @@ better-auth stores session tokens in the `session` table as plaintext (the token
 
 Admins can also download a JSON backup from `/admin/data` and import one there. It's handy for moving family data between deployments, but it is not a replacement for `pg_dump`.
 
-**What's in the file:** users and profiles, relationships and permissions, guardians and dependents, relation labels, custom holidays and their reminder history, lists, item groups, items, todos, claims and contribution splits, comments, off-list gifts, list editors, pending scrape jobs, and suggestion dismiss / apply status (so a restore doesn't re-surface suggestions people already handled). App settings are included too, and encrypted settings only decrypt on a deployment with the same `BETTER_AUTH_SECRET`.
+**What's in the file:** users and profiles, relationships and permissions, guardians and dependents, relation labels, custom holidays and their reminder history, lists, item groups, items, todos, claims and contribution splits, comments, off-list gifts, list editors, gift exchanges (including who is gifting to whom, even in exchanges still running), pending scrape jobs, and suggestion dismiss / apply status (so a restore doesn't re-surface suggestions people already handled). App settings are included too, and encrypted settings only decrypt on a deployment with the same `BETTER_AUTH_SECRET`.
 
 **What's not:**
 

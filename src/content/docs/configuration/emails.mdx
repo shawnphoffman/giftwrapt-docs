@@ -1,13 +1,13 @@
 ---
 title: Emails
-description: Configure transactional email for password resets, comments, reminders, and the post-event gift summary.
+description: Configure transactional email for password resets, comments, reminders, gift exchanges, and the post-event gift summary.
 sidebar:
   order: 4
 ---
 
 import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
-GiftWrapt optionally sends a handful of transactional emails: password resets, new-comment notifications, day-of birthday reminders, post-birthday gift summaries, post-Christmas summaries, and configurable pre-event reminders. All outbound mail goes through [Resend](https://resend.com).
+GiftWrapt optionally sends a handful of transactional emails: password resets, new-comment notifications, day-of birthday reminders, post-birthday gift summaries, post-Christmas summaries, configurable pre-event reminders, and gift exchange notices. All outbound mail goes through [Resend](https://resend.com).
 
 <Aside type="note" title="Email Is Optional">
 If you don't configure it, the app still runs - every email send becomes a no-op, and the admin toggles for email features are hidden from the settings UI. Password resets still appear to succeed from the user's perspective so account-existence isn't leaked.
@@ -80,6 +80,14 @@ Turn on **Include Gift Picks** (`enableReminderPicks`, off by default) and each 
 - The email says what is still open and nothing about who claimed anything else.
 - A copy of a child's reminder also goes to their guardians. Those copies never include picks, because a guardian is often the very person the reminder is about.
 - When nothing is open, the reminder is sent exactly as before.
+
+### Gift Exchanges
+
+- **Enable Gift Exchange Emails** (`enableGiftExchangeEmails`, off by default, under **Gift Exchanges** on the Email page) - gates both [gift exchange](/features/gift-exchanges/) emails. Neither one ever says who anyone is gifting to.
+  - **Your assignment is ready** - sent only when an admin presses **Send Emails** on an exchange, and only to people who haven't had it yet. Nothing is sent at the draw itself.
+  - **Your assignment has changed** - automatic. Sent to every person after a redraw once someone has looked, and to the one affected person when someone is added to or removed from an exchange after the draw.
+
+  A child's gift exchange emails are copied to their guardians. With the switch off, or with email not set up, nothing is sent and people find their assignment from the **Gift Exchange** link in the sidebar.
 
 ## Sender Setup
 

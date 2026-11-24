@@ -1,0 +1,183 @@
+---
+title: Gift Exchanges
+description: Draw names for a Secret Santa. Each person is given one person to gift to and sees that person's lists.
+sidebar:
+  order: 6
+---
+
+import { Aside, CardGrid, LinkCard, Steps } from '@astrojs/starlight/components'
+
+A gift exchange is GiftWrapt's Secret Santa. An admin sets one up and draws names, and each person in it is given one other person to gift to. Their Gift Exchange page then shows who that is, with that person's lists underneath.
+
+The exchange only decides who gifts to whom. Everything after that works exactly as it always does: claiming an item on your person's list is an ordinary [claim](/features/claims/), the [reveal](/features/claims/#reveal) names you as the giver the usual way, and gift credit follows the usual rules.
+
+## Setting Up an Exchange
+
+Only admins set up exchanges. An admin can also be in one, and sees their own person like anyone else.
+
+<Steps>
+
+1. Open **Admin → Exchanges** and press **Add Exchange**.
+
+2. Fill in the **Name** (for example "Family Christmas"), an optional **Budget**, and the **Gift Date**. The budget is an amount in the site's default currency. The gift date is shown to everyone in the exchange; nothing happens automatically on that day.
+
+3. Under **People**, use **Add Person** to search for people one at a time, or **Add Everybody** to add everyone who can take part. Chosen people show as chips you can remove.
+
+4. Press **Add Exchange**. The exchange opens as a page of cards: the details with the actions, **People**, and **Who Can Gift to Whom**.
+
+</Steps>
+
+You can add more people later from the **People** card, and change the name, budget, or date with **Edit**. Several exchanges can run at the same time, for example one for the adults and one for the cousins.
+
+### Who Can Take Part
+
+- **Users**, including people with the **Child** role. Children take part like anyone else.
+- **Not [dependents](/permissions/dependents/).** Dependents are pets, babies, and others without an account, so they can't be given a person or be someone's person.
+- **Not banned users.** They are left out of **Add Person** and **Add Everybody**. Someone banned after they were added stays in the exchange until an admin removes them, and is not emailed.
+
+Whether someone has any lists, how many, or what kind, plays no part in the draw.
+
+## Who Can Gift to Whom
+
+By default anyone in the exchange can gift to anyone else. To change that, click a person, in the **People** card or in the table. A dialog opens with two columns of Yes / No answers for every other person:
+
+- **Can Nora gift to them?**
+- **Can they gift to Nora?**
+
+Each direction is its own question. You can let Nora gift to Ben while not letting Ben gift to Nora. Press **Save** to keep the changes.
+
+The **Who Can Gift to Whom** table shows the whole picture at once: each row is a person, each column who they might gift to. A cell reads **Can**, **Off** (you answered No), or **Locked** (a limit you can't change, below). Under each name in the **People** card, a line counts how many people that person can gift to and how many can gift to them.
+
+### Limits You Can't Change
+
+A few pairs are always No, and show as locked with the reason written under the person's name:
+
+- **Nobody gifts to themselves.**
+- **Nobody is given someone who has hidden their lists from them.** If Omar set Dana's access to his lists to [None](/permissions/privacy/#access-levels), Dana can never be given Omar. A **Restricted** viewer can still be given that person, because they can open the lists and claim.
+- **A child is never given their own guardian.** A guardian can be given their child.
+
+These limits are checked again at every draw, so a change to someone's access after the draw counts the next time names are drawn.
+
+### When Names Can't Be Drawn
+
+Sometimes the answers leave no way to give everyone a person. The page tells you before you try, with a warning naming who is stuck, and **Draw Names** stays unavailable until it's fixed. The warning is one of three kinds:
+
+- **"Theo has nobody to gift to."** Every answer for Theo is No or locked. Turn on at least one person Theo can gift to.
+- **"Nobody can gift to Theo."** The mirror image. Turn on at least one person who can gift to Theo.
+- **"Names can't be drawn."** A group of people share too few options between them. For example: "Ruth, Dana and Omar can only gift to Nora and Ben. That's 3 people gifting and only 2 people to gift to." Three people can't share two recipients, so let one of them gift to someone else. The warning can also be put the other way round, as "Only Nora and Ben can gift to Ruth, Dana and Omar", in which case let someone else gift to one of them.
+
+The names in the warning are links: click one to open that person's Yes / No dialog and fix it there.
+
+## Drawing Names
+
+Press **Draw Names**. You need at least three people. With fewer, the button is unavailable and the page says so.
+
+The draw is random, and it never breaks a No or a locked pair. Within those rules it aims for the most satisfying result it can find, in this order:
+
+1. **One loop through everyone.** Nora gifts to Ben, Ben to Ruth, Ruth to Dana, and so on until the last person gifts back to Nora.
+2. **Otherwise, nobody has each other.** No two people are simply swapped (Nora gifts to Ben and Ben gifts to Nora).
+3. **Otherwise, whatever the rules allow.**
+
+After the draw the exchange shows **Drawn** with the date names were drawn. The admin's own screens never show who has whom while the exchange is running.
+
+## Telling People
+
+Nothing is emailed when names are drawn. When you're ready, press **Send Emails** on the exchange page. Each person who hasn't been emailed yet gets "Your assignment is ready", with the exchange name, the budget if there is one, the gift date, and a button to open their Gift Exchange page.
+
+- **The email never says who anyone has.** People find out on the page.
+- **Send Emails only goes to people who haven't had it**, so pressing it again later only reaches newcomers. A line beside the **Drawn** badge says who hasn't been emailed yet, and the button disappears once everyone has.
+- **Everyone gets the email in their own language.**
+
+There is one automatic email, "Your assignment has changed". It is sent when someone's person changes after the draw: to everyone after a [redraw](#redraw) once someone has looked, and to the one affected person when someone is [added or removed](#adding-or-removing-someone). Like the first email, it never names anyone.
+
+### The Email Setting
+
+Both emails are off until an admin turns them on. Open **Admin → Email** and, under **Gift Exchanges**, turn on **Enable Gift Exchange Emails**. While it is off, or when [email](/configuration/emails/) isn't set up at all, **Send Emails** is unavailable with the reason beside it, and nothing is sent.
+
+That's fine. Email is only a nudge: once names are drawn, everyone in the exchange sees **Gift Exchange** at the bottom of the Lists section of their sidebar, under My Lists, and can find their person there.
+
+## What Each Person Sees
+
+The **Gift Exchange** link appears in the sidebar once names are drawn, and goes away when there is nothing to show. The page has a card for each exchange you're in, with its name, budget, and gift date.
+
+Until you look, the card says names have been drawn and shows a **See Who You Have** button. Press it and the card shows who you're gifting to, with the same view of that person's lists you get anywhere else in GiftWrapt. From there you shop as usual: open a list, claim something, and the claim works like any other.
+
+The person's lists are the ones you can already see, nothing more. If they have no lists you can see, the card says so.
+
+### Your Assignment Has Changed
+
+If your person changes after you looked (an admin redrew names, or someone joined or left), the page shows **Your assignment has changed** above the card, and **See Who You Have** comes back. Press it to see who you're gifting to now. If email is on, you also get an email saying the same thing.
+
+## Children and Guardians
+
+Children take part like anyone else, with their own Gift Exchange page.
+
+A guardian doesn't see who their child is gifting to unless they choose to. The guardian's Gift Exchange page has a **Children** card with a **Show** button for each child in an exchange. Pressing it asks first, then shows the child's person. Because a child is never given their own guardian, a guardian never sees their own name this way.
+
+Showing counts as the child having looked, so the child's own page then shows their person without the **See Who You Have** step.
+
+Every gift exchange email to a child is also sent to their guardians, worded about the child ("Sam's assignment is ready"). Those copies don't name anyone either.
+
+## Changing Things After the Draw
+
+Mistakes happen, so nothing locks after the draw. Each change below asks first.
+
+### Redraw
+
+**Redraw** gives everyone a new person. If nobody has looked yet, the swap is silent. If anyone has looked, the confirmation says so (never who) and everyone is told their assignment changed.
+
+### Changing a Yes or No
+
+The Yes / No dialog still works after the draw, but saving redraws names for everyone. The dialog says "Names are already drawn. Saving a change here redraws them for everyone." and its button becomes **Save and Redraw**, which asks to confirm. A change that would make the draw impossible can't be saved.
+
+### Adding or Removing Someone
+
+- **Adding someone** fits them in without a redraw: one person who already had someone is given the newcomer instead, and the newcomer takes over that person's old recipient. Only that one person gets a new assignment. The newcomer can gift to and be given anyone except for the fixed limits; change their Yes / No afterwards and it redraws like any other change. If there's no way to fit them in, you are asked to redraw first.
+- **Removing someone** after the draw is done from that person's dialog, with **Remove**. Whoever had them is given the removed person's recipient instead, and is told their assignment changed. If that pairing isn't allowed, you're asked to confirm **Remove and Redraw**, which redraws for everyone.
+
+Before the draw, each person in the **People** card has a plain remove button.
+
+A removal can leave just two people, who then have each other. Three is only needed to draw names in the first place.
+
+### When an Account Is Deleted
+
+Deleting a user's account removes them from every exchange that is still running, the same way as removing them by hand. Because nobody is there to confirm, a redraw happens on its own when one is needed. If no draw is possible at all, the exchange goes back to **Not Drawn** so an admin can fix it.
+
+In archived exchanges the person stays in the record as "Deleted user".
+
+## Finishing an Exchange
+
+When the exchange is over, press **Archive** on its admin page. It asks to confirm, and **it can't be undone**. Exchanges don't archive on their own, not even on the gift date.
+
+Archiving ends the exchange for everyone: it disappears from every Gift Exchange page and sidebar, from the iOS app, and from AI assistants. Its admin page then shows **Who Gifted to Whom**, one row per person, giver and recipient. This is the only place an admin can see the pairings.
+
+### Deleting an Exchange
+
+An exchange whose names were never drawn can be deleted instead, with **Delete**. That removes it and its people for good. Once names are drawn, archive it instead.
+
+## AI Assistants
+
+If you have connected an [AI assistant](/features/ai-assistants/), you can ask it who you're gifting to, and it can go on to help plan the gift from that person's lists. It only ever learns your own assignment, never anyone else's, including your children's.
+
+Asking counts as looking, exactly like pressing **See Who You Have**. So only ask when you want to know.
+
+## The iOS App
+
+The Gift Exchange page works in the [iOS app](/features/ios-app/) the same as on the web, in the app's **Lists** tab.
+
+An upcoming exchange also appears on the **Upcoming** tab and in the **Coming Up** widget, with its name and gift date only. The app and the widget never show who anyone is gifting to; tapping the exchange on the Upcoming tab opens the Gift Exchange page, where you see your person the usual way.
+
+## How Secret It Is
+
+Inside GiftWrapt, each person sees only their own assignment, and admins' screens don't show any pairing until the exchange is archived. The emails, the iOS app, and the widgets never name anyone.
+
+That secrecy is in the app, not in the data. The pairings are stored in the database and included in the [admin backup](/deploy/self-hosting/#admin-export-and-restore), so anyone with access to the database or a backup file could read them. An admin who impersonates a user also sees what that user sees, including their person, and that counts as the user having looked. Keep that in mind when deciding who runs the exchange and who holds the backups.
+
+## Related
+
+<CardGrid>
+	<LinkCard title="Claims and Reveal" href="/features/claims/" description="How claiming works once you know who you're gifting to." />
+	<LinkCard title="Guardians" href="/permissions/guardians/" description="What guardians can see and do for a child." />
+	<LinkCard title="Privacy" href="/permissions/privacy/" description="Access levels, including the None setting the draw respects." />
+	<LinkCard title="Emails" href="/configuration/emails/" description="Setting up email and the gift exchange email switch." />
+</CardGrid>
