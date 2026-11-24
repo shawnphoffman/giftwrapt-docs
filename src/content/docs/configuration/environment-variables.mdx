@@ -206,7 +206,7 @@ METRICS_TOKEN=<16+ chars>
 | `SENTRY_DSN` | Where error events go. Points at whatever you chose - your Sentry org, a self-hosted GlitchTip, your own proxy. Unset means no error reporting. |
 | `SENTRY_ENVIRONMENT` | Environment tag on each event. Falls back to `NODE_ENV`. |
 | `SENTRY_RELEASE` | Release tag on each event. Set it from your build's version or commit SHA. |
-| `SENTRY_TRACES_SAMPLE_RATE` | Performance-trace sample rate, `0` to `1`. Unset means the SDK default. |
+| `SENTRY_TRACES_SAMPLE_RATE` | Performance-trace sample rate, `0` to `1`. Unset means `0`, errors only. |
 | `METRICS_TOKEN` | Bearer token that gates `/api/metrics` scraping. Minimum 16 characters. A real secret, unlike the DSN. |
 
 <Aside type="caution" title="Both Gates Have to Be On">
