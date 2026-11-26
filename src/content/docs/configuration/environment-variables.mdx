@@ -125,7 +125,8 @@ STORAGE_MAX_UPLOAD_MB=8
 
 # Dev-only. Skips the boot-time HeadBucket connectivity check so fake
 # STORAGE_* values satisfy the configured-ness gate without reaching a
-# real bucket. Leave unset anywhere that uploads real images.
+# real bucket. Leave unset anywhere that uploads real images. Has no
+# effect on Vercel, where the boot check never runs.
 STORAGE_SKIP_BOOT_CHECK=
 ```
 
