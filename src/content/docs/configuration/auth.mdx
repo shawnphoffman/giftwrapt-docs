@@ -36,6 +36,23 @@ OIDC config is loaded once at server startup. Saving changes in the admin form r
 
 If the config is invalid at boot, GiftWrapt logs a warning and falls back to email + password only. Operators can still sign in, fix the config, and restart.
 
+### Password Sign-In for Admins Only
+
+When OIDC should be the only way in for your family, turn on **Password Sign-In for Admins Only** in Admin → Auth. While it's on:
+
+- Everyone except admins signs in with OIDC (or a passkey), on the web and in the iOS app.
+- The sign-in page hides the email and password form, and email sign-up is turned off. New people sign up through OIDC, so leave your provider's auto-register on if you want that.
+- The server refuses a non-admin's password, not just the form. They get the same answer as a wrong password, so the sign-in endpoint doesn't reveal who is an admin.
+- The iOS app hides its email form too. Admins sign in there with OIDC or a passkey.
+
+If your identity provider is down, admins can still sign in with their password at `/sign-in?local=1`. Nothing links to that address, so bookmark it. It works on the web only.
+
+The setting only applies while OIDC works: configured in Admin → Auth and loaded by a server restart. If you turn OIDC off, password sign-in comes back for everyone at once.
+
+<Aside type="caution" title="You Need a Password to Turn It On">
+The server refuses to turn this on unless OIDC is set up and running, and the admin turning it on has a password on their account. An admin account created through OIDC has none, so turn it on from an admin account that does. That way whoever turns it on can always get back in at `/sign-in?local=1`.
+</Aside>
+
 <Aside type="danger" title="Rotate Your Client Secret If You Ran 0.45.0 or Earlier">
 On releases up to and including 0.45.0, the unauthenticated app-settings response that every page load prefetches included the decrypted OIDC client secret. Any deployment with OIDC configured on those versions served that secret to anyone who loaded a page.
 

@@ -24,9 +24,9 @@ The admin panel lives at `/admin`. Once you're signed in as an admin, the top-ri
 
 | Section | Path | What it controls |
 |---|---|---|
-| General | `/admin` | App Settings (title, default list type, list-type toggles, mobile, MCP, passkeys), Comments, Birthday / Christmas / Holiday Lists (including archive timing and custom holidays), Relationship Reminders, Todo Lists, Observability. |
+| General | `/admin` | App Settings (title, default list type, list-type toggles, mobile, MCP), Comments, Birthday / Christmas / Holiday Lists (including archive timing and custom holidays), Relationship Reminders, Todo Lists, Observability. |
 | Email | `/admin/email` | Email-family toggles (comments, birthday, Christmas, holiday, reminders, relationship reminders, gift exchanges) and a test-send button. |
-| Auth | `/admin/auth` | OIDC client config; passkey toggle. |
+| Auth | `/admin/auth` | Allow Sign-Ups, passkeys, Password Sign-In for Admins Only, mobile app redirect URIs; OIDC client config. |
 | Gift Exchanges | `/admin/exchanges` | Gift exchanges (Secret Santa): add one, choose people and who can gift to whom, draw names, send emails, archive. See [Gift Exchanges](/features/gift-exchanges/). |
 | Users | `/admin/users` | User list, roles, partner/guardian relationships, user-detail pages, impersonation. |
 | Storage | `/admin/storage` | Bucket connectivity, recent uploads, test-upload. Hidden when storage isn't configured. |
@@ -86,6 +86,7 @@ A few app-wide toggles that shape what users see:
 | `enableMcp` | false | Lets users connect AI assistants over MCP: turns on the `/api/mcp` endpoint, the OAuth sign-in and consent pages, Admin → MCP, and Settings → Connected Apps. Turning it off disconnects every assistant immediately. See [AI Assistants](/features/ai-assistants/). |
 | `enablePasskeys` | false | WebAuthn passkey enrollment. |
 | `enableSignUps` | true | Lets anyone who can reach the site create an account. When off, add people from Admin → Users. A deployment with no admin stays open. |
+| `passwordSignInAdminsOnly` | false | While OIDC works, only admins may sign in with a password (at `/sign-in?local=1`), and email sign-up is off. Everyone else signs in with OIDC or a passkey, on the web and in the iOS app. See [Password Sign-In for Admins Only](/configuration/auth/#password-sign-in-for-admins-only). |
 
 The list-type toggles are deliberately fine-grained so a single-family deployment can run wishlists-only and not see Christmas / birthday / holiday machinery anywhere.
 
